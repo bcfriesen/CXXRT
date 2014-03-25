@@ -27,7 +27,6 @@ int main(int argc, char *argv[]) {
       double mu = mu_min;
       for (Ray& r: rays) {
         r.mu = mu;
-        std::cout << r.mu << std::endl;
         mu += (mu_max - mu_min) / double(rays.size());
         for (RayData& d: r.raydata) {
           d.gridvoxel = nullptr;
