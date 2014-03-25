@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 
     YAML::Node config = YAML::LoadFile(argv[1]);
 
-    std::vector<GridVoxel> grid(config["n_depth_pts"].as<int>());
+    std::vector<struct GridVoxel> grid(config["n_depth_pts"].as<int>());
 
     return(0);
 }
