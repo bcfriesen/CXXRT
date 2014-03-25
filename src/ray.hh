@@ -19,6 +19,7 @@ class Ray {
     std::list<struct RayData> raydata;
     double mu;
     double lambda;
+    void set_to_LTE(const double temperature);
 };
 
 #endif
