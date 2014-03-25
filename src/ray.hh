@@ -2,12 +2,14 @@
 #define RAY_HH
 
 #include <list>
+#include <iostream>
+#include <vector>
 
 #include "grid.hh"
 
 class RayData {
   public:
-    struct GridVoxel* gridvoxel;
+    const struct GridVoxel* gridvoxel;
     double I_lam;
     double tau;
     double chi;
