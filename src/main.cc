@@ -4,12 +4,11 @@
 
 #include <yaml-cpp/yaml.h>
 
-using namespace std;
 
 int main(int argc, char *argv[]) {
 
     if (argc == 1) {
-        cout << "Usage: <executable name> <YAML control file>" << endl;
+        std::cout << "Usage: <executable name> <YAML control file>" << std::endl;
         exit(0);
     }
 
