@@ -25,4 +25,6 @@ class Ray {
     void set_to_LTE(const double temperature);
 };
 
+std::ostream& operator<<(std::ostream& os, const Ray& r);
+
 #endif
