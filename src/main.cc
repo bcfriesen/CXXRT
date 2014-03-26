@@ -28,7 +28,6 @@ int main(int argc, char *argv[]) {
       for (Ray& r: rays) {
         r.mu = mu;
         mu += (mu_max - mu_min) / double(rays.size());
-        r.bind_to_grid(grid);
         for (RayData& d: r.raydata) {
           d.gridvoxel = nullptr;
           d.I_lam = 0.0;
@@ -36,6 +35,7 @@ int main(int argc, char *argv[]) {
           d.chi = 0.0;
           d.source_fn = 0.0;
         }
+        r.bind_to_grid(grid);
       }
     }
 
