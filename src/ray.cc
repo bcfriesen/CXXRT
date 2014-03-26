@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "planck_function.hh"
 #include "ray.hh"
 
@@ -19,9 +21,15 @@ void Ray::bind_to_grid(const std::vector<struct GridVoxel> grid) {
   }
 }
 
-void Ray::set_to_LTE(const double temperature) {
+void Ray::set_to_LTE() {
+  // We get the temperature from the grid, so first check that the ray is bound
+  // to the grid.
+  if (std::any_of(raydata.begin(), raydata.end(), [](struct RayData d) {return d.gridvoxel == nullptr;})) {
+          std::cout << "ERROR: cannot set ray data to LTE because ray is not bound to grid!" << std::endl;
+          exit(0);
+      }
   for (RayData& d: raydata) {
-    d.source_fn = planck_function(lambda, temperature);
+    d.source_fn = planck_function(lambda, d.gridvoxel->temperature);
   }
 }
 

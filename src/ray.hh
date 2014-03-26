@@ -22,7 +22,7 @@ class Ray {
     double mu;
     double lambda;
     void bind_to_grid(const std::vector<struct GridVoxel> grid);
-    void set_to_LTE(const double temperature);
+    void set_to_LTE();
 };
 
 std::ostream& operator<<(std::ostream& os, const Ray& r);
