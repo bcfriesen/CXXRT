@@ -4,6 +4,7 @@
 struct GridVoxel {
     double z;
     double rho;
+    double temperature;
 };
 
 #endif
