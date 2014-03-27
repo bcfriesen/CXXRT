@@ -24,7 +24,7 @@ void Ray::bind_to_grid(const std::vector<struct GridVoxel> grid) {
 void Ray::set_to_LTE() {
   // We get the temperature from the grid, so first check that the ray is bound
   // to the grid.
-  if (std::any_of(raydata.begin(), raydata.end(), [](struct RayData d) {return d.gridvoxel == nullptr;})) {
+  if (std::none_of(raydata.begin(), raydata.end(), [](struct RayData d) {return (d.gridvoxel);})) {
           std::cout << "ERROR: cannot set ray data to LTE because ray is not bound to grid!" << std::endl;
           exit(0);
       }
