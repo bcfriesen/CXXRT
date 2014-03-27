@@ -1,9 +1,8 @@
 #include <algorithm>
+#include <iomanip>
 
 #include "planck_function.hh"
 #include "ray.hh"
-
-#include <iomanip>
 
 void Ray::bind_to_grid(const std::vector<struct GridVoxel> grid) {
   raydata.resize(grid.size());
