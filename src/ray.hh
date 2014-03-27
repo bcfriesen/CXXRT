@@ -22,7 +22,7 @@ class Ray {
     std::list<struct RayData> raydata;
     double mu;
     double lambda;
-    void bind_to_grid(const std::vector<struct GridVoxel> grid);
+    void bind_to_grid();
     void set_to_LTE();
 };
 

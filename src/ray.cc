@@ -3,8 +3,9 @@
 
 #include "planck_function.hh"
 #include "ray.hh"
+#include "globals.hh"
 
-void Ray::bind_to_grid(const std::vector<struct GridVoxel> grid) {
+void Ray::bind_to_grid() {
   raydata.resize(grid.size());
   int i = 0;
   if (mu < 0.0) {

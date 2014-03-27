@@ -4,6 +4,9 @@
 
 #include "grid.hh"
 #include "ray.hh"
+#include "globals.hh"
+
+std::vector<struct GridVoxel> grid;
 
 int main(int argc, char *argv[]) {
 
@@ -15,7 +18,11 @@ int main(int argc, char *argv[]) {
     YAML::Node config = YAML::LoadFile(argv[1]);
 
     const int n_depth_pts = config["n_depth_pts"].as<int>();
-    std::vector<struct GridVoxel> grid(n_depth_pts);
+    grid.resize(n_depth_pts);
+
+    for (GridVoxel& gv: grid) {
+        gv.rho = 5.0;
+    }
 
     const int n_mu_pts = config["n_mu_pts"].as<int>();
     const double mu_min = -1.0;
@@ -27,7 +34,7 @@ int main(int argc, char *argv[]) {
     for (Ray& r: rays) {
       r.mu = mu;
       mu += (mu_max - mu_min) / double(rays.size());
-      r.bind_to_grid(grid);
+      r.bind_to_grid();
     }
 
     return(0);
