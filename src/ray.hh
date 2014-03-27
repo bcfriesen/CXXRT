@@ -24,6 +24,7 @@ class Ray {
     double lambda;
     void bind_to_grid();
     void set_to_LTE();
+    void calc_chi();
 };
 
 std::ostream& operator<<(std::ostream& os, const Ray& r);

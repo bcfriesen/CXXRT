@@ -50,3 +50,10 @@ RayData::RayData() {
     chi = 0.0;
     source_fn = 0.0;
 }
+
+void Ray::calc_chi() {
+    for (RayData& rd: raydata) {
+        // TODO: calculate opacity the right way, not by just using density as a proxy.
+        rd.chi = rd.gridvoxel->rho;
+    }
+}

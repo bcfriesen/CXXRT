@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
       r.mu = mu;
       mu += (mu_max - mu_min) / double(rays.size());
       r.bind_to_grid();
+      r.calc_chi();
     }
 
     return(0);
