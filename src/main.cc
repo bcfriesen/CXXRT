@@ -23,13 +23,11 @@ int main(int argc, char *argv[]) {
 
     std::vector<Ray> rays(n_mu_pts);
 
-    {
-      double mu = mu_min;
-      for (Ray& r: rays) {
-        r.mu = mu;
-        mu += (mu_max - mu_min) / double(rays.size());
-        r.bind_to_grid(grid);
-      }
+    double mu = mu_min;
+    for (Ray& r: rays) {
+      r.mu = mu;
+      mu += (mu_max - mu_min) / double(rays.size());
+      r.bind_to_grid(grid);
     }
 
     return(0);
