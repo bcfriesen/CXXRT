@@ -41,3 +41,11 @@ std::ostream& operator<<(std::ostream& os, const Ray& r) {
   }
   return os;
 }
+
+RayData::RayData() {
+    gridvoxel = nullptr;
+    I_lam = 0.0;
+    tau = 0.0;
+    chi = 0.0;
+    source_fn = 0.0;
+}
