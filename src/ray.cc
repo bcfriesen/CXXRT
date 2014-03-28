@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iomanip>
+#include <iterator>
 
 #include "planck_function.hh"
 #include "ray.hh"
@@ -52,8 +53,8 @@ RayData::RayData() {
 }
 
 void Ray::calc_chi() {
-    for (RayData& rd: raydata) {
-        // TODO: calculate opacity the right way, not by just using density as a proxy.
-        rd.chi = rd.gridvoxel->rho;
-    }
+  for (RayData& rd: raydata) {
+      // TODO: calculate opacity the right way, not by just using density as a proxy.
+      rd.chi = rd.gridvoxel->rho;
+  }
 }
