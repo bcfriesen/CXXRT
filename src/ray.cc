@@ -39,8 +39,13 @@ std::ostream& operator<<(std::ostream& os, const Ray& r) {
   os << "mu: " << r.mu << std::endl;
   os << "lambda: " << r.lambda << std::endl;
   os << "RAY DATA:" << std::endl;
+  os << std::setw(15) << "I_lam" << std::setw(15) << "tau" << std::setw(15) << "chi" << std::setw(15) << "source_fn" << std::endl;
   for (const RayData& rd: r.raydata) {
-    os << rd.I_lam << std::setw(15) << rd.tau << std::setw(15) << rd.chi << std::setw(15) << rd.source_fn << std::endl;
+    os << std::setw(15) << std::scientific << rd.I_lam;
+    os << std::setw(15) << std::scientific << rd.tau;
+    os << std::setw(15) << std::scientific << rd.chi;
+    os << std::setw(15) << std::scientific << rd.source_fn;
+    os << std::endl;
   }
   return os;
 }
