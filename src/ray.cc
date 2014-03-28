@@ -27,7 +27,7 @@ void Ray::set_to_LTE() {
   if (std::none_of(raydata.begin(), raydata.end(), [](struct RayData d) {return (d.gridvoxel);})) {
           std::cout << "ERROR: cannot set ray data to LTE because ray is not bound to grid!" << std::endl;
           exit(0);
-      }
+  }
   for (RayData& d: raydata) {
     d.source_fn = planck_function(lambda, d.gridvoxel->temperature);
   }
