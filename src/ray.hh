@@ -26,6 +26,7 @@ class Ray {
     void set_to_LTE();
     void calc_chi();
     void calc_tau();
+    void formal_soln();
 };
 
 std::ostream& operator<<(std::ostream& os, const Ray& r);

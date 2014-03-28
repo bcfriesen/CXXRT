@@ -87,3 +87,18 @@ void Ray::calc_tau() {
     }
   }
 }
+
+void Ray::formal_soln() {
+  for (auto it = raydata.begin(); it != raydata.end(); ++it) {
+    if (it == raydata.begin()) {
+      if (it->mu > 0.0) {
+        it->I_lam = planck_function(it->lambda, it->gridvoxel->temperature);
+      } else {
+        it->I_lam = 0.0;
+      }
+    } else {
+      const auto it_prev = std::prev(it, 1);
+      // it->I_lam = it_prev->I_lam * std::exp(-(it->tau - it_prev->tau)) + DELTA_I
+    }
+  }
+}
