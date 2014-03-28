@@ -5,6 +5,7 @@
 #include "grid.hh"
 #include "ray.hh"
 #include "globals.hh"
+#include "calc_moments.hh"
 
 std::vector<struct GridVoxel> grid;
 
@@ -38,11 +39,17 @@ int main(int argc, char *argv[]) {
 
     double mu = mu_min;
     for (Ray& r: rays) {
-      r.mu = mu;
+      for (RayData& rd: r.raydata) {
+        rd.mu = mu;
+      }
       mu += (mu_max - mu_min) / double(rays.size());
       r.bind_to_grid();
       r.calc_chi();
       r.calc_tau();
+    }
+
+    for (GridVoxel& gv: grid) {
+      calc_J(gv);
     }
 
     return(0);
