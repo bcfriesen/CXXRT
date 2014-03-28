@@ -53,6 +53,11 @@ RayData::RayData() {
 }
 
 void Ray::calc_chi() {
+  // First check that the ray is bound to the grid.
+  if (std::none_of(raydata.begin(), raydata.end(), [](struct RayData d) {return (d.gridvoxel);})) {
+          std::cout << "ERROR: cannot calculate chi because ray is not bound to grid!" << std::endl;
+          exit(0);
+  }
   for (RayData& rd: raydata) {
       // TODO: calculate opacity the right way, not by just using density as a proxy.
       rd.chi = rd.gridvoxel->rho;
