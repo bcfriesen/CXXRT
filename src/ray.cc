@@ -13,11 +13,13 @@ void Ray::bind_to_grid() {
   if (mu < 0.0) {
     for (auto it = raydata.begin(); it != raydata.end(); ++it) {
       it->gridvoxel = &grid[i];
+      grid[i].intersecting_rays.push_back(this);
       ++i;
     }
   } else {
     for (auto it = raydata.rbegin(); it != raydata.rend(); ++it) {
       it->gridvoxel = &grid[i];
+      grid[i].intersecting_rays.push_back(this);
       ++i;
     }
   }
