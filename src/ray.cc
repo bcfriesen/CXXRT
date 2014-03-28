@@ -58,3 +58,19 @@ void Ray::calc_chi() {
       rd.chi = rd.gridvoxel->rho;
   }
 }
+
+void Ray::calc_tau() {
+  // First check that the ray is bound to the grid.
+  if (std::none_of(raydata.begin(), raydata.end(), [](struct RayData d) {return (d.gridvoxel);})) {
+          std::cout << "ERROR: cannot calculate tau because ray is not bound to grid!" << std::endl;
+          exit(0);
+  }
+  for (auto it = raydata.begin(); it != raydata.end(); ++it) {
+    if (it == raydata.begin()) {
+      it->tau = 0.0;
+    } else {
+      const auto it_prev = std::prev(it, 1);
+      it->tau = it_prev->tau + (0.5 * (it_prev->chi + it->chi) * abs(it->gridvoxel->z- it_prev->gridvoxel->z) / mu);
+    }
+  }
+}
