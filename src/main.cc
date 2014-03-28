@@ -24,6 +24,12 @@ int main(int argc, char *argv[]) {
         gv.rho = 5.0;
     }
 
+    double z_tmp = 1.0;
+    for (auto it = grid.begin(); it != grid.end(); ++it) {
+      it->z = z_tmp;
+      z_tmp += 1.0;
+    }
+
     const int n_mu_pts = config["n_mu_pts"].as<int>();
     const double mu_min = -1.0;
     const double mu_max = +1.0;
