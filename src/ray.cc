@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iterator>
+#include <cmath>
 
 #include "planck_function.hh"
 #include "ray.hh"
@@ -75,7 +76,7 @@ void Ray::calc_tau() {
       it->tau = 0.0;
     } else {
       const auto it_prev = std::prev(it, 1);
-      it->tau = it_prev->tau + (0.5 * (it_prev->chi + it->chi) * abs(it->gridvoxel->z- it_prev->gridvoxel->z) / mu);
+      it->tau = it_prev->tau + (0.5 * (it_prev->chi + it->chi) * std::abs(it->gridvoxel->z - it_prev->gridvoxel->z) / std::abs(mu));
     }
   }
 }
