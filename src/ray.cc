@@ -9,18 +9,15 @@
 
 void Ray::bind_to_grid() {
   raydata.resize(grid.size());
-  int i = 0;
   if (raydata.front().mu < 0.0) {
-    for (auto it = raydata.begin(); it != raydata.end(); ++it) {
-      it->gridvoxel = &grid[i];
-      grid[i].intersecting_raydata.push_back(*it);
-      ++i;
+    for (unsigned int i = 0; i < raydata.size(); ++i) {
+        raydata.at(i).gridvoxel = &grid[i];
+        grid.at(i).intersecting_raydata.push_back(&raydata[i]);
     }
   } else {
-    for (auto it = raydata.rbegin(); it != raydata.rend(); ++it) {
-      it->gridvoxel = &grid[i];
-      grid[i].intersecting_raydata.push_back(*it);
-      ++i;
+    for (int i = raydata.size()-1; i >= 0; --i) {
+        raydata.at(i).gridvoxel = &grid[i];
+        grid.at(i).intersecting_raydata.push_back(&raydata[i]);
     }
   }
 }
