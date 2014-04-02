@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
       mu += (mu_max - mu_min) / double(rays.size());
       r.calc_chi();
       r.calc_tau();
+      r.set_to_LTE();
       r.formal_soln();
     }
 
