@@ -3,6 +3,6 @@
 
 #include "grid.hh"
 
-void calc_J(const GridVoxel gv);
+void calc_J(GridVoxel &gv);
 
 #endif

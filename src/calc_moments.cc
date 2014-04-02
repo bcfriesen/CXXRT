@@ -7,7 +7,7 @@ bool ray_angle_sort_function(class RayData* rd1, class RayData* rd2) {
   return (rd1->mu < rd2->mu);
 }
 
-void calc_J(GridVoxel gv) {
+void calc_J(GridVoxel &gv) {
   std::sort(gv.intersecting_raydata.begin(), gv.intersecting_raydata.end(), ray_angle_sort_function);
 
   double result = 0.0;
