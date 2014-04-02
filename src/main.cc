@@ -21,10 +21,10 @@ int main(int argc, char *argv[]) {
     const int n_depth_pts = config["n_depth_pts"].as<int>();
     grid.resize(n_depth_pts);
 
-    double rho = 5.0;
+    double rho = 1.0e-5;
     for (GridVoxel& gv: grid) {
         gv.rho = rho;
-        rho += 1.0;
+        rho *= 2.0;
     }
 
     double z_tmp = 1.0;
