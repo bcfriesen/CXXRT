@@ -7,8 +7,11 @@
 #include "ray.hh"
 #include "globals.hh"
 
-void Ray::bind_to_grid() {
+void Ray::bind_to_grid(const double mu) {
   raydata.resize(grid.size());
+  for (RayData& rd: raydata) {
+    rd.mu = mu;
+  }
   if (raydata.front().mu < 0.0) {
     for (unsigned int i = 0; i < raydata.size(); ++i) {
         raydata.at(i).gridvoxel = &grid[i];

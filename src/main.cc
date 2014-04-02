@@ -39,11 +39,8 @@ int main(int argc, char *argv[]) {
 
     double mu = mu_min;
     for (Ray& r: rays) {
-      for (RayData& rd: r.raydata) {
-        rd.mu = mu;
-      }
+      r.bind_to_grid(mu);
       mu += (mu_max - mu_min) / double(rays.size());
-      r.bind_to_grid();
       r.calc_chi();
       r.calc_tau();
       r.formal_soln();
