@@ -108,7 +108,7 @@ void Ray::formal_soln() {
       const double beta = (Delta_tau - 1.0 + std::exp(-Delta_tau)) / Delta_tau;
       // TODO: fill in gamma for parabolic interpolation
       const double Delta_I = (alpha * it_prev->source_fn) + (beta * it->source_fn);
-      it->I_lam = it_prev->I_lam * std::exp(-(it->tau - it_prev->tau)) + Delta_I;
+      it->I_lam = it_prev->I_lam * std::exp(-Delta_tau) + Delta_I;
     }
   }
 }
