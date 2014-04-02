@@ -11,7 +11,7 @@ void calc_J(GridVoxel &gv) {
   std::sort(gv.intersecting_raydata.begin(), gv.intersecting_raydata.end(), ray_angle_sort_function);
 
   double result = 0.0;
-  for (auto it = gv.intersecting_raydata.begin(); it != gv.intersecting_raydata.end(); ++it) {
+  for (auto it = gv.intersecting_raydata.begin(); it != gv.intersecting_raydata.end()-1; ++it) {
     const auto it_next = std::next(it, 1);
     result += 0.5 * ((*it)->I_lam + (*it_next)->I_lam) * ((*it_next)->mu - (*it)->mu);
   }
