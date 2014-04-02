@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     for (Ray& r: rays) {
       r.bind_to_grid(mu);
       for (RayData& rd: r.raydata) {
-        rd.lambda = 5.0;
+        rd.lambda = 5.0e-5;
       }
       mu += (mu_max - mu_min) / double(rays.size());
       r.calc_chi();
