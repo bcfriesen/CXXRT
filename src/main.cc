@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
     for (GridVoxel& gv: grid) {
         gv.rho = rho;
         rho *= 2.0;
+        gv.temperature = 5778.0;
     }
 
     double z_tmp = 1.0;
