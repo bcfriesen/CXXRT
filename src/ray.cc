@@ -36,7 +36,14 @@ void Ray::set_to_LTE() {
 
 std::ostream& operator<<(std::ostream& os, const Ray& r) {
   os << "RAY DATA:" << std::endl;
-  os << std::setw(15) << "z" << std::setw(15) << "mu" << std::setw(15) << "lambda" << std::setw(15) << "I_lam" << std::setw(15) << "tau" << std::setw(15) << "chi" << std::setw(15) << "source_fn" << std::endl;
+  os << std::setw(15) << "z";
+  os << std::setw(15) << "mu";
+  os << std::setw(15) << "lambda";
+  os << std::setw(15) << "I_lam";
+  os << std::setw(15) << "tau";
+  os << std::setw(15) << "chi";
+  os << std::setw(15) << "source_fn";
+  os << std::endl;
   for (const RayData& rd: r.raydata) {
     os << std::setw(15) << std::scientific << rd.gridvoxel->z;
     os << std::setw(15) << std::scientific << rd.mu;
