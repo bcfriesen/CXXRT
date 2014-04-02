@@ -12,16 +12,13 @@ void Ray::bind_to_grid(const double mu) {
   for (RayData& rd: raydata) {
     rd.mu = mu;
   }
-  if (raydata.front().mu < 0.0) {
-    for (unsigned int i = 0; i < raydata.size(); ++i) {
+  for (unsigned int i = 0; i < raydata.size(); ++i) {
+      if (raydata.front().mu < 0.0) {
         raydata.at(i).gridvoxel = &grid[i];
-        grid.at(i).intersecting_raydata.push_back(&raydata[i]);
-    }
-  } else {
-    for (int i = raydata.size()-1; i >= 0; --i) {
-        raydata.at(i).gridvoxel = &grid[i];
-        grid.at(i).intersecting_raydata.push_back(&raydata[i]);
-    }
+      } else {
+        raydata.at(i).gridvoxel = &grid[(grid.size()-1)-i];
+      }
+      grid.at(i).intersecting_raydata.push_back(&raydata[i]);
   }
 }
 
