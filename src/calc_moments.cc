@@ -5,7 +5,6 @@
 
 bool ray_angle_sort_function(class RayData* rd1, class RayData* rd2) {
   return (rd1->mu < rd2->mu);
-  return (false);
 }
 
 void calc_J(GridVoxel gv) {
