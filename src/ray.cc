@@ -95,7 +95,12 @@ void Ray::formal_soln() {
       }
     } else {
       const auto it_prev = std::prev(it, 1);
-      // it->I_lam = it_prev->I_lam * std::exp(-(it->tau - it_prev->tau)) + DELTA_I
+      const double Delta_tau = it->tau - it_prev->tau;
+      const double alpha = 1.0 - std::exp(-Delta_tau) - ((Delta_tau - 1.0 + std::exp(-Delta_tau))) / Delta_tau;
+      const double beta = (Delta_tau - 1.0 + std::exp(-Delta_tau)) / Delta_tau;
+      // TODO: fill in gamma for parabolic interpolation
+      const double Delta_I = (alpha * it_prev->source_fn) + (beta * it->source_fn);
+      it->I_lam = it_prev->I_lam * std::exp(-(it->tau - it_prev->tau)) + Delta_I;
     }
   }
 }

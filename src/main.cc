@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
       r.bind_to_grid();
       r.calc_chi();
       r.calc_tau();
+      r.formal_soln();
     }
 
     for (GridVoxel& gv: grid) {
