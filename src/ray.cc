@@ -25,7 +25,7 @@ void Ray::bind_to_grid(const double mu) {
 void Ray::set_to_LTE() {
   // We get the temperature from the grid, so first check that the ray is bound
   // to the grid.
-  if (std::none_of(raydata.begin(), raydata.end(), [](struct RayData d) {return (d.gridvoxel);})) {
+  if (std::none_of(raydata.begin(), raydata.end(), [](class RayData d) {return (d.gridvoxel);})) {
           std::cout << "ERROR: cannot set ray data to LTE because ray is not bound to grid!" << std::endl;
           exit(0);
   }
@@ -67,7 +67,7 @@ RayData::RayData() {
 
 void Ray::calc_chi() {
   // First check that the ray is bound to the grid.
-  if (std::none_of(raydata.begin(), raydata.end(), [](struct RayData d) {return (d.gridvoxel);})) {
+  if (std::none_of(raydata.begin(), raydata.end(), [](class RayData d) {return (d.gridvoxel);})) {
           std::cout << "ERROR: cannot calculate chi because ray is not bound to grid!" << std::endl;
           exit(0);
   }
@@ -79,7 +79,7 @@ void Ray::calc_chi() {
 
 void Ray::calc_tau() {
   // First check that the ray is bound to the grid.
-  if (std::none_of(raydata.begin(), raydata.end(), [](struct RayData d) {return (d.gridvoxel);})) {
+  if (std::none_of(raydata.begin(), raydata.end(), [](class RayData d) {return (d.gridvoxel);})) {
           std::cout << "ERROR: cannot calculate tau because ray is not bound to grid!" << std::endl;
           exit(0);
   }
