@@ -21,7 +21,7 @@ class RayData {
 
 class Ray {
   public:
-    std::vector<struct RayData> raydata;
+    std::list<class RayData> raydata;
     void bind_to_grid(const double mu);
     void set_to_LTE();
     void calc_chi();

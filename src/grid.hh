@@ -7,7 +7,7 @@ struct GridVoxel {
     double z;
     double rho;
     double temperature;
-    std::vector<struct RayData*> intersecting_raydata;
+    std::vector<std::list<class RayData>::iterator> intersecting_raydata;
     double J_lam;
 };
 

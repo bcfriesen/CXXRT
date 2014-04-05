@@ -3,7 +3,7 @@
 
 #include "ray.hh"
 
-bool ray_angle_sort_function(class RayData* rd1, class RayData* rd2) {
+bool ray_angle_sort_function(std::list<class RayData>::iterator rd1, std::list<class RayData>::iterator rd2) {
   return (rd1->mu < rd2->mu);
 }
 
