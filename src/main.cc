@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     }
 
     double z_tmp = 1.0;
-    for (auto it = grid.begin(); it != grid.end(); ++it) {
+    for (auto it = grid.rbegin(); it != grid.rend(); ++it) {
       it->z = z_tmp;
       z_tmp += 1.0;
     }
