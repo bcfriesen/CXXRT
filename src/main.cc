@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
       r.calc_chi();
       r.calc_tau();
       r.set_to_LTE();
+      r.calc_SC_coeffs();
       r.formal_soln();
     }
 

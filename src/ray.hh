@@ -17,6 +17,10 @@ class RayData {
     double source_fn;
     double mu;
     double lambda;
+    double alpha;
+    double beta;
+    double gamma;
+    double Delta_tau;
 };
 
 class Ray {
@@ -27,6 +31,7 @@ class Ray {
     void calc_chi();
     void calc_tau();
     void formal_soln();
+    void calc_SC_coeffs();
 };
 
 std::ostream& operator<<(std::ostream& os, const Ray& r);

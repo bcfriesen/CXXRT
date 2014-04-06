@@ -95,6 +95,23 @@ void Ray::calc_tau() {
   }
 }
 
+void Ray::calc_SC_coeffs() {
+    for (auto it = raydata.begin(); it != raydata.end(); ++it) {
+        if (it == raydata.begin()) {
+            it->alpha = 0.0;
+            it->beta = 0.0;
+            it->gamma = 0.0;
+        } else {
+            const auto it_prev = std::prev(it, 1);
+            it->Delta_tau = it->tau - it_prev->tau;
+            it->alpha = 1.0 - std::exp(-it->Delta_tau) - ((it->Delta_tau - 1.0 + std::exp(-it->Delta_tau)) / it->Delta_tau);
+            it->beta = (it->Delta_tau - 1.0 + std::exp(-it->Delta_tau)) / it->Delta_tau;
+            // TODO: fill in gamma for parabolic interpolation
+            it->gamma = 0.0;
+        }
+    }
+}
+
 void Ray::formal_soln() {
   for (auto it = raydata.begin(); it != raydata.end(); ++it) {
     if (it == raydata.begin()) {
@@ -105,12 +122,8 @@ void Ray::formal_soln() {
       }
     } else {
       const auto it_prev = std::prev(it, 1);
-      const double Delta_tau = it->tau - it_prev->tau;
-      const double alpha = 1.0 - std::exp(-Delta_tau) - ((Delta_tau - 1.0 + std::exp(-Delta_tau))) / Delta_tau;
-      const double beta = (Delta_tau - 1.0 + std::exp(-Delta_tau)) / Delta_tau;
-      // TODO: fill in gamma for parabolic interpolation
-      const double Delta_I = (alpha * it_prev->source_fn) + (beta * it->source_fn);
-      it->I_lam = it_prev->I_lam * std::exp(-Delta_tau) + Delta_I;
+      const double Delta_I = (it->alpha * it_prev->source_fn) + (it->beta * it->source_fn);
+      it->I_lam = it_prev->I_lam * std::exp(-it->Delta_tau) + Delta_I;
     }
   }
 }
