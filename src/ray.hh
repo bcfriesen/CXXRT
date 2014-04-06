@@ -34,6 +34,11 @@ class Ray {
     void calc_SC_coeffs();
 };
 
+struct RayIntersectionData {
+    class Ray* ray;
+    std::list<class RayData>::iterator data;
+};
+
 std::ostream& operator<<(std::ostream& os, const Ray& r);
 
 #endif

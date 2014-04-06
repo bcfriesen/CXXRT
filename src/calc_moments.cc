@@ -3,17 +3,17 @@
 
 #include "ray.hh"
 
-bool ray_angle_sort_function(std::list<class RayData>::iterator rd1, std::list<class RayData>::iterator rd2) {
-  return (rd1->mu < rd2->mu);
+bool ray_angle_sort_function(struct RayIntersectionData rd1, struct RayIntersectionData rd2) {
+  return (rd1.data->mu < rd2.data->mu);
 }
 
 void calc_J(GridVoxel &gv) {
-  std::sort(gv.intersecting_raydata.begin(), gv.intersecting_raydata.end(), ray_angle_sort_function);
+  std::sort(gv.ray_intersection_data.begin(), gv.ray_intersection_data.end(), ray_angle_sort_function);
 
   double result = 0.0;
-  for (auto it = gv.intersecting_raydata.begin(); it != gv.intersecting_raydata.end()-1; ++it) {
+  for (auto it = gv.ray_intersection_data.begin(); it != gv.ray_intersection_data.end()-1; ++it) {
     const auto it_next = std::next(it, 1);
-    result += 0.5 * ((*it)->I_lam + (*it_next)->I_lam) * ((*it_next)->mu - (*it)->mu);
+    result += 0.5 * (it->data->I_lam + it_next->data->I_lam) * (it_next->data->mu - it->data->mu);
   }
 
   gv.J_lam = 0.5 * result;
