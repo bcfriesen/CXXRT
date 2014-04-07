@@ -14,7 +14,7 @@ std::vector<struct GridVoxel> grid;
 int main(int argc, char *argv[]) {
 
     if (argc == 1) {
-        std::cout << "Usage: <executable name> <YAML control file>" << std::endl;
+        std::cerr << "Usage: <executable name> <YAML control file>" << std::endl;
         exit(0);
     }
 
