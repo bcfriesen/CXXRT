@@ -131,3 +131,9 @@ void Ray::formal_soln() {
     }
   }
 }
+
+void Ray::calc_source_fn() {
+  for (RayData& rd: raydata) {
+    rd.source_fn = rd.epsilon * planck_function(rd.lambda, rd.gridvoxel->temperature) + (1.0 - rd.epsilon) * rd.gridvoxel->J_lam;
+  }
+}

@@ -53,6 +53,7 @@ int main(int argc, char *argv[]) {
       r.bind_to_grid(mu);
       for (RayData& rd: r.raydata) {
         rd.lambda = 5.0e-5;
+        rd.epsilon = config["epsilon"].as<double>();
       }
       mu += (mu_max - mu_min) / double(rays.size());
       r.calc_chi();
@@ -64,6 +65,10 @@ int main(int argc, char *argv[]) {
 
     for (GridVoxel& gv: grid) {
       calc_J(gv);
+    }
+
+    for (Ray& r: rays) {
+      r.calc_source_fn();
     }
 
     Eigen::MatrixXd Lambda_star = calc_ALO(rays);

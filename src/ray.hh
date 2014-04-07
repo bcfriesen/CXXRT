@@ -21,6 +21,7 @@ class RayData {
     double beta;
     double gamma;
     double Delta_tau;
+    double epsilon;
 };
 
 class Ray {
@@ -32,6 +33,7 @@ class Ray {
     void calc_tau();
     void formal_soln();
     void calc_SC_coeffs();
+    void calc_source_fn();
 };
 
 struct RayIntersectionData {
