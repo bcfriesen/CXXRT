@@ -12,6 +12,7 @@
 #include "calc_moments.hh"
 
 std::vector<struct GridVoxel> grid;
+std::vector<Ray> rays;
 
 int main(int argc, char *argv[]) {
 
@@ -39,11 +40,9 @@ int main(int argc, char *argv[]) {
     }
 
     const int n_mu_pts = config["n_mu_pts"].as<int>();
+    rays.resize(n_mu_pts);
     const double mu_min = -1.0;
     const double mu_max = +1.0;
-
-    std::vector<Ray> rays(n_mu_pts);
-
     double mu = mu_min;
     for (Ray& r: rays) {
       if (std::fabs(mu) < std::numeric_limits<double>::epsilon()) {
@@ -71,7 +70,7 @@ int main(int argc, char *argv[]) {
       r.calc_source_fn();
     }
 
-    Eigen::MatrixXd Lambda_star = calc_ALO(rays);
+    Eigen::MatrixXd Lambda_star = calc_ALO();
 
     return(0);
 }

@@ -5,7 +5,7 @@
 #include "globals.hh"
 #include "ray.hh"
 
-Eigen::MatrixXd calc_ALO (std::vector<Ray> rays) {
+Eigen::MatrixXd calc_ALO () {
     Eigen::MatrixXd Lambda_star(grid.size(), grid.size());
 
     std::vector<double>  Lambda_star_contrib;

@@ -2,6 +2,7 @@
 #include <iterator>
 
 #include "ray.hh"
+#include "globals.hh"
 
 bool ray_angle_sort_function(const struct RayIntersectionData rd1, const struct RayIntersectionData rd2) {
   const auto it1 = rd1.ray->raydata.begin() + rd1.intersection_point;
