@@ -14,14 +14,15 @@ void Ray::bind_to_grid(const double mu) {
   }
   int i = 0;
   for (auto it = raydata.begin(); it != raydata.end(); ++it) {
+      struct RayIntersectionData ray_intersection_data;
       if (raydata.front().mu < 0.0) {
         it->gridvoxel = &grid[i];
+        ray_intersection_data.intersection_point = it - raydata.begin();
       } else {
         it->gridvoxel = &grid[(grid.size()-1)-i];
+        ray_intersection_data.intersection_point = raydata.end() - it;
       }
-      struct RayIntersectionData ray_intersection_data;
       ray_intersection_data.ray = this;
-      ray_intersection_data.intersection_point = it - raydata.begin();
       grid.at(i).ray_intersection_data.push_back(ray_intersection_data);
       ++i;
   }
