@@ -1,4 +1,6 @@
 #include <iostream>
+#include <limits>
+#include <cmath>
 
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
@@ -44,6 +46,10 @@ int main(int argc, char *argv[]) {
 
     double mu = mu_min;
     for (Ray& r: rays) {
+      if (std::fabs(mu) < std::numeric_limits<double>::epsilon()) {
+        std::cerr << "ERROR: mu too close to zero! : " << mu << std::endl;
+        exit(0);
+      }
       r.bind_to_grid(mu);
       for (RayData& rd: r.raydata) {
         rd.lambda = 5.0e-5;
