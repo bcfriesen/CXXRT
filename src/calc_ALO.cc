@@ -28,8 +28,7 @@ Eigen::MatrixXd calc_ALO (std::vector<Ray> rays) {
             result += 0.5 * (I_hat.at(i) + I_hat.at(i+1)) * (mu.at(i+1) - mu.at(i));
         }
         result *= 0.5;
-        std::cout << result << std::endl;
-
+        Lambda_star(i, i) = result;
     }
     return (Lambda_star);
 }
