@@ -1,7 +1,9 @@
 #include <iostream>
 
 #include <yaml-cpp/yaml.h>
+#include <Eigen/Dense>
 
+#include "calc_ALO.hh"
 #include "grid.hh"
 #include "ray.hh"
 #include "globals.hh"
@@ -57,6 +59,8 @@ int main(int argc, char *argv[]) {
     for (GridVoxel& gv: grid) {
       calc_J(gv);
     }
+
+    Eigen::MatrixXd Lambda_star = calc_ALO(rays);
 
     return(0);
 }
