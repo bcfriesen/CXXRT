@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <Eigen/Dense>
 
 #include "globals.hh"
