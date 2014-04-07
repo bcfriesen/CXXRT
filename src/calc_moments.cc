@@ -16,8 +16,9 @@ void calc_J(GridVoxel &gv) {
   double result = 0.0;
   for (auto it = gv.ray_intersection_data.begin(); it != gv.ray_intersection_data.end()-1; ++it) {
     const auto real_it = it->ray->raydata.begin() + it->intersection_point;
-    const auto it_next = std::next(real_it, 1);
-    result += 0.5 * (real_it->I_lam + it_next->I_lam) * (it_next->mu - real_it->mu);
+    const auto it_next = std::next(it, 1);
+    const auto real_it_next = it_next->ray->raydata.begin() + it_next->intersection_point;
+    result += 0.5 * (real_it->I_lam + real_it_next->I_lam) * (real_it_next->mu - real_it->mu);
   }
 
   gv.J_lam = 0.5 * result;
