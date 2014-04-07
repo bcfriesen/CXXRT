@@ -25,7 +25,7 @@ class RayData {
 
 class Ray {
   public:
-    std::list<class RayData> raydata;
+    std::vector<class RayData> raydata;
     void bind_to_grid(const double mu);
     void set_to_LTE();
     void calc_chi();
@@ -36,7 +36,7 @@ class Ray {
 
 struct RayIntersectionData {
     class Ray* ray;
-    std::list<class RayData>::iterator data;
+    std::size_t intersection_point;
 };
 
 std::ostream& operator<<(std::ostream& os, const Ray& r);

@@ -21,7 +21,7 @@ void Ray::bind_to_grid(const double mu) {
       }
       struct RayIntersectionData ray_intersection_data;
       ray_intersection_data.ray = this;
-      ray_intersection_data.data = it;
+      ray_intersection_data.intersection_point = it - raydata.begin();
       grid.at(i).ray_intersection_data.push_back(ray_intersection_data);
       ++i;
   }
