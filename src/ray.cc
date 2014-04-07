@@ -20,7 +20,7 @@ void Ray::bind_to_grid(const double mu) {
         ray_intersection_data.intersection_point = it - raydata.begin();
       } else {
         it->gridvoxel = &grid[(grid.size()-1)-i];
-        ray_intersection_data.intersection_point = raydata.end() - it;
+        ray_intersection_data.intersection_point = (raydata.end()-1) - it;
       }
       ray_intersection_data.ray = this;
       grid.at(i).ray_intersection_data.push_back(ray_intersection_data);
