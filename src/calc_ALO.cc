@@ -15,7 +15,11 @@ Eigen::MatrixXd calc_ALO () {
         for (auto it = grid.at(i).ray_intersection_data.begin(); it != grid.at(i).ray_intersection_data.end(); ++it) {
             auto real_it = it->ray->raydata.begin() + it->intersection_point;
             if (real_it == it->ray->raydata.begin()) {
-              I_hat.push_back(real_it->beta);
+              if (i == grid.size()-1) {
+                I_hat.push_back(1.0);
+              } else {
+                I_hat.push_back(real_it->beta);
+              }
             } else {
               const auto it_prev = std::prev(real_it, 1);
               I_hat.push_back(it_prev->gamma * std::exp(-it_prev->Delta_tau) + real_it->beta);
