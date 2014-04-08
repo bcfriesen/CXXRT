@@ -21,5 +21,5 @@ void calc_J(GridVoxel &gv) {
     result += 0.5 * (real_it->I_lam + real_it_next->I_lam) * (real_it_next->mu - real_it->mu);
   }
 
-  gv.J_lam = 0.5 * result;
+  gv.J_fs = 0.5 * result;
 }

@@ -64,13 +64,37 @@ int main(int argc, char *argv[]) {
 
     for (GridVoxel& gv: grid) {
       calc_J(gv);
-    }
-
-    for (Ray& r: rays) {
-      r.calc_source_fn();
+      gv.J_old = gv.J_fs;
     }
 
     Eigen::MatrixXd Lambda_star = calc_ALO();
+
+    Eigen::VectorXd J_old(grid.size());
+    Eigen::VectorXd J_new(grid.size());
+    Eigen::VectorXd J_fs(grid.size());
+    for (unsigned int i = 0; i < grid.size(); ++i) {
+        J_fs(i) = grid.at(i).J_fs;
+    }
+    J_old = J_fs;
+    Eigen::VectorXd rhs;
+    Eigen::MatrixXd mtx;
+    for (int i = 0; i < 10; ++i) {
+        for (Ray& r: rays) {
+          r.calc_source_fn();
+          r.formal_soln();
+        }
+        for (GridVoxel& gv: grid) {
+          calc_J(gv);
+        }
+        for (unsigned int i = 0; i < grid.size(); ++i) {
+            J_fs(i) = grid.at(i).J_fs;
+        }
+        rhs = J_fs - (1.0 - config["epsilon"].as<double>())*Lambda_star*J_old;
+        mtx = Eigen::MatrixXd::Identity(grid.size(), grid.size()) - (1.0 - config["epsilon"].as<double>())*Lambda_star;
+        J_new = mtx.colPivHouseholderQr().solve(rhs);
+        std::cout << J_new << std::endl << std::endl;
+        J_old = J_new;
+    }
 
     return(0);
 }

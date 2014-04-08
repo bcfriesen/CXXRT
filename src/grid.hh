@@ -8,7 +8,9 @@ struct GridVoxel {
     double rho;
     double temperature;
     std::vector<struct RayIntersectionData> ray_intersection_data;
-    double J_lam;
+    double J_old;
+    double J_new;
+    double J_fs;
 };
 
 #endif
