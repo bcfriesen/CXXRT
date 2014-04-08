@@ -9,7 +9,6 @@
 #include "grid.hh"
 #include "ray.hh"
 #include "globals.hh"
-#include "calc_moments.hh"
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
