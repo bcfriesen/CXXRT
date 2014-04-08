@@ -2,7 +2,7 @@ include_directories (/home/brian/src//eigen-eigen-6b38706d90a9)
 
 set (CXXRT_SOURCES
      calc_ALO.cc
-     calc_moments.cc
+     grid.cc
      main.cc
      planck_function.cc
      ray.cc

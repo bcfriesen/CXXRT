@@ -11,7 +11,7 @@
 #include "globals.hh"
 #include "calc_moments.hh"
 
-std::vector<struct GridVoxel> grid;
+std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
 
 int main(int argc, char *argv[]) {
@@ -63,8 +63,7 @@ int main(int argc, char *argv[]) {
     }
 
     for (GridVoxel& gv: grid) {
-      calc_J(gv);
-      gv.J_old = gv.J_fs;
+      gv.calc_J();
     }
 
     Eigen::MatrixXd Lambda_star = calc_ALO();
@@ -73,7 +72,7 @@ int main(int argc, char *argv[]) {
     Eigen::VectorXd J_new(grid.size());
     Eigen::VectorXd J_fs(grid.size());
     for (unsigned int i = 0; i < grid.size(); ++i) {
-        J_fs(i) = grid.at(i).J_fs;
+        J_fs(i) = grid.at(i).J_lam;
     }
     J_old = J_fs;
     Eigen::VectorXd rhs;
@@ -84,15 +83,14 @@ int main(int argc, char *argv[]) {
           r.formal_soln();
         }
         for (GridVoxel& gv: grid) {
-          calc_J(gv);
+          gv.calc_J();
         }
         for (unsigned int i = 0; i < grid.size(); ++i) {
-            J_fs(i) = grid.at(i).J_fs;
+            J_fs(i) = grid.at(i).J_lam;
         }
         rhs = J_fs - (1.0 - config["epsilon"].as<double>())*Lambda_star*J_old;
         mtx = Eigen::MatrixXd::Identity(grid.size(), grid.size()) - (1.0 - config["epsilon"].as<double>())*Lambda_star;
         J_new = mtx.colPivHouseholderQr().solve(rhs);
-        std::cout << J_new << std::endl << std::endl;
         J_old = J_new;
     }
 

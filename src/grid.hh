@@ -3,14 +3,14 @@
 
 #include "ray.hh"
 
-struct GridVoxel {
+class GridVoxel {
+  public:
     double z;
     double rho;
     double temperature;
     std::vector<struct RayIntersectionData> ray_intersection_data;
-    double J_old;
-    double J_new;
-    double J_fs;
+    double J_lam;
+    void calc_J();
 };
 
 #endif

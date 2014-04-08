@@ -10,7 +10,7 @@
 class RayData {
   public:
     RayData();
-    const struct GridVoxel* gridvoxel;
+    const class GridVoxel* gridvoxel;
     double I_lam;
     double tau;
     double chi;
