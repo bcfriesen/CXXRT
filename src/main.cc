@@ -25,11 +25,14 @@ int main(int argc, char *argv[]) {
     const int n_depth_pts = config["n_depth_pts"].as<int>();
     grid.resize(n_depth_pts);
 
-    double rho = 1.0e-5;
+    const double log10_rho_min = config["log10_rho_min"].as<double>();
+    const double log10_rho_max = config["log10_rho_max"].as<double>();
+    double log10_rho = log10_rho_min;
+    const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(grid.size()-1);
     for (GridVoxel& gv: grid) {
-        gv.rho = rho;
-        rho *= 2.0;
+        gv.rho = std::pow(10.0, log10_rho);
         gv.temperature = 5778.0;
+        log10_rho += log10_delta_rho;
     }
 
     double z_tmp = 1.0;

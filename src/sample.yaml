@@ -6,7 +6,7 @@ epsilon: 1.0e-4
 radius_min:  1.0
 radius_max: 10.0
 
-log10_chi_min: -7.0
-log10_chi_max:  9.0
+log10_rho_min: -7.0
+log10_rho_max:  9.0
 
 plot_filename: derp.png
