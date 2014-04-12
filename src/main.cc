@@ -71,9 +71,8 @@ int main(int argc, char *argv[]) {
     Eigen::VectorXd J_new(grid.size());
     Eigen::VectorXd J_fs(grid.size());
     for (unsigned int i = 0; i < grid.size(); ++i) {
-        J_fs(i) = grid.at(i).J_lam;
+        J_old(i) = grid.at(i).J_lam;
     }
-    J_old = J_fs;
     Eigen::VectorXd rhs;
     Eigen::MatrixXd mtx;
     for (int i = 0; i < 10; ++i) {
@@ -91,6 +90,9 @@ int main(int argc, char *argv[]) {
         mtx = Eigen::MatrixXd::Identity(grid.size(), grid.size()) - (1.0 - config["epsilon"].as<double>())*Lambda_star;
         J_new = mtx.colPivHouseholderQr().solve(rhs);
         J_old = J_new;
+        for (unsigned int i = 0; i < grid.size(); ++i) {
+          grid.at(i).J_lam = J_old(i);
+        }
     }
 
     return(0);
