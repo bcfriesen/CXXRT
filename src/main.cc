@@ -1,6 +1,7 @@
 #include <iostream>
 #include <limits>
 #include <cmath>
+#include <iomanip>
 
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
@@ -68,6 +69,13 @@ int main(int argc, char *argv[]) {
       gv.calc_J();
     }
 
+    if (config["print_every_iter"].as<bool>()) {
+      for (GridVoxel& gv: grid) {
+        std::cout << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
+      }
+      std::cout << std::endl;
+    }
+
     Eigen::MatrixXd Lambda_star = calc_ALO();
 
     Eigen::VectorXd J_old(grid.size());
@@ -95,6 +103,13 @@ int main(int argc, char *argv[]) {
         J_old = J_new;
         for (unsigned int i = 0; i < grid.size(); ++i) {
           grid.at(i).J_lam = J_old(i);
+        }
+
+        if (config["print_every_iter"].as<bool>()) {
+          for (GridVoxel& gv: grid) {
+            std::cout << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
+          }
+          std::cout << std::endl;
         }
     }
 
