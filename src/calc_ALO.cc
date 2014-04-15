@@ -13,14 +13,14 @@ Eigen::MatrixXd calc_ALO () {
         std::vector<double> I_hat;
         std::vector<double> mu;
         for (struct RayIntersectionData& rid: grid.at(i).ray_intersection_data) {
-            auto real_it = rid.ray->raydata.begin() + rid.intersection_point;
-            if (real_it == rid.ray->raydata.begin()) {
-              I_hat.push_back(real_it->beta);
+            auto it = rid.ray->raydata.begin() + rid.intersection_point;
+            if (it == rid.ray->raydata.begin()) {
+              I_hat.push_back(it->beta);
             } else {
-              const auto it_prev = std::prev(real_it, 1);
-              I_hat.push_back(it_prev->gamma * std::exp(-it_prev->Delta_tau) + real_it->beta);
+              const auto it_prev = std::prev(it, 1);
+              I_hat.push_back(it_prev->gamma * std::exp(-it_prev->Delta_tau) + it->beta);
             }
-            mu.push_back(real_it->mu);
+            mu.push_back(it->mu);
         }
 
         double result = 0.0;
