@@ -12,9 +12,9 @@ Eigen::MatrixXd calc_ALO () {
     for (unsigned int i = 0; i < grid.size(); ++i) {
         std::vector<double> I_hat;
         std::vector<double> mu;
-        for (auto it = grid.at(i).ray_intersection_data.begin(); it != grid.at(i).ray_intersection_data.end(); ++it) {
-            auto real_it = it->ray->raydata.begin() + it->intersection_point;
-            if (real_it == it->ray->raydata.begin()) {
+        for (struct RayIntersectionData& rid: grid.at(i).ray_intersection_data) {
+            auto real_it = rid.ray->raydata.begin() + rid.intersection_point;
+            if (real_it == rid.ray->raydata.begin()) {
               I_hat.push_back(real_it->beta);
             } else {
               const auto it_prev = std::prev(real_it, 1);
