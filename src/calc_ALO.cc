@@ -24,8 +24,8 @@ Eigen::MatrixXd calc_ALO () {
         }
 
         double result = 0.0;
-        for (unsigned int i = 0; i < I_hat.size()-1; ++i) {
-            result += 0.5 * (I_hat.at(i) + I_hat.at(i+1)) * (mu.at(i+1) - mu.at(i));
+        for (unsigned int j = 0; j < I_hat.size()-1; ++j) {
+            result += 0.5 * (I_hat.at(j) + I_hat.at(j+1)) * (mu.at(j+1) - mu.at(j));
         }
         result *= 0.5;
         Lambda_star(i, i) = result;
