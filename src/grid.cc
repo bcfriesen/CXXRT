@@ -14,7 +14,7 @@ void GridVoxel::calc_J() {
   double result = 0.0;
   for (auto it = ray_intersection_data.begin(); it != ray_intersection_data.end()-1; ++it) {
     const auto real_it = it->ray->raydata.begin() + it->intersection_point;
-    const auto it_next = std::next(it, 1);
+    auto it_next = it; std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
     const auto real_it_next = it_next->ray->raydata.begin() + it_next->intersection_point;
     result += 0.5 * (real_it->I_lam + real_it_next->I_lam) * (real_it_next->mu - real_it->mu);
   }

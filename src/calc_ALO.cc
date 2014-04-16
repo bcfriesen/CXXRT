@@ -17,7 +17,7 @@ Eigen::MatrixXd calc_ALO () {
             if (it == rid.ray->raydata.begin()) {
               I_hat.push_back(it->beta);
             } else {
-              const auto it_prev = std::prev(it, 1);
+              auto it_prev = it; std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
               I_hat.push_back(it_prev->gamma * std::exp(-it_prev->Delta_tau) + it->beta);
             }
             mu.push_back(it->mu);

@@ -101,7 +101,7 @@ void Ray::calc_tau() {
     if (it == raydata.begin()) {
       it->tau = 0.0;
     } else {
-      const auto it_prev = std::prev(it, 1);
+      auto it_prev = it; std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
       it->tau = it_prev->tau + (0.5 * (it_prev->chi + it->chi) * std::abs(it->gridvoxel->z - it_prev->gridvoxel->z) / std::abs(it->mu));
     }
   }
@@ -115,7 +115,7 @@ void Ray::calc_SC_coeffs() {
             it->gamma = 0.0;
             it->Delta_tau = 0.0;
         } else {
-            const auto it_prev = std::prev(it, 1);
+            auto it_prev = it; std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
             it->Delta_tau = it->tau - it_prev->tau;
             it->alpha = 1.0 - std::exp(-it->Delta_tau) - ((it->Delta_tau - 1.0 + std::exp(-it->Delta_tau)) / it->Delta_tau);
             it->beta = (it->Delta_tau - 1.0 + std::exp(-it->Delta_tau)) / it->Delta_tau;
@@ -134,7 +134,7 @@ void Ray::formal_soln() {
         it->I_lam = 0.0;
       }
     } else {
-      const auto it_prev = std::prev(it, 1);
+      auto it_prev = it; std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
       const double Delta_I = (it->alpha * it_prev->source_fn) + (it->beta * it->source_fn);
       it->I_lam = it_prev->I_lam * std::exp(-it->Delta_tau) + Delta_I;
     }
