@@ -23,6 +23,8 @@ int main(int argc, char *argv[]) {
 
     YAML::Node config = YAML::LoadFile(argv[1]);
 
+    std::cout << std::scientific;
+
     const int n_depth_pts = config["n_depth_pts"].as<int>();
     grid.resize(n_depth_pts);
 
