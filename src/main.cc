@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (config["print_every_iter"].as<bool>()) {
+      std::cout << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::endl;
       for (GridVoxel& gv: grid) {
         std::cout << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
       }
