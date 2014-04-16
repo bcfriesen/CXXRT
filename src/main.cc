@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
         rd.lambda = 5.0e-5;
         rd.epsilon = config["epsilon"].as<double>();
       }
-      mu += (mu_max - mu_min) / double(rays.size());
+      mu += (mu_max - mu_min) / double(rays.size()-1);
       r.calc_chi();
       r.calc_tau();
       r.set_to_LTE();
