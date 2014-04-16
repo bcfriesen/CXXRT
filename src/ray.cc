@@ -113,6 +113,7 @@ void Ray::calc_SC_coeffs() {
             it->alpha = 0.0;
             it->beta = 0.0;
             it->gamma = 0.0;
+            it->Delta_tau = 0.0;
         } else {
             const auto it_prev = std::prev(it, 1);
             it->Delta_tau = it->tau - it_prev->tau;
