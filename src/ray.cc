@@ -49,6 +49,10 @@ std::ostream& operator<<(std::ostream& os, const Ray& r) {
   os << std::setw(15) << "tau";
   os << std::setw(15) << "chi";
   os << std::setw(15) << "source_fn";
+  os << std::setw(15) << "Delta_tau";
+  os << std::setw(15) << "alpha";
+  os << std::setw(15) << "beta";
+  os << std::setw(15) << "gamma";
   os << std::endl;
   for (const RayData& rd: r.raydata) {
     os << std::setw(15) << std::scientific << rd.gridvoxel->z;
@@ -58,6 +62,10 @@ std::ostream& operator<<(std::ostream& os, const Ray& r) {
     os << std::setw(15) << std::scientific << rd.tau;
     os << std::setw(15) << std::scientific << rd.chi;
     os << std::setw(15) << std::scientific << rd.source_fn;
+    os << std::setw(15) << std::scientific << rd.Delta_tau;
+    os << std::setw(15) << std::scientific << rd.alpha;
+    os << std::setw(15) << std::scientific << rd.beta;
+    os << std::setw(15) << std::scientific << rd.gamma;
     os << std::endl;
   }
   return os;
