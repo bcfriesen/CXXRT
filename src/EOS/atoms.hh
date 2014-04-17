@@ -8,11 +8,12 @@ class Atom {
   public:
     unsigned int atomic_number;
     double atomic_weight;
+    std::string atomic_symbol;
 };
 
 class Ion : public Atom {
   public:
-    Ion (const unsigned int atomic_number, const unsigned int ionization_stage, const double atomic_weight);
+    Ion (const std::string atomic_symbol_in, const unsigned int atomic_number_in, const unsigned int ionization_stage_in, const double atomic_weight_in);
     unsigned int ionization_stage;
     double partition_function;
     std::vector<class AtomicLevel> levels;
