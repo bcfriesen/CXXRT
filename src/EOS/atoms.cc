@@ -3,6 +3,7 @@
 #include <string>
 
 #include "atoms.hh"
+#include "../globals.hh"
 
 Ion::Ion(const std::string atomic_symbol_in, const unsigned int atomic_number_in, const unsigned int ionization_stage_in, const double atomic_weight_in) {
   atomic_symbol = atomic_symbol_in;

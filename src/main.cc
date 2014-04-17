@@ -13,6 +13,7 @@
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
+YAML::Node config;
 
 int main(int argc, char *argv[]) {
 
@@ -21,7 +22,7 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
 
-    YAML::Node config = YAML::LoadFile(argv[1]);
+    config = YAML::LoadFile(argv[1]);
 
     std::cout << std::scientific;
 
