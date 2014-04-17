@@ -17,6 +17,7 @@ class Ion : public Atom {
     unsigned int ionization_stage;
     double partition_function;
     std::vector<class AtomicLevel> levels;
+    std::vector<class AtomicLine> lines;
 };
 
 class AtomicLine {
@@ -30,8 +31,6 @@ class AtomicLine {
 class AtomicLevel {
   public:
     double energy;
-    std::string term;
-    std::string configuration;
     unsigned int g;
     double J;
     std::vector<class AtomicLine*> lines;
