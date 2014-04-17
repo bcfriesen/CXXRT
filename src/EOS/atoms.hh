@@ -2,6 +2,7 @@
 #define ATOMS_HH
 
 #include <vector>
+#include <string>
 
 class Atom {
   public:
@@ -14,6 +15,7 @@ class Ion : public Atom {
     Ion (const unsigned int atomic_number, const unsigned int ionization_stage, const double atomic_weight);
     unsigned int ionization_stage;
     double partition_function;
+    std::vector<class AtomicLevel> levels;
 };
 
 class AtomicLine {
@@ -27,7 +29,10 @@ class AtomicLine {
 class AtomicLevel {
   public:
     double energy;
-    unsigned int degeneracy;
+    std::string term;
+    std::string configuration;
+    unsigned int g;
+    double J;
     std::vector<class AtomicLine*> lines;
 };
 
