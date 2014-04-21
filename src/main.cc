@@ -6,6 +6,7 @@
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
 
+#include "EOS/atoms.hh"
 #include "calc_ALO.hh"
 #include "grid.hh"
 #include "ray.hh"
@@ -116,6 +117,8 @@ int main(int argc, char *argv[]) {
           std::cout << std::endl;
         }
     }
+
+    Atom H(1);
 
     return(0);
 }

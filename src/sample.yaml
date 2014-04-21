@@ -13,6 +13,6 @@ max_iter: 40
 
 plot_filename: derp.png
 
-print_every_iter: true
+print_every_iter: false
 
 atomic_data_root_folder: /home/brian/CXXRT/atomic_data

@@ -3,75 +3,182 @@
 #include <iomanip>
 #include <string>
 #include <fstream>
+#include <limits>
 
 #include "atoms.hh"
 #include "../globals.hh"
+#include "../constants.hh"
 
-Ion::Ion(const std::string atomic_symbol_in, const unsigned int atomic_number_in, const unsigned int ionization_stage_in, const double atomic_weight_in) {
-  atomic_symbol = atomic_symbol_in;
-  atomic_number = atomic_number_in;
-  ionization_stage = ionization_stage_in;
-  atomic_weight = atomic_weight_in;
-
-  const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + atomic_symbol + "_" + std::to_string(ionization_stage+1) + ".dat";
+Atom::Atom(const unsigned int atomic_number_in) 
+  : atomic_number(atomic_number_in)
+{
+  const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + "atoms.dat";
   std::ifstream atomic_data_file;
-  atomic_data_file.open(atomic_data_file_name);
   std::string one_line;
-  double wavelength, log_gf, el_code, first_energy_level, J_first, second_energy_level, J_second, gam_rad, gam_stark, gam_vdw, hyperfine, iso_abund_frac;
-  char *blank = nullptr, *label = nullptr, *ref = nullptr, *code = nullptr;
-  int first_nlte_lvl_idx, second_nlte_lvl_idx, isotope_num, isotope_num2, first_hyper_shift, second_hyper_shift, first_hyperfine, second_hyperfine, icode, first_lande, second_lande, iso_shift;
-  std::getline(atomic_data_file, one_line);
+  atomic_data_file.open(atomic_data_file_name);
+  unsigned int atomic_number_from_file;
   while (std::getline(atomic_data_file, one_line)) {
-    int ret = std::sscanf(one_line.c_str(), "%11lf%7lf%6lf%12lf%5lf%1s%10s%12lf%5lf%1s%10s%6lf%6lf%6lf%4s%2d%2d%3d%6lf%3d%6lf%5d%5d%1s%1d%1s%1s%1d%1s%1d%3s%5d%5d%6d",
-                                             &wavelength,
-                                             &log_gf,
-                                             &el_code,
-                                             &first_energy_level,
-                                             &J_first,
-                                             blank,
-                                             label,
-                                             &second_energy_level,
-                                             &J_second,
-                                             blank,
-                                             label,
-                                             &gam_rad,
-                                             &gam_stark,
-                                             &gam_vdw,
-                                             ref,
-                                             &first_nlte_lvl_idx,
-                                             &second_nlte_lvl_idx,
-                                             &isotope_num,
-                                             &hyperfine,
-                                             &isotope_num2,
-                                             &iso_abund_frac,
-                                             &first_hyper_shift,
-                                             &second_hyper_shift,
-                                             blank,
-                                             &first_hyperfine,
-                                             blank,
-                                             blank,
-                                             &second_hyperfine,
-                                             blank,
-                                             &icode,
-                                             code,
-                                             &first_lande,
-                                             &second_lande,
-                                             &iso_shift);
-
-    std::cout << first_energy_level << " " << second_energy_level << std::endl;
-
-    class AtomicLine atomic_line;
-    class AtomicLevel upper_level, lower_level;
-    lower_level.energy = first_energy_level;
-    lower_level.J = J_first;
-    lower_level.g = int(2.0*lower_level.J + 1);
-    upper_level.energy = second_energy_level;
-    upper_level.J = J_second;
-    upper_level.g = int(2.0*upper_level.J + 1);
-
-    atomic_line.wavelength = wavelength;
+    std::istringstream iss(one_line);
+    iss >> atomic_number_from_file;
+    if (atomic_number_from_file == atomic_number)
+      iss >> atomic_weight >> atomic_symbol;
   }
   atomic_data_file.close();
+
+  for (unsigned int i = 0; i <= atomic_number_in; ++i) {
+    Ion ion(atomic_number, i);
+    ions.push_back(ion);
+  }
+}
+
+Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stage_in)
+  : atomic_number(atomic_number_in),
+    ionization_stage(ionization_stage_in)
+{
+  if (ionization_stage > atomic_number) {
+    std::cerr << "ERROR! in atom " << atomic_number << " you tried to add an ion with ionization stage " << ionization_stage << std::endl;
+    exit(1);
+  } else if (ionization_stage < atomic_number) {
+    const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + std::to_string(atomic_number*100 + ionization_stage) + ".dat";
+    std::ifstream atomic_data_file;
+    atomic_data_file.open(atomic_data_file_name);
+    std::string one_line;
+    double wavelength, log_gf, el_code, first_energy_level, J_first, second_energy_level, J_second;
+    char skip[20];
+    bool duplicate;
+    const double tolerance = 1.0e-30;
+
+    // skip first line (formatting is different and it only has information about the continuum)
+    std::getline(atomic_data_file, one_line);
+
+    while (std::getline(atomic_data_file, one_line)) {
+      int ret = std::sscanf(one_line.c_str(), "%11lf%7lf%6lf%12lf%5lf%11s%12lf%5lf",
+                                               &wavelength,
+                                               &log_gf,
+                                               &el_code,
+                                               &first_energy_level,
+                                               &J_first,
+                                               skip,
+                                               &second_energy_level,
+                                               &J_second);
+
+      // the return value of sscanf is the number of entries parsed successfully
+      if (ret <= 0) {
+        std::cerr << "ERROR: could not read lines!" << std::endl;
+        exit(1);
+      }
+
+      class AtomicLevel upper_level, lower_level;
+      lower_level.energy = first_energy_level * h_planck * c_light;  // convert cm^-1 to erg
+      lower_level.J = J_first;
+      lower_level.g = int(2.0*lower_level.J + 1.0);
+      upper_level.energy = second_energy_level * h_planck * c_light; // convert cm^-1 to erg
+      upper_level.J = J_second;
+      upper_level.g = int(2.0*upper_level.J + 1.0);
+
+      // Add the lower level of the line to the model atom only if it hasn't been
+      // added already. We detect duplicates by checking energy differences; if
+      // two levels are similar to within some tolerance, they are defined as
+      // duplicates.
+      for (auto level: levels) {
+        if ((std::abs(lower_level.energy - level.energy) / level.energy) > tolerance) {
+          duplicate = false;
+        } else {
+          duplicate = true;
+          break;
+        }
+      }
+      if (!duplicate) {
+        levels.push_back(lower_level);
+      }
+      // Now add the upper level if necessary.
+      for (auto level: levels) {
+        if ((std::abs(upper_level.energy - level.energy) / level.energy) > tolerance) {
+          duplicate = false;
+        } else {
+          duplicate = true;
+          break;
+        }
+      }
+      if (!duplicate) {
+        levels.push_back(upper_level);
+      }
+    }
+    atomic_data_file.close();
+
+    // Now read the file again to get the lines.
+
+    atomic_data_file.open(atomic_data_file_name);
+
+    // skip first line (formatting is different and it only has information about the continuum)
+    std::getline(atomic_data_file, one_line);
+
+    while (std::getline(atomic_data_file, one_line)) {
+      int ret = std::sscanf(one_line.c_str(), "%11lf%7lf%6lf%12lf%5lf%11s%12lf%5lf",
+                                               &wavelength,
+                                               &log_gf,
+                                               &el_code,
+                                               &first_energy_level,
+                                               &J_first,
+                                               skip,
+                                               &second_energy_level,
+                                               &J_second);
+
+      // the return value of sscanf is the number of entries parsed successfully
+      if (ret <= 0) {
+        std::cerr << "ERROR: could not read lines!" << std::endl;
+        exit(1);
+      }
+
+      class AtomicLine atomic_line;
+      atomic_line.wavelength = wavelength;
+      const int g = int(2.0*J_first + 1.0);
+      atomic_line.oscillator_strength = std::pow(10.0, log_gf) / double(g);
+
+      // Now search through the model atom energy levels to find the lower and upper levels for this line.
+      for (auto level = levels.begin(); level != levels.end(); ++level) {
+        if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
+          if (std::abs(first_energy_level*h_planck*c_light - level->energy) < tolerance)
+            atomic_line.lower_level = std::addressof(*level);
+        } else if ((std::abs(first_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
+          atomic_line.lower_level = std::addressof(*level);
+        }
+      }
+      for (auto level = levels.begin(); level != levels.end(); ++level) {
+        if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
+          if (std::abs(second_energy_level*h_planck*c_light - level->energy) < tolerance)
+            atomic_line.upper_level = std::addressof(*level);
+        } else if ((std::abs(second_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
+          atomic_line.upper_level = std::addressof(*level);
+        }
+      }
+
+      duplicate = false;
+      // We assume the line lists don't have duplicate lines, but it can't hurt to check anyway.
+      for (auto line: lines) {
+        if ((std::abs(atomic_line.wavelength - line.wavelength) / line.wavelength) > tolerance) {
+          duplicate = false;
+        } else {
+          duplicate = true;
+          break;
+        }
+      }
+      if (!duplicate) {
+        lines.push_back(atomic_line);
+      }
+    }
+    atomic_data_file.close();
+  }
+}
+
+
+void Ion::calc_partition_function(const double temperature) {
+    const double beta = 1.0 / (k_boltzmann * temperature);
+    double result = 0.0;
+    for (auto level: levels) {
+        result += level.g * std::exp(-beta * level.energy);
+    }
+    partition_function = result;
 }
 
 std::ostream& operator<<(std::ostream& os, const Ion& ion) {

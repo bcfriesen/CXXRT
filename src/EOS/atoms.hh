@@ -4,20 +4,26 @@
 #include <vector>
 #include <string>
 
+class Ion {
+  public:
+    Ion (const unsigned int atomic_number_in, const unsigned int ionization_stage_in);
+    unsigned int atomic_number;
+    unsigned int ionization_stage;
+    double atomic_weight;
+    void calc_partition_function(const double temperature);
+    double partition_function;
+    std::string atomic_symbol;
+    std::vector<class AtomicLevel> levels;
+    std::vector<class AtomicLine> lines;
+};
+
 class Atom {
   public:
+    Atom(const unsigned int atomic_number_in);
     unsigned int atomic_number;
     double atomic_weight;
     std::string atomic_symbol;
-};
-
-class Ion : public Atom {
-  public:
-    Ion (const std::string atomic_symbol_in, const unsigned int atomic_number_in, const unsigned int ionization_stage_in, const double atomic_weight_in);
-    unsigned int ionization_stage;
-    double partition_function;
-    std::vector<class AtomicLevel> levels;
-    std::vector<class AtomicLine> lines;
+    std::vector<Ion> ions;
 };
 
 class AtomicLine {
