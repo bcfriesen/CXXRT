@@ -6,6 +6,7 @@
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
 
+#include "EOS/atoms.hh"
 #include "calc_ALO.hh"
 #include "grid.hh"
 #include "ray.hh"
@@ -13,6 +14,7 @@
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
+YAML::Node config;
 
 int main(int argc, char *argv[]) {
 
@@ -21,7 +23,7 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
 
-    YAML::Node config = YAML::LoadFile(argv[1]);
+    config = YAML::LoadFile(argv[1]);
 
     std::cout << std::scientific;
 
@@ -115,6 +117,8 @@ int main(int argc, char *argv[]) {
           std::cout << std::endl;
         }
     }
+
+    Atom H(1);
 
     return(0);
 }

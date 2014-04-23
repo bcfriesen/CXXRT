@@ -1,5 +1,7 @@
 include_directories (/home/brian/src//eigen-eigen-6b38706d90a9)
 
+add_subdirectory (EOS)
+
 set (CXXRT_SOURCES
      calc_ALO.cc
      grid.cc
@@ -10,4 +12,4 @@ set (CXXRT_SOURCES
 
 ADD_EXECUTABLE(CXXRT ${CXXRT_SOURCES})
 
-target_link_libraries(CXXRT yaml-cpp)
+target_link_libraries(CXXRT yaml-cpp EOS)
