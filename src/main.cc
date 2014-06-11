@@ -23,20 +23,16 @@ int main(int argc, char *argv[]) {
         std::cerr << "Usage: <executable name> <YAML control file>" << std::endl;
         exit(0);
     }
-
     config = YAML::LoadFile(argv[1]);
-
-    std::cout << std::scientific;
-
-    const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
     const std::string output_file_name = config["output_file"].as<std::string>();
-
-    grid.resize(n_depth_pts);
-
+    const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
     const double log10_rho_min = config["log10_rho_min"].as<double>();
     const double log10_rho_max = config["log10_rho_max"].as<double>();
+
     double log10_rho = log10_rho_min;
     const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(n_depth_pts-1);
+    grid.resize(n_depth_pts);
+
     for (GridVoxel& gv: grid) {
         gv.rho = std::pow(10.0, log10_rho);
         gv.temperature = 5778.0;
@@ -48,6 +44,8 @@ int main(int argc, char *argv[]) {
       it->z = z_tmp;
       z_tmp += 1.0;
     }
+
+    std::cout << std::scientific;
 
     const int n_mu_pts = config["n_mu_pts"].as<int>();
     rays.resize(n_mu_pts);
