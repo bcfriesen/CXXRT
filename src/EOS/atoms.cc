@@ -15,7 +15,7 @@ Atom::Atom(const unsigned int atomic_number_in)
   const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + "atoms.dat";
   std::ifstream atomic_data_file;
   std::string one_line;
-  atomic_data_file.open(atomic_data_file_name);
+  atomic_data_file.open(atomic_data_file_name.c_str()); // in C++ the argument of open() can be a string
   unsigned int atomic_number_from_file;
   while (std::getline(atomic_data_file, one_line)) {
     std::istringstream iss(one_line);
@@ -39,9 +39,11 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
     std::cerr << "ERROR! in atom " << atomic_number << " you tried to add an ion with ionization stage " << ionization_stage << std::endl;
     exit(1);
   } else if (ionization_stage < atomic_number) {
-    const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + std::to_string(atomic_number*100 + ionization_stage) + ".dat";
+    std::ostringstream convert; // for compilers without std::to_string (a C++11 feature)
+    convert << atomic_number*100 + ionization_stage;
+    const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + convert.str() + ".dat";
     std::ifstream atomic_data_file;
-    atomic_data_file.open(atomic_data_file_name);
+    atomic_data_file.open(atomic_data_file_name.c_str()); // in C++ the argument of open() can be a string
     std::string one_line;
     double wavelength, log_gf, el_code, first_energy_level, J_first, second_energy_level, J_second;
     char skip[20];
@@ -108,7 +110,7 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
 
     // Now read the file again to get the lines.
 
-    atomic_data_file.open(atomic_data_file_name);
+    atomic_data_file.open(atomic_data_file_name.c_str()); // in C++ the argument of open() can be a string
 
     // skip first line (formatting is different and it only has information about the continuum)
     std::getline(atomic_data_file, one_line);
@@ -139,17 +141,17 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
       for (auto level = levels.begin(); level != levels.end(); ++level) {
         if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
           if (std::abs(first_energy_level*h_planck*c_light - level->energy) < tolerance)
-            atomic_line.lower_level = std::addressof(*level);
+            atomic_line.lower_level = &(*level); // std::addressof(*level) would work but that's C++11
         } else if ((std::abs(first_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
-          atomic_line.lower_level = std::addressof(*level);
+          atomic_line.lower_level = &(*level); // std::addressof(*level) would work but that's C++11
         }
       }
       for (auto level = levels.begin(); level != levels.end(); ++level) {
         if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
           if (std::abs(second_energy_level*h_planck*c_light - level->energy) < tolerance)
-            atomic_line.upper_level = std::addressof(*level);
+            atomic_line.upper_level = &(*level); // std::addressof(*level) would work but that's C++11
         } else if ((std::abs(second_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
-          atomic_line.upper_level = std::addressof(*level);
+          atomic_line.upper_level = &(*level); // std::addressof(*level) would work but that's C++11
         }
       }
 
