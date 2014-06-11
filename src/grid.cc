@@ -20,3 +20,15 @@ void GridVoxel::calc_J() {
   }
   J_lam = 0.5 * result;
 }
+
+void GridVoxel::calc_H() {
+  std::sort(ray_intersection_data.begin(), ray_intersection_data.end(), ray_angle_sort_function);
+  double result = 0.0;
+  for (auto it = ray_intersection_data.begin(); it != ray_intersection_data.end()-1; ++it) {
+    const auto real_it = it->ray->raydata.begin() + it->intersection_point;
+    auto it_next = it; std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
+    const auto real_it_next = it_next->ray->raydata.begin() + it_next->intersection_point;
+    result += 0.5 * (real_it->mu * real_it->I_lam + real_it_next->mu * real_it_next->I_lam) * (real_it_next->mu - real_it->mu);
+  }
+  H_lam = 0.5 * result;
+}
