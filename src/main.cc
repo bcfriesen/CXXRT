@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
         exit(0);
     }
     config = YAML::LoadFile(argv[1]);
-    const std::string output_file_name = config["output_file"].as<std::string>();
+    const std::string moments_file_name = config["moments_file"].as<std::string>();
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
     const double log10_rho_min = config["log10_rho_min"].as<double>();
     const double log10_rho_max = config["log10_rho_max"].as<double>();
@@ -74,16 +74,16 @@ int main(int argc, char *argv[]) {
       gv.calc_J();
     }
 
-    std::ofstream output_file;
-    output_file.open(output_file_name);
-    output_file << std::scientific;
-    output_file << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::endl;
+    std::ofstream moments_file;
+    moments_file.open(moments_file_name);
+    moments_file << std::scientific;
+    moments_file << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::endl;
 
     if (config["print_every_iter"].as<bool>()) {
       for (GridVoxel& gv: grid) {
-        output_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
+        moments_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
       }
-      output_file << std::endl;
+      moments_file << std::endl;
     }
 
     Eigen::MatrixXd Lambda_star = calc_ALO();
@@ -117,15 +117,15 @@ int main(int argc, char *argv[]) {
 
         if (config["print_every_iter"].as<bool>() || i == config["max_iter"].as<int>()-1) {
           for (GridVoxel& gv: grid) {
-            output_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
+            moments_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
           }
-          output_file << std::endl;
+          moments_file << std::endl;
         }
     }
 
     Atom H(1);
 
-    output_file.close();
+    moments_file.close();
 
     return(0);
 }
