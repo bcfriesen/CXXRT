@@ -15,4 +15,4 @@ plot_filename: derp.png
 
 print_every_iter: false
 
-atomic_data_root_folder: /home/brian/CXXRT/atomic_data
+atomic_data_root_folder: /home/brian/CXXRT_atomic_data
