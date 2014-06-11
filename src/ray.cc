@@ -8,6 +8,7 @@
 #include "globals.hh"
 
 void Ray::bind_to_grid(const double mu) {
+  const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
   raydata.resize(grid.size());
   for (RayData& rd: raydata) {
     rd.mu = mu;
@@ -19,7 +20,7 @@ void Ray::bind_to_grid(const double mu) {
         it->gridvoxel = &grid[i];
         ray_intersection_data.intersection_point = it - raydata.begin();
       } else {
-        it->gridvoxel = &grid[(grid.size()-1)-i];
+        it->gridvoxel = &grid[(n_depth_pts-1)-i];
         ray_intersection_data.intersection_point = (raydata.end()-1) - it;
       }
       ray_intersection_data.ray = this;

@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     const double log10_rho_min = config["log10_rho_min"].as<double>();
     const double log10_rho_max = config["log10_rho_max"].as<double>();
     double log10_rho = log10_rho_min;
-    const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(grid.size()-1);
+    const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(n_depth_pts-1);
     for (GridVoxel& gv: grid) {
         gv.rho = std::pow(10.0, log10_rho);
         gv.temperature = 5778.0;
@@ -83,10 +83,10 @@ int main(int argc, char *argv[]) {
 
     Eigen::MatrixXd Lambda_star = calc_ALO();
 
-    Eigen::VectorXd J_old(grid.size());
-    Eigen::VectorXd J_new(grid.size());
-    Eigen::VectorXd J_fs(grid.size());
-    for (unsigned int i = 0; i < grid.size(); ++i) {
+    Eigen::VectorXd J_old(n_depth_pts);
+    Eigen::VectorXd J_new(n_depth_pts);
+    Eigen::VectorXd J_fs(n_depth_pts);
+    for (unsigned int i = 0; i < n_depth_pts; ++i) {
         J_old(i) = grid.at(i).J_lam;
     }
     Eigen::VectorXd rhs;
@@ -99,14 +99,14 @@ int main(int argc, char *argv[]) {
         for (GridVoxel& gv: grid) {
           gv.calc_J();
         }
-        for (unsigned int i = 0; i < grid.size(); ++i) {
+        for (unsigned int i = 0; i < n_depth_pts; ++i) {
             J_fs(i) = grid.at(i).J_lam;
         }
         rhs = J_fs - (1.0 - config["epsilon"].as<double>())*Lambda_star*J_old;
-        mtx = Eigen::MatrixXd::Identity(grid.size(), grid.size()) - (1.0 - config["epsilon"].as<double>())*Lambda_star;
+        mtx = Eigen::MatrixXd::Identity(n_depth_pts, n_depth_pts) - (1.0 - config["epsilon"].as<double>())*Lambda_star;
         J_new = mtx.colPivHouseholderQr().solve(rhs);
         J_old = J_new;
-        for (unsigned int i = 0; i < grid.size(); ++i) {
+        for (unsigned int i = 0; i < n_depth_pts; ++i) {
           grid.at(i).J_lam = J_old(i);
         }
 

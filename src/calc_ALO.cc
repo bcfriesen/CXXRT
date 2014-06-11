@@ -6,10 +6,11 @@
 #include "ray.hh"
 
 Eigen::MatrixXd calc_ALO () {
-    Eigen::MatrixXd Lambda_star(grid.size(), grid.size());
+    const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
+    Eigen::MatrixXd Lambda_star(n_depth_pts, n_depth_pts);
 
     std::vector<double>  Lambda_star_contrib;
-    for (unsigned int i = 0; i < grid.size(); ++i) {
+    for (unsigned int i = 0; i < n_depth_pts; ++i) {
         std::vector<double> I_hat;
         std::vector<double> mu;
         for (struct RayIntersectionData& rid: grid.at(i).ray_intersection_data) {
