@@ -11,8 +11,10 @@ class GridVoxel {
     std::vector<struct RayIntersectionData> ray_intersection_data;
     double J_lam;
     double H_lam; // TODO: make this a vector in less symmetric geometries
+    double K_lam;
     void calc_J();
     void calc_H();
+    void calc_K();
 };
 
 #endif
