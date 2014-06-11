@@ -2,6 +2,7 @@
 #include <limits>
 #include <cmath>
 #include <iomanip>
+#include <fstream>
 
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
@@ -28,6 +29,8 @@ int main(int argc, char *argv[]) {
     std::cout << std::scientific;
 
     const int n_depth_pts = config["n_depth_pts"].as<int>();
+    const std::string output_file_name = config["plot_filename"].as<std::string>();
+
     grid.resize(n_depth_pts);
 
     const double log10_rho_min = config["log10_rho_min"].as<double>();
@@ -73,12 +76,15 @@ int main(int argc, char *argv[]) {
       gv.calc_J();
     }
 
+    std::ofstream output_file;
+    output_file << std::scientific;
     if (config["print_every_iter"].as<bool>()) {
-      std::cout << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::endl;
+      output_file.open(output_file_name);
+      output_file << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::endl;
       for (GridVoxel& gv: grid) {
-        std::cout << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
+        output_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
       }
-      std::cout << std::endl;
+      output_file << std::endl;
     }
 
     Eigen::MatrixXd Lambda_star = calc_ALO();
@@ -112,13 +118,15 @@ int main(int argc, char *argv[]) {
 
         if (config["print_every_iter"].as<bool>()) {
           for (GridVoxel& gv: grid) {
-            std::cout << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
+            output_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
           }
-          std::cout << std::endl;
+          output_file << std::endl;
         }
     }
 
     Atom H(1);
+
+    output_file.close();
 
     return(0);
 }
