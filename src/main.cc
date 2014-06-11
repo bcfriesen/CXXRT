@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     std::cout << std::scientific;
 
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
-    const std::string output_file_name = config["plot_filename"].as<std::string>();
+    const std::string output_file_name = config["output_file"].as<std::string>();
 
     grid.resize(n_depth_pts);
 
