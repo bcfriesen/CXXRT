@@ -77,10 +77,11 @@ int main(int argc, char *argv[]) {
     }
 
     std::ofstream output_file;
+    output_file.open(output_file_name);
     output_file << std::scientific;
+    output_file << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::endl;
+
     if (config["print_every_iter"].as<bool>()) {
-      output_file.open(output_file_name);
-      output_file << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::endl;
       for (GridVoxel& gv: grid) {
         output_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
       }
@@ -116,7 +117,7 @@ int main(int argc, char *argv[]) {
           grid.at(i).J_lam = J_old(i);
         }
 
-        if (config["print_every_iter"].as<bool>()) {
+        if (config["print_every_iter"].as<bool>() || i == config["max_iter"].as<int>()-1) {
           for (GridVoxel& gv: grid) {
             output_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::endl;
           }
