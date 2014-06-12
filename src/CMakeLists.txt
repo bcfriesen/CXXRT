@@ -9,6 +9,7 @@ set (CXXRT_SOURCES
      main.cc
      planck_function.cc
      ray.cc
+     rmsd.cc
     )
 
 ADD_EXECUTABLE(CXXRT ${CXXRT_SOURCES})
