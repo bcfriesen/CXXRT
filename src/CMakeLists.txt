@@ -3,6 +3,7 @@ include_directories (/home/brian/src//eigen-eigen-6b38706d90a9)
 add_subdirectory (EOS)
 
 set (CXXRT_SOURCES
+     Lambda_iteration.cc
      calc_ALO.cc
      grid.cc
      main.cc
