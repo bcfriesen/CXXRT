@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     }
     Eigen::VectorXd rhs;
     Eigen::MatrixXd mtx;
-    for (int i = 0; i < max_iter; ++i) {
+    for (unsigned int i = 0; i < max_iter; ++i) {
         for (Ray& r: rays) {
           r.calc_source_fn();
           r.formal_soln();
