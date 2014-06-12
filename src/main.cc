@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
     const double log10_rho_min = config["log10_rho_min"].as<double>();
     const double log10_rho_max = config["log10_rho_max"].as<double>();
+    const unsigned int max_iter = config["max_iter"].as<int>();
 
     double log10_rho = log10_rho_min;
     const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(n_depth_pts-1);
@@ -106,7 +107,7 @@ int main(int argc, char *argv[]) {
     }
     Eigen::VectorXd rhs;
     Eigen::MatrixXd mtx;
-    for (int i = 0; i < config["max_iter"].as<int>(); ++i) {
+    for (int i = 0; i < max_iter; ++i) {
         for (Ray& r: rays) {
           r.calc_source_fn();
           r.formal_soln();
@@ -127,7 +128,7 @@ int main(int argc, char *argv[]) {
           grid.at(i).J_lam = J_old(i);
         }
 
-        if (config["print_every_iter"].as<bool>() || i == config["max_iter"].as<int>()-1) {
+        if (config["print_every_iter"].as<bool>() || i == max_iter-1) {
           for (GridVoxel& gv: grid) {
             moments_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::setw(15) << gv.H_lam << std::setw(15) << gv.K_lam << std::endl;
           }
