@@ -12,6 +12,7 @@
 #include "grid.hh"
 #include "ray.hh"
 #include "globals.hh"
+#include "rmsd.hh"
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
@@ -124,6 +125,8 @@ int main(int argc, char *argv[]) {
         rhs = J_fs - (1.0 - epsilon)*Lambda_star*J_old;
         mtx = Eigen::MatrixXd::Identity(n_depth_pts, n_depth_pts) - (1.0 - epsilon)*Lambda_star;
         J_new = mtx.colPivHouseholderQr().solve(rhs);
+        double rmsd = calc_rmsd(J_old, J_new);
+        log_file << "RMSD: " << rmsd << std::endl;
         J_old = J_new;
         for (unsigned int i = 0; i < n_depth_pts; ++i) {
           grid.at(i).J_lam = J_old(i);
