@@ -88,11 +88,11 @@ int main(int argc, char *argv[]) {
     std::ofstream moments_file;
     moments_file.open(moments_file_name);
     moments_file << std::scientific;
-    moments_file << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::endl;
+    moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::endl;
 
     if (config["print_every_iter"].as<bool>()) {
       for (GridVoxel& gv: grid) {
-        moments_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::setw(15) << gv.H_lam << std::setw(15) << gv.K_lam << std::endl;
+        moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::setw(15) << gv.H_lam << std::setw(15) << gv.K_lam << std::endl;
       }
       moments_file << std::endl;
     }
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 
         if (config["print_every_iter"].as<bool>() || i == max_iter-1) {
           for (GridVoxel& gv: grid) {
-            moments_file << std::setw(15) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::setw(15) << gv.H_lam << std::setw(15) << gv.K_lam << std::endl;
+            moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::setw(15) << gv.H_lam << std::setw(15) << gv.K_lam << std::endl;
           }
           moments_file << std::endl;
         }
