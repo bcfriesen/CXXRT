@@ -12,6 +12,7 @@ log10_rho_max:  9.0
 max_iter: 40
 
 moments_file: moments.dat
+log_file: main.log
 
 print_every_iter: false
 

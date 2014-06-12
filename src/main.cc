@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
     }
     config = YAML::LoadFile(argv[1]);
     const std::string moments_file_name = config["moments_file"].as<std::string>();
+    const std::string log_file_name = config["log_file"].as<std::string>();
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
     const double log10_rho_min = config["log10_rho_min"].as<double>();
     const double log10_rho_max = config["log10_rho_max"].as<double>();
@@ -32,6 +33,13 @@ int main(int argc, char *argv[]) {
     double log10_rho = log10_rho_min;
     const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(n_depth_pts-1);
     grid.resize(n_depth_pts);
+
+    std::ofstream log_file;
+    log_file.open(log_file_name.c_str());
+    log_file << std::scientific;
+
+    log_file << "PARAMETERS USED:" << std::endl;
+    log_file << config << std::endl << std::endl;
 
     for (GridVoxel& gv: grid) {
         gv.rho = std::pow(10.0, log10_rho);
@@ -130,6 +138,7 @@ int main(int argc, char *argv[]) {
     Atom H(1);
 
     moments_file.close();
+    log_file.close();
 
     return(0);
 }
