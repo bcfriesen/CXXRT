@@ -102,6 +102,19 @@ void Ray::calc_SC_coeffs() {
         } else {
             auto it_prev = it; std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
             it->Delta_tau = it->tau - it_prev->tau;
+            // Sometimes optical depths get so large that the difference
+            // between two of them amounts to the difference between two
+            // extremely large numbers, and we can't keep enough significant
+            // digits, so the result is numerically 0. Without using a
+            // multiprecision library, which will be slow as shit, the only way
+            // to fix this is by lowering the maximum optical depth. This
+            // should not pose any problems though because there is no
+            // interesting physics which happens at an optical depth of 10^8
+            // which doesn't already happen at 10^2.
+            if (std::fabs(it->Delta_tau) < std::numeric_limits<double>::epsilon()) {
+                std::cerr << "ERROR: Delta_tau = 0! Your maximum optical depth is too high for floating-point precision!" << std::endl;
+                exit(1);
+            }
             it->alpha = 1.0 - std::exp(-it->Delta_tau) - ((it->Delta_tau - 1.0 + std::exp(-it->Delta_tau)) / it->Delta_tau);
             it->beta = (it->Delta_tau - 1.0 + std::exp(-it->Delta_tau)) / it->Delta_tau;
             // TODO: fill in gamma for parabolic interpolation
