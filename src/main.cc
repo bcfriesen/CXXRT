@@ -30,6 +30,7 @@ int main(int argc, char *argv[]) {
     const double log10_rho_min = config["log10_rho_min"].as<double>();
     const double log10_rho_max = config["log10_rho_max"].as<double>();
     const unsigned int max_iter = config["max_iter"].as<int>();
+    const double epsilon = config["epsilon"].as<double>();
 
     double log10_rho = log10_rho_min;
     const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(n_depth_pts-1);
@@ -69,7 +70,7 @@ int main(int argc, char *argv[]) {
       r.bind_to_grid(mu);
       for (RayData& rd: r.raydata) {
         rd.lambda = 5.0e-5;
-        rd.epsilon = config["epsilon"].as<double>();
+        rd.epsilon = epsilon;
       }
       mu += (mu_max - mu_min) / double(rays.size()-1);
       r.calc_chi();
@@ -120,8 +121,8 @@ int main(int argc, char *argv[]) {
         for (unsigned int i = 0; i < n_depth_pts; ++i) {
             J_fs(i) = grid.at(i).J_lam;
         }
-        rhs = J_fs - (1.0 - config["epsilon"].as<double>())*Lambda_star*J_old;
-        mtx = Eigen::MatrixXd::Identity(n_depth_pts, n_depth_pts) - (1.0 - config["epsilon"].as<double>())*Lambda_star;
+        rhs = J_fs - (1.0 - epsilon)*Lambda_star*J_old;
+        mtx = Eigen::MatrixXd::Identity(n_depth_pts, n_depth_pts) - (1.0 - epsilon)*Lambda_star;
         J_new = mtx.colPivHouseholderQr().solve(rhs);
         J_old = J_new;
         for (unsigned int i = 0; i < n_depth_pts; ++i) {
