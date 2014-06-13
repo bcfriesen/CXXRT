@@ -142,8 +142,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    const double temperature = 5778.0;
-    const double n_e = 1.0;
+    for (auto &gv: grid) {
+        gv.temperature = 5778.0;
+        gv.n_e = 2.0;
+    }
 
     Atom H(1);
     for (auto &ion: H.ions) {
