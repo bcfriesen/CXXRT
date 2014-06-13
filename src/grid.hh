@@ -7,6 +7,7 @@ class GridVoxel {
   public:
     double z;
     double rho;
+    double n_e;
     double temperature;
     std::vector<struct RayIntersectionData> ray_intersection_data;
     double J_lam;
