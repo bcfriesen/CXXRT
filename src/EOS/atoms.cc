@@ -43,7 +43,7 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
     convert << atomic_number*100 + ionization_stage;
     const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + convert.str() + ".dat";
     std::ifstream atomic_data_file;
-    atomic_data_file.open(atomic_data_file_name.c_str()); // in C++ the argument of open() can be a string
+    atomic_data_file.open(atomic_data_file_name.c_str()); // in C++11 the argument of open() can be a string
     std::string one_line;
     double wavelength, log_gf, first_energy_level, J_first, second_energy_level, J_second;
     bool duplicate;
