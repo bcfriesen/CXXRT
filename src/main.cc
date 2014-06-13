@@ -121,8 +121,8 @@ int main(int argc, char *argv[]) {
           gv.calc_H();
           gv.calc_K();
         }
-        for (unsigned int i = 0; i < n_depth_pts; ++i) {
-            J_fs(i) = grid.at(i).J_lam;
+        for (unsigned int j = 0; j < n_depth_pts; ++j) {
+            J_fs(j) = grid.at(j).J_lam;
         }
         rhs = J_fs - (1.0 - epsilon)*Lambda_star*J_old;
         mtx = Eigen::MatrixXd::Identity(n_depth_pts, n_depth_pts) - (1.0 - epsilon)*Lambda_star;
@@ -130,8 +130,8 @@ int main(int argc, char *argv[]) {
         double rmsd = calc_rmsd(J_old, J_new);
         log_file << "RMSD of relative change in J: " << rmsd << std::endl;
         J_old = J_new;
-        for (unsigned int i = 0; i < n_depth_pts; ++i) {
-          grid.at(i).J_lam = J_old(i);
+        for (unsigned int j = 0; j < n_depth_pts; ++j) {
+          grid.at(j).J_lam = J_old(j);
         }
 
         if (config["print_every_iter"].as<bool>() || i == max_iter-1) {
