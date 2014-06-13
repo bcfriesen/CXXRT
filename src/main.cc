@@ -142,7 +142,13 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    const double temperature = 5778.0;
+    const double n_e = 1.0;
+
     Atom H(1);
+    for (auto &ion: H.ions) {
+        ion.calc_partition_function(temperature);
+    }
 
     moments_file.close();
     log_file.close();
