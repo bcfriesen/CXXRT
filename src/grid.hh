@@ -16,6 +16,7 @@ class GridVoxel {
     void calc_J();
     void calc_H();
     void calc_K();
+    std::vector<Atom> atoms;
 };
 
 #endif
