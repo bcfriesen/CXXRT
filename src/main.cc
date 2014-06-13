@@ -147,9 +147,17 @@ int main(int argc, char *argv[]) {
         gv.n_e = 2.0;
     }
 
-    Atom H(1);
-    for (auto &ion: H.ions) {
-        ion.calc_partition_function(temperature);
+    for (auto &gv: grid) {
+        Atom H(1);
+        gv.atoms.push_back(H);
+    }
+
+    for (auto &gv: grid) {
+        for (auto &atom: gv.atoms) {
+            for (auto &ion: atom.ions) {
+                ion.calc_partition_function(gv.temperature);
+            }
+        }
     }
 
     moments_file.close();
