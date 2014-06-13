@@ -12,6 +12,7 @@ class Ion {
     double atomic_weight;
     void calc_partition_function(const double temperature);
     double partition_function;
+    double ionization_potential;
     std::string atomic_symbol;
     std::vector<class AtomicLevel> levels;
     std::vector<class AtomicLine> lines;

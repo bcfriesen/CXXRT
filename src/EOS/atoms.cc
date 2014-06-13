@@ -9,7 +9,7 @@
 #include "../globals.hh"
 #include "../constants.hh"
 
-Atom::Atom(const unsigned int atomic_number_in) 
+Atom::Atom(const unsigned int atomic_number_in)
   : atomic_number(atomic_number_in)
 {
   const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + "atoms.dat";
@@ -43,30 +43,19 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
     std::ifstream atomic_data_file;
     atomic_data_file.open(atomic_data_file_name);
     std::string one_line;
-    double wavelength, log_gf, el_code, first_energy_level, J_first, second_energy_level, J_second;
-    char skip[20];
+    double wavelength, log_gf, first_energy_level, J_first, second_energy_level, J_second;
     bool duplicate;
     const double tolerance = 1.0e-30;
 
-    // skip first line (formatting is different and it only has information about the continuum)
+    // The first line is the ionization potential.
     std::getline(atomic_data_file, one_line);
+    std::istringstream iss(one_line);
+    iss >> ionization_potential;
+    ionization_potential *= h_planck * c_light;
 
     while (std::getline(atomic_data_file, one_line)) {
-      int ret = std::sscanf(one_line.c_str(), "%11lf%7lf%6lf%12lf%5lf%11s%12lf%5lf",
-                                               &wavelength,
-                                               &log_gf,
-                                               &el_code,
-                                               &first_energy_level,
-                                               &J_first,
-                                               skip,
-                                               &second_energy_level,
-                                               &J_second);
-
-      // the return value of sscanf is the number of entries parsed successfully
-      if (ret <= 0) {
-        std::cerr << "ERROR: could not read lines!" << std::endl;
-        exit(1);
-      }
+      std::istringstream iss(one_line);
+      iss >> wavelength >> log_gf >> first_energy_level >> J_first >> second_energy_level >> J_second;
 
       class AtomicLevel upper_level, lower_level;
       lower_level.energy = first_energy_level * h_planck * c_light;  // convert cm^-1 to erg
@@ -80,8 +69,15 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
       // added already. We detect duplicates by checking energy differences; if
       // two levels are similar to within some tolerance, they are defined as
       // duplicates.
+
       for (auto level: levels) {
-        if ((std::abs(lower_level.energy - level.energy) / level.energy) > tolerance) {
+        double difference;
+        if (level.energy < std::numeric_limits<double>::epsilon()) {
+          difference = std::abs(lower_level.energy - level.energy);
+        } else {
+          difference = std::abs(lower_level.energy - level.energy) / level.energy;
+        }
+        if (difference > tolerance) {
           duplicate = false;
         } else {
           duplicate = true;
@@ -93,7 +89,8 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
       }
       // Now add the upper level if necessary.
       for (auto level: levels) {
-        if ((std::abs(upper_level.energy - level.energy) / level.energy) > tolerance) {
+        const double difference = std::abs(upper_level.energy - level.energy) / level.energy;
+        if (difference > tolerance) {
           duplicate = false;
         } else {
           duplicate = true;
@@ -104,31 +101,19 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
         levels.push_back(upper_level);
       }
     }
+
     atomic_data_file.close();
 
     // Now read the file again to get the lines.
 
     atomic_data_file.open(atomic_data_file_name);
 
-    // skip first line (formatting is different and it only has information about the continuum)
+    // The first line is the ionization potential so skip it this time.
     std::getline(atomic_data_file, one_line);
 
     while (std::getline(atomic_data_file, one_line)) {
-      int ret = std::sscanf(one_line.c_str(), "%11lf%7lf%6lf%12lf%5lf%11s%12lf%5lf",
-                                               &wavelength,
-                                               &log_gf,
-                                               &el_code,
-                                               &first_energy_level,
-                                               &J_first,
-                                               skip,
-                                               &second_energy_level,
-                                               &J_second);
-
-      // the return value of sscanf is the number of entries parsed successfully
-      if (ret <= 0) {
-        std::cerr << "ERROR: could not read lines!" << std::endl;
-        exit(1);
-      }
+      std::istringstream iss(one_line);
+      iss >> wavelength >> log_gf >> first_energy_level >> J_first >> second_energy_level >> J_second;
 
       class AtomicLine atomic_line;
       atomic_line.wavelength = wavelength;
