@@ -109,6 +109,8 @@ int main(int argc, char *argv[]) {
     }
     Eigen::VectorXd rhs;
     Eigen::MatrixXd mtx;
+
+    log_file << "Beginning ALI ..." << std::endl;
     for (unsigned int i = 0; i < max_iter; ++i) {
         for (Ray& r: rays) {
           r.calc_source_fn();
@@ -126,7 +128,7 @@ int main(int argc, char *argv[]) {
         mtx = Eigen::MatrixXd::Identity(n_depth_pts, n_depth_pts) - (1.0 - epsilon)*Lambda_star;
         J_new = mtx.colPivHouseholderQr().solve(rhs);
         double rmsd = calc_rmsd(J_old, J_new);
-        log_file << "RMSD: " << rmsd << std::endl;
+        log_file << "RMSD of relative change in J: " << rmsd << std::endl;
         J_old = J_new;
         for (unsigned int i = 0; i < n_depth_pts; ++i) {
           grid.at(i).J_lam = J_old(i);
