@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
     if (argc == 1) {
         std::cerr << "Usage: <executable name> <YAML control file>" << std::endl;
-        exit(0);
+        exit(1);
     }
     config = YAML::LoadFile(argv[1]);
     const std::string moments_file_name = config["moments_file"].as<std::string>();
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     for (Ray& r: rays) {
       if (std::fabs(mu) < std::numeric_limits<double>::epsilon()) {
         std::cerr << "ERROR: mu too close to zero! : " << mu << std::endl;
-        exit(0);
+        exit(1);
       }
       r.bind_to_grid(mu);
       for (RayData& rd: r.raydata) {
