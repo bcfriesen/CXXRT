@@ -122,6 +122,9 @@ int main(int argc, char *argv[]) {
     const double n_e = 1.0;
 
     Atom H(1);
+    for (auto &ion: H.ions) {
+        ion.calc_partition_function(temperature);
+    }
 
     return(0);
 }
