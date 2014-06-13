@@ -2,6 +2,7 @@
 #define GRID_HH
 
 #include "ray.hh"
+#include "EOS/atoms.hh"
 
 class GridVoxel {
   public:
