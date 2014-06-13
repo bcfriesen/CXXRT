@@ -15,7 +15,7 @@ Atom::Atom(const unsigned int atomic_number_in)
   const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + "atoms.dat";
   std::ifstream atomic_data_file;
   std::string one_line;
-  atomic_data_file.open(atomic_data_file_name.c_str()); // in C++ the argument of open() can be a string
+  atomic_data_file.open(atomic_data_file_name.c_str()); // in C++11 the argument of open() can be a string
   unsigned int atomic_number_from_file;
   while (std::getline(atomic_data_file, one_line)) {
     std::istringstream iss(one_line);
