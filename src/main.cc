@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
     }
 
     std::ofstream moments_file;
-    moments_file.open(moments_file_name);
+    moments_file.open(moments_file_name.c_str());
     moments_file << std::scientific;
     moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::endl;
 
