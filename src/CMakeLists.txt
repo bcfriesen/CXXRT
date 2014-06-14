@@ -3,6 +3,7 @@ include_directories ($ENV{YAML}/include)
 include_directories ($ENV{BOOST_DIR}/include)
 
 add_subdirectory (EOS)
+add_subdirectory (lines)
 
 set (CXXRT_SOURCES
      Lambda_iteration.cc
