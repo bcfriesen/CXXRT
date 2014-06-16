@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
 
     for (auto &gv: grid) {
         gv.temperature = 5778.0;
-        gv.n_g = 4.0;
+        gv.n_g = 1.0e+14;
     }
 
     for (auto &gv: grid) {
