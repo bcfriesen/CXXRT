@@ -155,6 +155,7 @@ int main(int argc, char *argv[]) {
 
     for (auto &gv: grid) {
         for (auto &atom: gv.atoms) {
+            atom.number_fraction = 1.0;
             for (auto &ion: atom.ions) {
                 ion.calc_partition_function(gv.temperature);
             }
