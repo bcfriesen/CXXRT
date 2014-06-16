@@ -25,6 +25,7 @@ class Atom {
     double atomic_weight;
     std::string atomic_symbol;
     std::vector<Ion> ions;
+    double number_fraction;
 };
 
 class AtomicLine {
