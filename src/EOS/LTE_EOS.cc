@@ -1,6 +1,8 @@
 #include <iostream>
 
 #include "saha_equation.hh"
+#include "atoms.hh"
+#include "../grid.hh"
 
 double f_ij (Atom atom, const double n_e, const double temperature) {
     double numerator = 1.0;
@@ -27,4 +29,23 @@ double f_ij (Atom atom, const double n_e, const double temperature) {
     denominator += 1.0;
 
     return (numerator/denominator);
+}
+
+
+double RHS(GridVoxel &gv) {
+    double result = 0.0;
+    for (auto atom: gv.atoms) {
+        double tmp = 0.0;
+        for (auto ion: atom.ions) {
+            tmp += ion.ionization_stage * f_ij(atom, gv.n_e, gv.temperature);
+        }
+        tmp *= atom.number_fraction;
+        result += tmp;
+    }
+    result = 1.0 / result;
+    result = result + 1.0;
+    result = result * gv.n_e;
+    result = result - gv.n_g;
+
+    return result;
 }
