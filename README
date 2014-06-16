@@ -1,0 +1,10 @@
+DESCRIPTION:
+
+This is a radiative transfer code based on the approximate Lambda-iteration
+(ALI) scheme.
+
+
+SOFTWARE DEPENDENCIES:
+ - YAML version >= 0.5
+ - Eigen
+ - CMake version >= 2.8
