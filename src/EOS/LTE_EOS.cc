@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "saha_equation.hh"
 #include "atoms.hh"
 #include "../grid.hh"
