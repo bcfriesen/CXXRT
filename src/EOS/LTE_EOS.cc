@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "saha_equation.hh"
 #include "atoms.hh"
 #include "../grid.hh"
@@ -46,4 +48,28 @@ double RHS(GridVoxel &gv) {
     result = result - gv.n_g;
 
     return result;
+}
+
+
+void calc_n_e_LTE(GridVoxel &gv) {
+    // Set lower and upper limits for n_e.
+    double max_n_e = (1.0 - std::numeric_limits<double>::epsilon()) * gv.n_g;
+    double min_n_e = std::numeric_limits<double>::epsilon() * gv.n_g;
+    double root;
+
+    const double max_iter = 100;
+    const double tol = 1.0e-9;
+
+    for (unsigned int i = 0; i < max_iter; ++i) {
+        gv.n_e = 0.5 * (max_n_e + min_n_e);
+        root = RHS(gv);
+        if (root > 0.0) {
+            max_n_e = gv.n_e;
+        } else {
+            min_n_e = gv.n_e;
+        }
+        if (std::abs(root) < tol) return;
+    }
+    std::cerr << "EOS: could not converge n_e in " << max_iter << " iterations! Quitting ..." << std::endl;
+    exit(1);
 }
