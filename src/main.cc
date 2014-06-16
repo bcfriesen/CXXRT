@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
 
     for (auto &gv: grid) {
         gv.temperature = 5778.0;
-        gv.n_e = 2.0;
+        gv.n_g = 1.0e+14;
     }
 
     for (auto &gv: grid) {
@@ -154,9 +154,21 @@ int main(int argc, char *argv[]) {
 
     for (auto &gv: grid) {
         for (auto &atom: gv.atoms) {
+            atom.number_fraction = 1.0;
             for (auto &ion: atom.ions) {
                 ion.calc_partition_function(gv.temperature);
             }
+        }
+    }
+
+    // Normalize number fractions. They must add up to 1.
+    for (auto &gv: grid) {
+        double tmp = 0.0;
+        for (auto &atom: gv.atoms) {
+            tmp += atom.number_fraction;
+        }
+        for (auto &atom: gv.atoms) {
+            atom.number_fraction /= tmp;
         }
     }
 

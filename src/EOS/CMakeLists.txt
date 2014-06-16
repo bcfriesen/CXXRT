@@ -1,4 +1,5 @@
 set (EOS_SOURCES
+     LTE_EOS.cc
      atoms.cc
      saha_equation.cc
     )
