@@ -8,6 +8,7 @@
 #include <Eigen/Dense>
 
 #include "EOS/atoms.hh"
+#include "EOS/LTE_EOS.hh"
 #include "calc_ALO.hh"
 #include "grid.hh"
 #include "ray.hh"
@@ -170,6 +171,14 @@ int main(int argc, char *argv[]) {
         for (auto &atom: gv.atoms) {
             atom.number_fraction /= tmp;
         }
+    }
+
+    log_file << std::endl;
+    log_file << "GRID VALUES:" << std::endl;
+    log_file << std::setw(15) << "rho" << std::setw(15) << "temperature" << std::setw(15) << "n_e" << std::endl;
+    for (auto &gv: grid) {
+        calc_n_e_LTE(gv);
+        log_file << std::setw(15) << gv.rho << std::setw(15) << gv.temperature << std::setw(15) << gv.n_e << std::endl;
     }
 
     moments_file.close();
