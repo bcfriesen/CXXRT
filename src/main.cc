@@ -161,6 +161,17 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // Normalize number fractions. They must add up to 1.
+    for (auto &gv: grid) {
+        double tmp = 0.0;
+        for (auto &atom: gv.atoms) {
+            tmp += atom.number_fraction;
+        }
+        for (auto &atom: gv.atoms) {
+            atom.number_fraction /= tmp;
+        }
+    }
+
     moments_file.close();
     log_file.close();
 
