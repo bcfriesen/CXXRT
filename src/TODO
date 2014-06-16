@@ -1,0 +1,2 @@
+- reorganize LTE EOS so that it doesn't use loop indices as substitutes for ionization stages
+ - make the calls iterator-based like in saha_equation()
