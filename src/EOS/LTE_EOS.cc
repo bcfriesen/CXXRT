@@ -68,7 +68,7 @@ void calc_n_e_LTE(GridVoxel &gv) {
         } else {
             min_n_e = gv.n_e;
         }
-        if (std::abs(root) < tol) return;
+        if (std::abs(root)/gv.n_g < tol) return;
     }
     std::cerr << "EOS: could not converge n_e in " << max_iter << " iterations! Quitting ..." << std::endl;
     exit(1);
