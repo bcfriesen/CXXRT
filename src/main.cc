@@ -14,6 +14,7 @@
 #include "ray.hh"
 #include "globals.hh"
 #include "rmsd.hh"
+#include "constants.hh"
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
@@ -145,7 +146,8 @@ int main(int argc, char *argv[]) {
 
     for (auto &gv: grid) {
         gv.temperature = 5778.0;
-        gv.n_g = 1.0e+14;
+        // TODO: this works only for hydrogen! fix when adding more elements!!
+        gv.n_g = gv.rho / H_mass;
     }
 
     for (auto &gv: grid) {
