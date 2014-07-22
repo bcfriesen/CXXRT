@@ -19,6 +19,7 @@
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
 YAML::Node config;
+std::vector<double> wavelength_values;
 
 int main(int argc, char *argv[]) {
 
@@ -39,6 +40,14 @@ int main(int argc, char *argv[]) {
     const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(n_depth_pts-1);
     grid.resize(n_depth_pts);
 
+    // set up the wavelength grid
+    const int n_wavelength_pts = config["n_wavelength_pts"].as<int>();
+    const double wl_min = config["wl_min"].as<double>();
+    const double wl_max = config["wl_max"].as<double>();
+    for (unsigned int i = 0; i < n_wavelength_pts; ++i) {
+        wavelength_values.push_back(wl_min + double(i) * (wl_max - wl_min) / double(n_wavelength_pts-1));
+    }
+
     std::ofstream log_file;
     log_file.open(log_file_name.c_str());
     log_file << std::scientific;
@@ -50,6 +59,11 @@ int main(int argc, char *argv[]) {
         gv.rho = std::pow(10.0, log10_rho);
         gv.temperature = 5778.0;
         log10_rho += log10_delta_rho;
+        for (double &wlv: wavelength_values) {
+            GridWavelengthPoint gwlp_tmp;
+            gwlp_tmp.lambda = &wlv;
+            gv.wavelength_grid.push_back(gwlp_tmp);
+        }
     }
 
     double z_tmp = 1.0;
@@ -72,75 +86,112 @@ int main(int argc, char *argv[]) {
       }
       r.bind_to_grid(mu);
       for (RayData& rd: r.raydata) {
-        rd.lambda = 5.0e-5;
-        rd.epsilon = epsilon;
+        for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
+          rwlp.epsilon = epsilon;
+        }
       }
       mu += (mu_max - mu_min) / double(rays.size()-1);
-      r.calc_chi();
-      r.calc_tau();
-      r.calc_SC_coeffs();
-      r.set_to_LTE();
-      r.formal_soln();
+
+      for (RayData& rd: r.raydata) {
+        for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
+          rwlp.calc_chi(rd.gridvoxel->rho, *(rwlp.lambda));
+          r.calc_tau(*(rwlp.lambda));
+          r.calc_SC_coeffs(*(rwlp.lambda));
+          rwlp.set_to_LTE(rd.gridvoxel->temperature);
+          r.formal_soln(*(rwlp.lambda));
+        }
+      }
     }
 
     for (GridVoxel& gv: grid) {
-      gv.calc_J();
-      gv.calc_H();
-      gv.calc_K();
+      for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
+        gv.calc_J(*(wlp.lambda));
+        gv.calc_H(*(wlp.lambda));
+        gv.calc_K(*(wlp.lambda));
+      }
     }
 
     std::ofstream moments_file;
     moments_file.open(moments_file_name.c_str());
     moments_file << std::scientific;
-    moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::endl;
+    moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::endl;
 
     if (config["print_every_iter"].as<bool>()) {
       for (GridVoxel& gv: grid) {
-        moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::setw(15) << gv.H_lam << std::setw(15) << gv.K_lam << std::endl;
+        for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
+          moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.lambda << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::endl;
+        }
       }
       moments_file << std::endl;
     }
 
-    Eigen::MatrixXd Lambda_star = calc_ALO();
+    for (double wlv: wavelength_values) {
+        Eigen::MatrixXd Lambda_star = calc_ALO(wlv);
 
-    Eigen::VectorXd J_old(n_depth_pts);
-    Eigen::VectorXd J_new(n_depth_pts);
-    Eigen::VectorXd J_fs(n_depth_pts);
-    for (unsigned int i = 0; i < n_depth_pts; ++i) {
-        J_old(i) = grid.at(i).J_lam;
-    }
-    Eigen::VectorXd rhs;
-    Eigen::MatrixXd mtx;
+        Eigen::VectorXd J_old(n_depth_pts);
+        Eigen::VectorXd J_new(n_depth_pts);
+        Eigen::VectorXd J_fs(n_depth_pts);
+        for (unsigned int i = 0; i < n_depth_pts; ++i) {
+            // Find the requested wavelength point on the grid voxel.
+            // TODO: make this faster than a crude linear search.
+            std::vector<GridWavelengthPoint>::iterator grid_wlp;
+            for (grid_wlp = grid.at(i).wavelength_grid.begin(); grid_wlp != grid.at(i).wavelength_grid.end(); ++grid_wlp) {
+              if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
+                  break;
+            }
+            J_old(i) = grid_wlp->J;
+        }
+        Eigen::VectorXd rhs;
+        Eigen::MatrixXd mtx;
 
-    log_file << "Beginning ALI ..." << std::endl;
-    for (unsigned int i = 0; i < max_iter; ++i) {
-        for (Ray& r: rays) {
-          r.calc_source_fn();
-          r.formal_soln();
-        }
-        for (GridVoxel& gv: grid) {
-          gv.calc_J();
-          gv.calc_H();
-          gv.calc_K();
-        }
-        for (unsigned int j = 0; j < n_depth_pts; ++j) {
-            J_fs(j) = grid.at(j).J_lam;
-        }
-        rhs = J_fs - (1.0 - epsilon)*Lambda_star*J_old;
-        mtx = Eigen::MatrixXd::Identity(n_depth_pts, n_depth_pts) - (1.0 - epsilon)*Lambda_star;
-        J_new = mtx.colPivHouseholderQr().solve(rhs);
-        double rmsd = calc_rmsd(J_old, J_new);
-        log_file << "RMSD of relative change in J: " << rmsd << std::endl;
-        J_old = J_new;
-        for (unsigned int j = 0; j < n_depth_pts; ++j) {
-          grid.at(j).J_lam = J_old(j);
-        }
+        log_file << "Beginning ALI ..." << std::endl;
+        for (unsigned int i = 0; i < max_iter; ++i) {
+            for (Ray& r: rays) {
+              for (RayData &rd: r.raydata) {
+                rd.calc_source_fn(wlv);
+              }
+              r.formal_soln(wlv);
+            }
+            for (GridVoxel& gv: grid) {
+              gv.calc_J(wlv);
+              gv.calc_H(wlv);
+              gv.calc_K(wlv);
+            }
+            for (unsigned int j = 0; j < n_depth_pts; ++j) {
+                // Find the requested wavelength point on the grid voxel.
+                // TODO: make this faster than a crude linear search.
+                std::vector<GridWavelengthPoint>::iterator grid_wlp;
+                for (grid_wlp = grid.at(i).wavelength_grid.begin(); grid_wlp != grid.at(i).wavelength_grid.end(); ++grid_wlp) {
+                  if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
+                      break;
+                }
+                J_fs(j) = grid_wlp->J;
+            }
+            rhs = J_fs - (1.0 - epsilon)*Lambda_star*J_old;
+            mtx = Eigen::MatrixXd::Identity(n_depth_pts, n_depth_pts) - (1.0 - epsilon)*Lambda_star;
+            J_new = mtx.colPivHouseholderQr().solve(rhs);
+            double rmsd = calc_rmsd(J_old, J_new);
+            log_file << "RMSD of relative change in J: " << rmsd << std::endl;
+            J_old = J_new;
+            for (unsigned int j = 0; j < n_depth_pts; ++j) {
+              // Find the requested wavelength point on the grid voxel.
+              // TODO: make this faster than a crude linear search.
+              std::vector<GridWavelengthPoint>::iterator grid_wlp;
+              for (grid_wlp = grid.at(i).wavelength_grid.begin(); grid_wlp != grid.at(i).wavelength_grid.end(); ++grid_wlp) {
+                if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
+                    break;
+              }
+              grid_wlp->J = J_old(j);
+            }
 
-        if (config["print_every_iter"].as<bool>() || i == max_iter-1) {
-          for (GridVoxel& gv: grid) {
-            moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << gv.J_lam << std::setw(15) << gv.H_lam << std::setw(15) << gv.K_lam << std::endl;
-          }
-          moments_file << std::endl;
+            if (config["print_every_iter"].as<bool>() || i == max_iter-1) {
+              for (GridVoxel& gv: grid) {
+                for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
+                  moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.lambda << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::endl;
+                }
+              }
+              moments_file << std::endl;
+            }
         }
     }
 

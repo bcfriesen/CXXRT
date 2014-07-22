@@ -10,4 +10,6 @@ extern std::vector<class Ray> rays;
 
 extern YAML::Node config;
 
+extern std::vector<double> wavelength_values;
+
 #endif
