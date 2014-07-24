@@ -13,6 +13,7 @@ set (CXXRT_SOURCES
      planck_function.cc
      ray.cc
      rmsd.cc
+     wavelength_grid.cc
     )
 
 ADD_EXECUTABLE(CXXRT ${CXXRT_SOURCES})

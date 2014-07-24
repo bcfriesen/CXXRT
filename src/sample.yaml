@@ -1,5 +1,6 @@
 n_depth_pts:  20
 n_mu_pts: 20
+n_wavelength_pts: 20
 
 epsilon: 1.0e-4
 
@@ -8,6 +9,9 @@ radius_max: 10.0
 
 log10_rho_min: -7.0
 log10_rho_max:  9.0
+
+wl_min: 3.0e-5
+wl_max: 7.0e-5
 
 max_iter: 40
 

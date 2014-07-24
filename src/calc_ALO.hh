@@ -3,6 +3,6 @@
 
 #include <Eigen/Dense>
 
-Eigen::MatrixXd calc_ALO();
+Eigen::MatrixXd calc_ALO(const double lambda);
 
 #endif
