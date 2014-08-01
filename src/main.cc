@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
                 // Find the requested wavelength point on the grid voxel.
                 // TODO: make this faster than a crude linear search.
                 std::vector<GridWavelengthPoint>::iterator grid_wlp;
-                for (grid_wlp = grid.at(i).wavelength_grid.begin(); grid_wlp != grid.at(i).wavelength_grid.end(); ++grid_wlp) {
+                for (grid_wlp = grid.at(j).wavelength_grid.begin(); grid_wlp != grid.at(j).wavelength_grid.end(); ++grid_wlp) {
                   if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
                       break;
                 }
@@ -177,7 +177,7 @@ int main(int argc, char *argv[]) {
               // Find the requested wavelength point on the grid voxel.
               // TODO: make this faster than a crude linear search.
               std::vector<GridWavelengthPoint>::iterator grid_wlp;
-              for (grid_wlp = grid.at(i).wavelength_grid.begin(); grid_wlp != grid.at(i).wavelength_grid.end(); ++grid_wlp) {
+              for (grid_wlp = grid.at(j).wavelength_grid.begin(); grid_wlp != grid.at(j).wavelength_grid.end(); ++grid_wlp) {
                 if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
                     break;
               }
