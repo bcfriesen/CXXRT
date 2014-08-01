@@ -95,11 +95,22 @@ int main(int argc, char *argv[]) {
       for (RayData& rd: r.raydata) {
         for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
           rwlp.calc_chi(rd.gridvoxel->rho, *(rwlp.lambda));
-          r.calc_tau(*(rwlp.lambda));
-          r.calc_SC_coeffs(*(rwlp.lambda));
-          rwlp.set_to_LTE(rd.gridvoxel->temperature);
-          r.formal_soln(*(rwlp.lambda));
         }
+      }
+
+      for (auto wlv: wavelength_values) {
+        r.calc_tau(wlv);
+        r.calc_SC_coeffs(wlv);
+      }
+
+      for (RayData& rd: r.raydata) {
+        for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
+          rwlp.set_to_LTE(rd.gridvoxel->temperature);
+        }
+      }
+
+      for (auto wlv: wavelength_values) {
+        r.formal_soln(wlv);
       }
     }
 
