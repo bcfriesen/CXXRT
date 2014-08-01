@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
     if (config["print_every_iter"].as<bool>()) {
       for (GridVoxel& gv: grid) {
         for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-          moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.lambda << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::endl;
+          moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::endl;
         }
       }
       moments_file << std::endl;
@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
             if (config["print_every_iter"].as<bool>() || i == max_iter-1) {
               for (GridVoxel& gv: grid) {
                 for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-                  moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.lambda << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::endl;
+                  moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::endl;
                 }
               }
               moments_file << std::endl;
