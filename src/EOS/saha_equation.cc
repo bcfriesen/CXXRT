@@ -32,9 +32,9 @@ double saha_equation(Atom &atom, const unsigned int lower_ionization_stage, cons
 
     // If the upper ionization stage is the fully ionized atom, then it will have no levels so skip looking for the partition function because it's just 1.
     if (lower_ionization_stage == atom.atomic_number-1) {
-      upper_partition_function = 1.0;
+        upper_partition_function = 1.0;
     } else {
-      upper_partition_function = upper_ion_it->partition_function;
+        upper_partition_function = upper_ion_it->partition_function;
     }
 
     result = (1.0 / n_e) * (std::pow(2.0 * pi * m_electron * k_boltzmann * temperature, 1.5) / std::pow(h_planck, 3)) * g_e * (upper_partition_function / lower_partition_function) * std::exp(-lower_ion_it->ionization_potential / (k_boltzmann * temperature));

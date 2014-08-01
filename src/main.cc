@@ -69,8 +69,8 @@ int main(int argc, char *argv[]) {
 
     double z_tmp = 1.0;
     for (auto it = grid.rbegin(); it != grid.rend(); ++it) {
-      it->z = z_tmp;
-      z_tmp += 1.0;
+        it->z = z_tmp;
+        z_tmp += 1.0;
     }
 
     std::cout << std::scientific;
@@ -81,46 +81,46 @@ int main(int argc, char *argv[]) {
     const double mu_max = +1.0;
     double mu = mu_min;
     for (Ray& r: rays) {
-      if (std::fabs(mu) < std::numeric_limits<double>::epsilon()) {
-        std::cerr << "ERROR: mu too close to zero! : " << mu << std::endl;
-        exit(1);
-      }
-      r.bind_to_grid(mu);
-      for (RayData& rd: r.raydata) {
-        for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
-          rwlp.epsilon = epsilon;
+        if (std::fabs(mu) < std::numeric_limits<double>::epsilon()) {
+            std::cerr << "ERROR: mu too close to zero! : " << mu << std::endl;
+            exit(1);
         }
-      }
-      mu += (mu_max - mu_min) / double(rays.size()-1);
-
-      for (RayData& rd: r.raydata) {
-        for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
-          rwlp.calc_chi(rd.gridvoxel->rho, *(rwlp.lambda));
+        r.bind_to_grid(mu);
+        for (RayData& rd: r.raydata) {
+            for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
+                rwlp.epsilon = epsilon;
+            }
         }
-      }
+        mu += (mu_max - mu_min) / double(rays.size()-1);
 
-      for (auto wlv: wavelength_values) {
-        r.calc_tau(wlv);
-        r.calc_SC_coeffs(wlv);
-      }
-
-      for (RayData& rd: r.raydata) {
-        for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
-          rwlp.set_to_LTE(rd.gridvoxel->temperature);
+        for (RayData& rd: r.raydata) {
+            for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
+                rwlp.calc_chi(rd.gridvoxel->rho, *(rwlp.lambda));
+            }
         }
-      }
 
-      for (auto wlv: wavelength_values) {
-        r.formal_soln(wlv);
-      }
+        for (auto wlv: wavelength_values) {
+            r.calc_tau(wlv);
+            r.calc_SC_coeffs(wlv);
+        }
+
+        for (RayData& rd: r.raydata) {
+            for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
+                rwlp.set_to_LTE(rd.gridvoxel->temperature);
+            }
+        }
+
+        for (auto wlv: wavelength_values) {
+            r.formal_soln(wlv);
+        }
     }
 
     for (GridVoxel& gv: grid) {
-      for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-        gv.calc_J(*(wlp.lambda));
-        gv.calc_H(*(wlp.lambda));
-        gv.calc_K(*(wlp.lambda));
-      }
+        for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
+            gv.calc_J(*(wlp.lambda));
+            gv.calc_H(*(wlp.lambda));
+            gv.calc_K(*(wlp.lambda));
+        }
     }
 
     std::ofstream moments_file;
@@ -129,12 +129,12 @@ int main(int argc, char *argv[]) {
     moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::setw(15) << "B_lam" << std::endl;
 
     if (config["print_every_iter"].as<bool>()) {
-      for (GridVoxel& gv: grid) {
-        for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-          moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::setw(15) << planck_function(*(wlp.lambda), gv.temperature) << std::endl;
+        for (GridVoxel& gv: grid) {
+            for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
+                moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::setw(15) << planck_function(*(wlp.lambda), gv.temperature) << std::endl;
+            }
         }
-      }
-      moments_file << std::endl;
+        moments_file << std::endl;
     }
 
     for (double wlv: wavelength_values) {
@@ -148,8 +148,8 @@ int main(int argc, char *argv[]) {
             // TODO: make this faster than a crude linear search.
             std::vector<GridWavelengthPoint>::iterator grid_wlp;
             for (grid_wlp = grid.at(i).wavelength_grid.begin(); grid_wlp != grid.at(i).wavelength_grid.end(); ++grid_wlp) {
-              if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
-                  break;
+                if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
+                    break;
             }
             J_old(i) = grid_wlp->J;
         }
@@ -159,23 +159,23 @@ int main(int argc, char *argv[]) {
         log_file << "Beginning ALI ..." << std::endl;
         for (unsigned int i = 0; i < max_iter; ++i) {
             for (Ray& r: rays) {
-              for (RayData &rd: r.raydata) {
-                rd.calc_source_fn(wlv);
-              }
-              r.formal_soln(wlv);
+                for (RayData &rd: r.raydata) {
+                    rd.calc_source_fn(wlv);
+                }
+                r.formal_soln(wlv);
             }
             for (GridVoxel& gv: grid) {
-              gv.calc_J(wlv);
-              gv.calc_H(wlv);
-              gv.calc_K(wlv);
+                gv.calc_J(wlv);
+                gv.calc_H(wlv);
+                gv.calc_K(wlv);
             }
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
                 // Find the requested wavelength point on the grid voxel.
                 // TODO: make this faster than a crude linear search.
                 std::vector<GridWavelengthPoint>::iterator grid_wlp;
                 for (grid_wlp = grid.at(j).wavelength_grid.begin(); grid_wlp != grid.at(j).wavelength_grid.end(); ++grid_wlp) {
-                  if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
-                      break;
+                    if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
+                        break;
                 }
                 J_fs(j) = grid_wlp->J;
             }
@@ -186,23 +186,23 @@ int main(int argc, char *argv[]) {
             log_file << "RMSD of relative change in J: " << rmsd << std::endl;
             J_old = J_new;
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
-              // Find the requested wavelength point on the grid voxel.
-              // TODO: make this faster than a crude linear search.
-              std::vector<GridWavelengthPoint>::iterator grid_wlp;
-              for (grid_wlp = grid.at(j).wavelength_grid.begin(); grid_wlp != grid.at(j).wavelength_grid.end(); ++grid_wlp) {
-                if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
-                    break;
-              }
-              grid_wlp->J = J_old(j);
+                // Find the requested wavelength point on the grid voxel.
+                // TODO: make this faster than a crude linear search.
+                std::vector<GridWavelengthPoint>::iterator grid_wlp;
+                for (grid_wlp = grid.at(j).wavelength_grid.begin(); grid_wlp != grid.at(j).wavelength_grid.end(); ++grid_wlp) {
+                    if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
+                        break;
+                }
+                grid_wlp->J = J_old(j);
             }
 
             if (config["print_every_iter"].as<bool>() || i == max_iter-1) {
-              for (GridVoxel& gv: grid) {
-                for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-                  moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::setw(15) << planck_function(*(wlp.lambda), gv.temperature) << std::endl;
+                for (GridVoxel& gv: grid) {
+                    for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
+                        moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::setw(15) << planck_function(*(wlp.lambda), gv.temperature) << std::endl;
+                    }
                 }
-              }
-              moments_file << std::endl;
+                moments_file << std::endl;
             }
         }
     }

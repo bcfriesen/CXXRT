@@ -7,7 +7,7 @@ void RayWavelengthPoint::set_to_LTE(const double temperature) {
 }
 
 void RayWavelengthPoint::calc_chi(const double rho, const double lambda) {
-      // TODO: calculate opacity the right way, not by just using density as a proxy.
-      chi = rho;
+    // TODO: calculate opacity the right way, not by just using density as a proxy.
+    chi = rho;
 }
 
