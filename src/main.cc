@@ -15,6 +15,7 @@
 #include "globals.hh"
 #include "rmsd.hh"
 #include "constants.hh"
+#include "planck_function.hh"
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
@@ -125,12 +126,12 @@ int main(int argc, char *argv[]) {
     std::ofstream moments_file;
     moments_file.open(moments_file_name.c_str());
     moments_file << std::scientific;
-    moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::endl;
+    moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::setw(15) << "B_lam" << std::endl;
 
     if (config["print_every_iter"].as<bool>()) {
       for (GridVoxel& gv: grid) {
         for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-          moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::endl;
+          moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::setw(15) << planck_function(*(wlp.lambda), gv.temperature) << std::endl;
         }
       }
       moments_file << std::endl;
@@ -198,7 +199,7 @@ int main(int argc, char *argv[]) {
             if (config["print_every_iter"].as<bool>() || i == max_iter-1) {
               for (GridVoxel& gv: grid) {
                 for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-                  moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::endl;
+                  moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::setw(15) << planck_function(*(wlp.lambda), gv.temperature) << std::endl;
                 }
               }
               moments_file << std::endl;
