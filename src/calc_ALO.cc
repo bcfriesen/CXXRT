@@ -21,22 +21,23 @@ Eigen::MatrixXd calc_ALO (const double lambda) {
             // TODO: make this faster than a crude linear search.
             std::vector<RayWavelengthPoint>::const_iterator wlp_it;
             for (wlp_it = it->wavelength_grid.begin(); wlp_it != it->wavelength_grid.end(); ++wlp_it) {
-              if (std::abs(*(wlp_it->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                  break;
+                if (std::abs(*(wlp_it->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                    break;
             }
 
             if (it == rid.ray->raydata.begin()) {
-              I_hat.push_back(wlp_it->beta);
+                I_hat.push_back(wlp_it->beta);
             } else {
-              auto it_prev = it; std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
+                auto it_prev = it;
+                std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
 
-              std::vector<RayWavelengthPoint>::const_iterator wlp_it_prev;
-              for (wlp_it_prev = it_prev->wavelength_grid.begin(); wlp_it_prev != it_prev->wavelength_grid.end(); ++wlp_it_prev) {
-                if (std::abs(*(wlp_it_prev->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                    break;
-              }
+                std::vector<RayWavelengthPoint>::const_iterator wlp_it_prev;
+                for (wlp_it_prev = it_prev->wavelength_grid.begin(); wlp_it_prev != it_prev->wavelength_grid.end(); ++wlp_it_prev) {
+                    if (std::abs(*(wlp_it_prev->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                        break;
+                }
 
-              I_hat.push_back(wlp_it_prev->gamma * std::exp(-wlp_it_prev->Delta_tau) + wlp_it->beta);
+                I_hat.push_back(wlp_it_prev->gamma * std::exp(-wlp_it_prev->Delta_tau) + wlp_it->beta);
             }
             mu.push_back(it->mu);
         }
