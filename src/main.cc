@@ -6,6 +6,7 @@
 
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 #include "EOS/atoms.hh"
 #include "EOS/LTE_EOS.hh"
@@ -154,7 +155,6 @@ int main(int argc, char *argv[]) {
             J_old(i) = grid_wlp->J;
         }
         Eigen::VectorXd rhs;
-        Eigen::MatrixXd mtx;
 
         log_file << "Beginning ALI ..." << std::endl;
         for (unsigned int i = 0; i < max_iter; ++i) {
@@ -180,8 +180,24 @@ int main(int argc, char *argv[]) {
                 J_fs(j) = grid_wlp->J;
             }
             rhs = J_fs - (1.0 - epsilon)*Lambda_star*J_old;
-            mtx = Eigen::MatrixXd::Identity(n_depth_pts, n_depth_pts) - (1.0 - epsilon)*Lambda_star;
-            J_new = mtx.colPivHouseholderQr().solve(rhs);
+
+            std::vector< Eigen::Triplet<double> > tripletList;
+            tripletList.reserve(n_depth_pts);
+
+            for (unsigned int k = 0; k < n_depth_pts; ++k) {
+                tripletList.push_back(Eigen::Triplet<double> (k, k, 1.0 - (1.0 - epsilon)*(Lambda_star(k, k))));
+            }
+            Eigen::SparseMatrix<double> mtx(n_depth_pts, n_depth_pts);
+            mtx.setFromTriplets(tripletList.begin(), tripletList.end());
+            Eigen::ConjugateGradient< Eigen::SparseMatrix<double> > cg;
+            cg.compute(mtx);
+            log_file << "Applying conjugate gradient method to ALI matrix ..." << std::endl;
+            for (unsigned int k = 0; k < 10; ++k) {
+                J_new = cg.solve(rhs);
+                log_file << "# of iterations: " << cg.iterations() << "; ";
+                log_file << "estimated error: " << cg.error() << std::endl;
+            }
+
             double rmsd = calc_rmsd(J_old, J_new);
             log_file << "RMSD of relative change in J: " << rmsd << std::endl;
             J_old = J_new;
