@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     grid.resize(n_depth_pts);
 
     // set up the wavelength grid
-    const int n_wavelength_pts = config["n_wavelength_pts"].as<int>();
+    const unsigned int n_wavelength_pts = config["n_wavelength_pts"].as<int>();
     const double wl_min = config["wl_min"].as<double>();
     const double wl_max = config["wl_max"].as<double>();
     for (unsigned int i = 0; i < n_wavelength_pts; ++i) {
