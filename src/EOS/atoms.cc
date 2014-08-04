@@ -8,6 +8,7 @@
 #include "atoms.hh"
 #include "../globals.hh"
 #include "../constants.hh"
+#include "../lines/Gaussian_profile.hh"
 
 Atom::Atom(const unsigned int atomic_number_in)
     : atomic_number(atomic_number_in) {
@@ -155,6 +156,10 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
                     break;
                 }
             }
+
+            // TODO: allow user to choose which line profile to use. For now the default is Gaussian.
+            atomic_line.line_profile = gauss_profile;
+
             if (!duplicate) {
                 lines.push_back(atomic_line);
             }
