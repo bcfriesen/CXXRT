@@ -188,7 +188,7 @@ std::ostream& operator<<(std::ostream& os, const Ion& ion) {
 
 
 double AtomicLine::Einstein_B() {
-    return (4.0 * std::pow(pi, 2) * std::pow(m_electron, 2) * wavelength) / (h_planck * m_electron * std::pow(c_light, 2)) * oscillator_strength;
+    return (4.0 * std::pow(pi, 2) * std::pow(e_charge, 2) * wavelength) / (h_planck * m_electron * std::pow(c_light, 2)) * oscillator_strength;
 }
 
 
