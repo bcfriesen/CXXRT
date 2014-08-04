@@ -43,6 +43,7 @@ class AtomicLine {
     double alpha(const double lambda); // Radiative cross-section. We assume complete redistribution so there is no need to distinguish between alpha_{i->j} and alpha_{j->i}.
     void set_line_width(const double temperature);
     double radiative_rate_absorption(const std::vector<GridWavelengthPoint> wavelength_grid);
+    double radiative_rate_emission(const std::vector<GridWavelengthPoint> wavelength_grid, const double temperature);
 };
 
 class AtomicLevel {
