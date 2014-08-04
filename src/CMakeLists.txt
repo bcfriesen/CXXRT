@@ -18,4 +18,4 @@ set (CXXRT_SOURCES
 
 ADD_EXECUTABLE(CXXRT ${CXXRT_SOURCES})
 
-target_link_libraries(CXXRT $ENV{YAML}/build/libyaml-cpp.a EOS)
+target_link_libraries(CXXRT $ENV{YAML}/build/libyaml-cpp.a EOS lines)
