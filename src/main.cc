@@ -5,7 +5,6 @@
 #include <fstream>
 
 #include <yaml-cpp/yaml.h>
-#include <Eigen/Dense>
 #include <Eigen/Sparse>
 
 #include "EOS/atoms.hh"
@@ -17,7 +16,6 @@
 #include "rmsd.hh"
 #include "constants.hh"
 #include "planck_function.hh"
-
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
 YAML::Node config;
@@ -191,11 +189,18 @@ int main(int argc, char *argv[]) {
             mtx.setFromTriplets(tripletList.begin(), tripletList.end());
             Eigen::ConjugateGradient< Eigen::SparseMatrix<double> > cg;
             cg.compute(mtx);
-            log_file << "Applying conjugate gradient method to ALI matrix ..." << std::endl;
-            for (unsigned int k = 0; k < 10; ++k) {
+            // Iterate the conjugate gradient method on the ALI linear system until it converges.
+            unsigned int n_cg_iter = 0;
+            const unsigned int max_cg_iter = 20;
+            const double max_err_tol = 1.0e-10;
+            while (true) {
                 J_new = cg.solve(rhs);
-                log_file << "# of iterations: " << cg.iterations() << "; ";
-                log_file << "estimated error: " << cg.error() << std::endl;
+                n_cg_iter++;
+                if (cg.error() <= max_err_tol) break;
+                if (n_cg_iter > max_cg_iter) {
+                    std::cerr << "ERROR: could not solve sparse ALI system! Error after " << n_cg_iter << " CG iterations: " << cg.error() << std::endl;
+                    exit(1);
+                }
             }
 
             double rmsd = calc_rmsd(J_old, J_new);
