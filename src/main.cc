@@ -5,7 +5,7 @@
 #include <fstream>
 
 #include <yaml-cpp/yaml.h>
-#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 #include "EOS/atoms.hh"
 #include "EOS/LTE_EOS.hh"
@@ -16,7 +16,6 @@
 #include "rmsd.hh"
 #include "constants.hh"
 #include "planck_function.hh"
-
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
 YAML::Node config;
@@ -154,7 +153,6 @@ int main(int argc, char *argv[]) {
             J_old(i) = grid_wlp->J;
         }
         Eigen::VectorXd rhs;
-        Eigen::MatrixXd mtx;
 
         log_file << "Beginning ALI ..." << std::endl;
         for (unsigned int i = 0; i < max_iter; ++i) {
@@ -180,8 +178,31 @@ int main(int argc, char *argv[]) {
                 J_fs(j) = grid_wlp->J;
             }
             rhs = J_fs - (1.0 - epsilon)*Lambda_star*J_old;
-            mtx = Eigen::MatrixXd::Identity(n_depth_pts, n_depth_pts) - (1.0 - epsilon)*Lambda_star;
-            J_new = mtx.colPivHouseholderQr().solve(rhs);
+
+            std::vector< Eigen::Triplet<double> > tripletList;
+            tripletList.reserve(n_depth_pts);
+
+            for (unsigned int k = 0; k < n_depth_pts; ++k) {
+                tripletList.push_back(Eigen::Triplet<double> (k, k, 1.0 - (1.0 - epsilon)*(Lambda_star(k, k))));
+            }
+            Eigen::SparseMatrix<double> mtx(n_depth_pts, n_depth_pts);
+            mtx.setFromTriplets(tripletList.begin(), tripletList.end());
+            Eigen::ConjugateGradient< Eigen::SparseMatrix<double> > cg;
+            cg.compute(mtx);
+            // Iterate the conjugate gradient method on the ALI linear system until it converges.
+            unsigned int n_cg_iter = 0;
+            const unsigned int max_cg_iter = 20;
+            const double max_err_tol = 1.0e-10;
+            while (true) {
+                J_new = cg.solve(rhs);
+                n_cg_iter++;
+                if (cg.error() <= max_err_tol) break;
+                if (n_cg_iter > max_cg_iter) {
+                    std::cerr << "ERROR: could not solve sparse ALI system! Error after " << n_cg_iter << " CG iterations: " << cg.error() << std::endl;
+                    exit(1);
+                }
+            }
+
             double rmsd = calc_rmsd(J_old, J_new);
             log_file << "RMSD of relative change in J: " << rmsd << std::endl;
             J_old = J_new;

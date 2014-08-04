@@ -1,14 +1,17 @@
 #include <cmath>
 
-#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 #include "globals.hh"
 #include "ray.hh"
 #include "wavelength_grid.hh"
 
-Eigen::MatrixXd calc_ALO (const double lambda) {
+Eigen::SparseMatrix<double> calc_ALO (const double lambda) {
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
-    Eigen::MatrixXd Lambda_star(n_depth_pts, n_depth_pts);
+    Eigen::SparseMatrix<double> Lambda_star(n_depth_pts, n_depth_pts);
+
+    std::vector< Eigen::Triplet<double> > tripletList;
+    tripletList.reserve(n_depth_pts);
 
     std::vector<double>  Lambda_star_contrib;
     for (unsigned int i = 0; i < n_depth_pts; ++i) {
@@ -47,7 +50,8 @@ Eigen::MatrixXd calc_ALO (const double lambda) {
             result += 0.5 * (I_hat.at(j) + I_hat.at(j+1)) * (mu.at(j+1) - mu.at(j));
         }
         result *= 0.5;
-        Lambda_star(i, i) = result;
+        tripletList.push_back(Eigen::Triplet<double> (i, i, result));
     }
+    Lambda_star.setFromTriplets(tripletList.begin(), tripletList.end());
     return (Lambda_star);
 }
