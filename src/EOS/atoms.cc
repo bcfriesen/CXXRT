@@ -102,6 +102,13 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
             }
         }
 
+        // Set up the pointer for the ground state. By definition the energy of
+        // the ground state is zero.
+        for (auto &level: levels) {
+            if (level.energy < std::numeric_limits<double>::epsilon())
+                ground_state = &level;
+        }
+
         atomic_data_file.close();
 
         // Now read the file again to get the lines.

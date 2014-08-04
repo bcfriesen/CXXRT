@@ -16,6 +16,7 @@ class Ion {
     std::string atomic_symbol;
     std::vector<class AtomicLevel> levels;
     std::vector<class AtomicLine> lines;
+    AtomicLevel* ground_state;
 };
 
 class Atom {
