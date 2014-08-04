@@ -125,7 +125,7 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
             iss >> wavelength >> log_gf >> first_energy_level >> J_first >> second_energy_level >> J_second;
 
             class AtomicLine atomic_line;
-            atomic_line.wavelength = wavelength;
+            atomic_line.wavelength = wavelength*1.0e-7; // Kurucz wavelengths are in nanometers
             const int g = int(2.0*J_first + 1.0);
             atomic_line.oscillator_strength = std::pow(10.0, log_gf) / double(g);
 
