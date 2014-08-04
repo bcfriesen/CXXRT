@@ -179,3 +179,8 @@ std::ostream& operator<<(std::ostream& os, const Ion& ion) {
     os << std::setw(35) << ion.atomic_symbol << std::setw(20) << ion.atomic_number << std::setw(20) << ion.ionization_stage << std::setw(20) << ion.atomic_weight << std::endl;
     return os;
 }
+
+
+double AtomicLine::Einstein_B() {
+    return (4.0 * std::pow(pi, 2) * std::pow(m_electron, 2) * wavelength) / (h_planck * m_electron * std::pow(c_light, 2)) * oscillator_strength;
+}

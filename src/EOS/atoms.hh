@@ -35,6 +35,7 @@ class AtomicLine {
     double oscillator_strength;
     class AtomicLevel* lower_level;
     class AtomicLevel* upper_level;
+    double Einstein_B();
 };
 
 class AtomicLevel {
