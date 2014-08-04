@@ -9,6 +9,7 @@
 #include "../globals.hh"
 #include "../constants.hh"
 #include "../lines/Gaussian_profile.hh"
+#include "../lines/Doppler_width.hh"
 
 Atom::Atom(const unsigned int atomic_number_in)
     : atomic_number(atomic_number_in) {
@@ -193,4 +194,10 @@ double AtomicLine::Einstein_B() {
 
 double AtomicLine::alpha(const double lambda) {
     return ((h_planck * c_light) / (4.0 * pi)) * (wavelength / c_light) * Einstein_B() * line_profile(lambda, wavelength, Delta_lambda);
+}
+
+
+void AtomicLine::set_line_width(const double temperature) {
+    // TODO: let user choose among Doppler broadening and ... other types of broadening.
+    Delta_lambda = Doppler_width(wavelength, temperature);
 }

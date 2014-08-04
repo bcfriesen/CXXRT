@@ -240,6 +240,13 @@ int main(int argc, char *argv[]) {
     for (auto &gv: grid) {
         Atom H(1);
         gv.atoms.push_back(H);
+        for (auto &atom: gv.atoms) {
+          for (auto &ion: atom.ions) {
+            for (auto &line: ion.lines) {
+              line.set_line_width(gv.temperature);
+            }
+          }
+        }
     }
 
     for (auto &gv: grid) {
