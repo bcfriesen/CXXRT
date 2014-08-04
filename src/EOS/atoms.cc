@@ -10,6 +10,7 @@
 #include "../constants.hh"
 #include "../lines/Gaussian_profile.hh"
 #include "../lines/Doppler_width.hh"
+#include "../wavelength_grid.hh"
 
 Atom::Atom(const unsigned int atomic_number_in)
     : atomic_number(atomic_number_in) {
@@ -200,4 +201,16 @@ double AtomicLine::alpha(const double lambda) {
 void AtomicLine::set_line_width(const double temperature) {
     // TODO: let user choose among Doppler broadening and ... other types of broadening.
     Delta_lambda = Doppler_width(wavelength, temperature);
+}
+
+
+double AtomicLine::radiative_rate_absorption(const std::vector<GridWavelengthPoint> wavelength_grid) {
+    double result = 0.0;
+    for (auto it = wavelength_grid.begin(); it != wavelength_grid.end()-1; ++it) {
+        auto it_next = it;
+        std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
+        result += 0.5 * (*(it_next->lambda) - *(it->lambda)) * (alpha(*(it->lambda)) * it->J + alpha(*(it_next->lambda)) * it_next->J);
+    }
+    result *= (4.0 * pi) / (h_planck * c_light);
+    return result;
 }
