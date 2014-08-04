@@ -66,10 +66,13 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    double z_tmp = 1.0;
+    // TODO: add a switch that lets the model span the radius limits either linearly or logarithmically
+    const double radius_min = config["radius_min"].as<double>();
+    const double radius_max = config["radius_max"].as<double>();
+    unsigned int i = 0;
     for (auto it = grid.rbegin(); it != grid.rend(); ++it) {
-        it->z = z_tmp;
-        z_tmp += 1.0;
+        it->z = radius_min + double(i) * (radius_max - radius_min) / double(n_depth_pts-1);
+        i++;
     }
 
     std::cout << std::scientific;
