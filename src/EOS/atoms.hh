@@ -37,6 +37,7 @@ class AtomicLine {
     double oscillator_strength;
     class AtomicLevel* lower_level;
     class AtomicLevel* upper_level;
+    double Einstein_A();
     double Einstein_B();
     double Delta_lambda; // Intrinsic line width.
     double (*line_profile) (const double lambda, const double lambda_0, const double Delta_lambda); // Function pointer to normalized line profile, e.g., Gaussian, Lorentzian, etc.

@@ -193,6 +193,11 @@ double AtomicLine::Einstein_B() {
 }
 
 
+double AtomicLine::Einstein_A() {
+    return ((2.0 * h_planck * c_light) / std::pow(wavelength, 3)) * Einstein_B();
+}
+
+
 double AtomicLine::alpha(const double lambda) {
     return ((h_planck * c_light) / (4.0 * pi)) * (wavelength / c_light) * Einstein_B() * line_profile(lambda, wavelength, Delta_lambda);
 }
