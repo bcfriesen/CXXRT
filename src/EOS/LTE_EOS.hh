@@ -4,10 +4,10 @@
 #include "../grid.hh"
 
 // the fraction of the population of atom i in ionization stage j
-double f_ij (const Atom atom, const double n_e, const double temperature);
+double f_ij (Atom* atom, const double n_e, const double temperature);
 
-double RHS(GridVoxel &gv);
+double RHS(GridVoxel* gv);
 
-void calc_n_e_LTE(GridVoxel &gv);
+void calc_n_e_LTE(GridVoxel* gv);
 
 #endif
