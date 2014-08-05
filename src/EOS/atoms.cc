@@ -133,20 +133,20 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
             atomic_line.oscillator_strength = std::pow(10.0, log_gf) / double(g);
 
             // Now search through the model atom energy levels to find the lower and upper levels for this line.
-            for (auto level = levels.begin(); level != levels.end(); ++level) {
-                if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
-                    if (std::abs(first_energy_level*h_planck*c_light - level->energy) < tolerance)
-                        atomic_line.lower_level = &(*level); // std::addressof(*level) would work but that's C++11
-                } else if ((std::abs(first_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
-                    atomic_line.lower_level = &(*level); // std::addressof(*level) would work but that's C++11
+            for (auto &level: levels) {
+                if (level.energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
+                    if (std::abs(first_energy_level*h_planck*c_light - level.energy) < tolerance)
+                        atomic_line.lower_level = &level;
+                } else if ((std::abs(first_energy_level*h_planck*c_light - level.energy) / level.energy) < tolerance) {
+                    atomic_line.lower_level = &level;
                 }
             }
-            for (auto level = levels.begin(); level != levels.end(); ++level) {
-                if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
-                    if (std::abs(second_energy_level*h_planck*c_light - level->energy) < tolerance)
-                        atomic_line.upper_level = &(*level); // std::addressof(*level) would work but that's C++11
-                } else if ((std::abs(second_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
-                    atomic_line.upper_level = &(*level); // std::addressof(*level) would work but that's C++11
+            for (auto &level: levels) {
+                if (level.energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
+                    if (std::abs(second_energy_level*h_planck*c_light - level.energy) < tolerance)
+                        atomic_line.upper_level = &level;
+                } else if ((std::abs(second_energy_level*h_planck*c_light - level.energy) / level.energy) < tolerance) {
+                    atomic_line.upper_level = &level;
                 }
             }
 
