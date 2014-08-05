@@ -45,6 +45,7 @@ class AtomicLine {
     void set_line_width(const double temperature);
     double radiative_rate_absorption(const std::vector<GridWavelengthPoint> wavelength_grid);
     double radiative_rate_emission(const std::vector<GridWavelengthPoint> wavelength_grid, const double temperature);
+    double collisional_rate_absorption(const double n_e, const double temperature);
 };
 
 class AtomicLevel {
