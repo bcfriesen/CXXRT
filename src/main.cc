@@ -16,6 +16,8 @@
 #include "rmsd.hh"
 #include "constants.hh"
 #include "planck_function.hh"
+
+
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
 YAML::Node config;
