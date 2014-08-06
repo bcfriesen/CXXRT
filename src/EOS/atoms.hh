@@ -21,6 +21,7 @@ class Ion {
     AtomicLevel* ground_state;
     AtomicLevel* continuum_state;
     void read_atomic_data();
+    double photo_xs(const double lambda) const;
 };
 
 class Atom {
