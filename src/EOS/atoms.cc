@@ -45,7 +45,13 @@ void Ion::read_atomic_data() {
     if (ionization_stage > atomic_number) {
         std::cerr << "ERROR! in atom " << atomic_number << " you tried to add an ion with ionization stage " << ionization_stage << std::endl;
         exit(1);
-    } else if (ionization_stage < atomic_number) {
+    } else if (ionization_stage == atomic_number) { // A fully ionized atom is just a nucleus which has no bound states, only a ground state;
+        class AtomicLevel ground_state;
+        ground_state.energy = 0.0;
+        ground_state.J = 0.0;
+        ground_state.g = 0;
+        levels.push_back(ground_state);
+    } else {
         std::ostringstream convert; // for compilers without std::to_string (a C++11 feature)
         convert << atomic_number*100 + ionization_stage;
         const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + convert.str() + ".dat";
