@@ -8,5 +8,6 @@ const double pi = 3.1415927;
 const double m_electron = 9.10938291e-28;
 const double H_mass = 1.6737e-24;
 const double e_charge = 4.80320425e-10;
+const double ev2erg = 1.602177e-12;
 
 #endif
