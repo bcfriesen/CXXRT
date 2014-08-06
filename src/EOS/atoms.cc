@@ -46,12 +46,10 @@ void Atom::set_continuum_pointers() {
         if (ion.ionization_stage == atomic_number)
             ion.continuum_state = nullptr;
 
-        std::cout << "searching for continuum state for ion " << ion.ionization_stage << std::endl;
         for (auto &next_ion: ions) {
             if (next_ion.ionization_stage == ion.ionization_stage+1) {
                 for (auto &level: next_ion.levels) {
                     if (level.energy < std::numeric_limits<double>::epsilon()) {
-                        std::cout << "found continuum state!" << std::endl;
                         ion.continuum_state = &level;
                         break;
                     }
