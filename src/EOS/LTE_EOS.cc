@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <limits>
+#include <cmath>
 
 #include "saha_equation.hh"
 #include "atoms.hh"
