@@ -38,6 +38,10 @@ Atom::Atom(const unsigned int atomic_number_in)
 Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stage_in)
     : atomic_number(atomic_number_in),
       ionization_stage(ionization_stage_in) {
+      }
+
+
+void Ion::read_atomic_data() {
     if (ionization_stage > atomic_number) {
         std::cerr << "ERROR! in atom " << atomic_number << " you tried to add an ion with ionization stage " << ionization_stage << std::endl;
         exit(1);

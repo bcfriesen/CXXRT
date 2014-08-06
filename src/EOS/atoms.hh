@@ -19,6 +19,7 @@ class Ion {
     std::vector<class AtomicLevel> levels;
     std::vector<class AtomicLine> lines;
     AtomicLevel* ground_state;
+    void read_atomic_data();
 };
 
 class Atom {
