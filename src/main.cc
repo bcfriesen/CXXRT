@@ -239,9 +239,9 @@ int main(int argc, char *argv[]) {
 
     for (auto &gv: grid) {
         Atom H(1);
-        gv.atoms.push_back(&H);
+        gv.atoms.push_back(H);
         for (auto &atom: gv.atoms) {
-            for (auto &ion: atom->ions) {
+            for (auto &ion: atom.ions) {
                 for (auto &line: ion.lines) {
                     line.set_line_width(gv.temperature);
                 }
@@ -251,8 +251,8 @@ int main(int argc, char *argv[]) {
 
     for (auto &gv: grid) {
         for (auto &atom: gv.atoms) {
-            atom->number_fraction = 1.0;
-            for (auto &ion: atom->ions) {
+            atom.number_fraction = 1.0;
+            for (auto &ion: atom.ions) {
                 ion.calc_partition_function(gv.temperature);
             }
         }
@@ -262,10 +262,10 @@ int main(int argc, char *argv[]) {
     for (auto &gv: grid) {
         double tmp = 0.0;
         for (auto &atom: gv.atoms) {
-            tmp += atom->number_fraction;
+            tmp += atom.number_fraction;
         }
         for (auto &atom: gv.atoms) {
-            atom->number_fraction /= tmp;
+            atom.number_fraction /= tmp;
         }
     }
 
@@ -273,7 +273,7 @@ int main(int argc, char *argv[]) {
     log_file << "GRID VALUES:" << std::endl;
     log_file << std::setw(15) << "rho" << std::setw(15) << "temperature" << std::setw(15) << "n_e" << std::endl;
     for (auto &gv: grid) {
-        calc_n_e_LTE(&gv);
+        calc_n_e_LTE(gv);
         log_file << std::setw(15) << gv.rho << std::setw(15) << gv.temperature << std::setw(15) << gv.n_e << std::endl;
     }
 
