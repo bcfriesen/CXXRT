@@ -35,6 +35,33 @@ Atom::Atom(const unsigned int atomic_number_in)
     }
 }
 
+
+// We assume all continuum processes promote a bound state to the ground state
+// of the next ionization stage (as opposed to promotion from the bound state
+// to an excited state of the next ionization stage).
+void Atom::set_continuum_pointers() {
+    for (auto &ion: ions) {
+
+        // A fully ionized atom has no higher continuum state.
+        if (ion.ionization_stage == atomic_number)
+            ion.continuum_state = nullptr;
+
+        std::cout << "searching for continuum state for ion " << ion.ionization_stage << std::endl;
+        for (auto &next_ion: ions) {
+            if (next_ion.ionization_stage == ion.ionization_stage+1) {
+                for (auto &level: next_ion.levels) {
+                    if (level.energy < std::numeric_limits<double>::epsilon()) {
+                        std::cout << "found continuum state!" << std::endl;
+                        ion.continuum_state = &level;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stage_in)
     : atomic_number(atomic_number_in),
       ionization_stage(ionization_stage_in) {

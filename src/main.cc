@@ -252,6 +252,7 @@ int main(int argc, char *argv[]) {
 
     for (auto &gv: grid) {
         for (auto &atom: gv.atoms) {
+            atom.set_continuum_pointers();
             for (auto &ion: atom.ions) {
                 for (auto &line: ion.lines) {
                     line.set_line_width(gv.temperature);

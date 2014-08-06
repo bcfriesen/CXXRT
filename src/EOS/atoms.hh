@@ -19,6 +19,7 @@ class Ion {
     std::vector<class AtomicLevel> levels;
     std::vector<class AtomicLine> lines;
     AtomicLevel* ground_state;
+    AtomicLevel* continuum_state;
     void read_atomic_data();
 };
 
@@ -30,6 +31,7 @@ class Atom {
     std::string atomic_symbol;
     std::vector<Ion> ions;
     double number_fraction;
+    void set_continuum_pointers();
 };
 
 class AtomicLine {
