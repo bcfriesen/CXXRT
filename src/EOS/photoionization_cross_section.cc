@@ -3,7 +3,8 @@
 #include "photoionization_cross_section.hh"
 
 // This formula is Eq. 1 of Verner et al, The Astrophysical Journal, 465:487-498, 1996 July 1
-double photo_xs(const double sigma_0,
+double photo_xs(const Ion ion,
+                const double sigma_0,
                 const double x,
                 const double y_w,
                 const double y,

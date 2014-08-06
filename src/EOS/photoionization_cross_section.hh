@@ -1,7 +1,10 @@
 #ifndef PHOTOIONIZATION_CROSS_SECTION_HH
 #define PHOTOIONIZATION_CROSS_SECTION_HH
 
-double photo_xs(const double sigma_0,
+#include "atoms.hh"
+
+double photo_xs(const Ion ion,
+                const double sigma_0,
                 const double x,
                 const double y_w,
                 const double y,
