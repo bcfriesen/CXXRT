@@ -3,6 +3,8 @@
 #include <limits>
 
 #include "grid.hh"
+#include "EOS/Phi.hh"
+#include "EOS/LTE_EOS.hh"
 
 bool ray_angle_sort_function(const struct RayIntersectionData rd1, const struct RayIntersectionData rd2) {
     const auto it1 = rd1.ray->raydata.begin() + rd1.intersection_point;
@@ -122,4 +124,20 @@ void GridVoxel::calc_K(const double lambda) {
         result += 0.5 * (std::pow(real_it->mu, 2) * wlp_it->I + std::pow(real_it_next->mu, 2) * wlp_it_next->I) * (real_it_next->mu - real_it->mu);
     }
     grid_wlp->K = 0.5 * result;
+}
+
+
+void GridVoxel::calc_LTE_populations() {
+    for (auto &atom: atoms) {
+        for (auto &ion: atom.ions) {
+            for (auto &level: ion.levels) {
+                if (ion.ionization_stage < ion.atomic_number) {
+                    level.number_density = atom.number_fraction * (n_g - n_e) * n_e * f_ij(atom, *(ion.next_ion), n_e, temperature) * Phi_tilde(level, ion, atom, temperature);
+                } else {
+                    // Treat fully ionized atom specially.
+                    level.number_density = atom.number_fraction * (n_g - n_e) * f_ij(atom, ion, n_e, temperature);
+                }
+            }
+        }
+    }
 }

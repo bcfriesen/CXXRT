@@ -59,6 +59,7 @@ class AtomicLevel {
     unsigned int g;
     double J;
     std::vector<class AtomicLine*> lines;
+    double number_density;
 };
 
 std::ostream& operator<<(std::ostream& os, const Ion& ion);

@@ -291,6 +291,10 @@ int main(int argc, char *argv[]) {
         log_file << std::setw(15) << gv.rho << std::setw(15) << gv.temperature << std::setw(15) << gv.n_e << std::endl;
     }
 
+    for (auto &gv: grid) {
+        gv.calc_LTE_populations();
+    }
+
     moments_file.close();
     log_file.close();
 
