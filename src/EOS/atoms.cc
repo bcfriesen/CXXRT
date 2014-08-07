@@ -213,7 +213,7 @@ void Ion::calc_partition_function(const double temperature) {
     const double beta = 1.0 / (k_boltzmann * temperature);
     double result = 0.0;
     for (auto level: levels) {
-        result += level.g * std::exp(-beta * level.energy);
+        result += double(level.g) * std::exp(-beta * level.energy);
     }
     partition_function = result;
 }
@@ -341,12 +341,12 @@ double Ion::alpha(const double lambda, const AtomicLevel level) const {
 
 
 double AtomicLine::eta(const double lambda) const {
-    return ((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(lambda, 5)) * (lower_level->g / upper_level->g) * alpha(lambda) * upper_level->number_density;
+    return ((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(lambda, 5)) * (double(lower_level->g) / double(upper_level->g)) * alpha(lambda) * upper_level->number_density;
 }
 
 
 double AtomicLine::kappa(const double lambda) const {
-    return alpha(lambda) * lower_level->number_density - alpha(lambda) * (lower_level->g / upper_level->g) * upper_level->number_density;
+    return alpha(lambda) * lower_level->number_density - alpha(lambda) * (double(lower_level->g) / double(upper_level->g)) * upper_level->number_density;
 }
 
 
