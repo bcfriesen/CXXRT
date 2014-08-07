@@ -3,6 +3,6 @@
 
 #include "atoms.hh"
 
-double saha_equation(Atom &atom, const unsigned int lower_ionization_stage, const double n_e, const double temperature);
+double saha_equation(const Atom atom, const Ion lower_ion, const double n_e, const double temperature);
 
 #endif

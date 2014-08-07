@@ -5,7 +5,7 @@
 #include "atoms.hh"
 #include "../constants.hh"
 
-double saha_equation(Atom &atom, const unsigned int lower_ionization_stage, const double n_e, const double temperature) {
+double saha_equation(const Atom atom, const Ion lower_ion, const double n_e, const double temperature) {
     double result = 0.0;
     const double g_e = 2.0;
 
@@ -21,17 +21,17 @@ double saha_equation(Atom &atom, const unsigned int lower_ionization_stage, cons
     // are added or removed.
 
     for (lower_ion_it = atom.ions.begin(); lower_ion_it != atom.ions.end(); ++lower_ion_it) {
-        if (lower_ion_it->ionization_stage == lower_ionization_stage) break;
+        if (lower_ion_it->ionization_stage == lower_ion.ionization_stage) break;
     }
     for (upper_ion_it = atom.ions.begin(); upper_ion_it != atom.ions.end(); ++upper_ion_it) {
-        if (upper_ion_it->ionization_stage == lower_ionization_stage+1) break;
+        if (upper_ion_it->ionization_stage == lower_ion.ionization_stage+1) break;
     }
 
     double lower_partition_function = lower_ion_it->partition_function;
     double upper_partition_function;
 
     // If the upper ionization stage is the fully ionized atom, then it will have no levels so skip looking for the partition function because it's just 1.
-    if (lower_ionization_stage == atom.atomic_number-1) {
+    if (lower_ion.ionization_stage == atom.atomic_number-1) {
         upper_partition_function = 1.0;
     } else {
         upper_partition_function = upper_ion_it->partition_function;
