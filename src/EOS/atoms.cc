@@ -348,3 +348,13 @@ double AtomicLine::eta(const double lambda) const {
 double AtomicLine::kappa(const double lambda) const {
     return alpha(lambda) * lower_level->number_density - alpha(lambda) * (lower_level->g / upper_level->g) * upper_level->number_density;
 }
+
+
+double Ion::eta(const double lambda, const AtomicLevel level, const double n_e, const double temperature) const {
+    return ((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(lambda, 5)) * alpha(lambda, level) * LTE_number_density(*(continuum_state), n_e, temperature) * std::exp(-(h_planck * c_light) / (lambda * k_boltzmann * temperature));
+}
+
+
+double Ion::kappa(const double lambda, const AtomicLevel level, const double n_e, const double temperature) const {
+    return (level.number_density - LTE_number_density(*(continuum_state), n_e, temperature) * std::exp(-(h_planck * c_light) / (lambda * k_boltzmann * temperature))) * alpha(lambda, level);
+}
