@@ -74,7 +74,7 @@ void Ion::read_atomic_data() {
         class AtomicLevel ground_state;
         ground_state.energy = 0.0;
         ground_state.J = 0.0;
-        ground_state.g = 0;
+        ground_state.g = 1;
         levels.push_back(ground_state);
     } else {
         std::ostringstream convert; // for compilers without std::to_string (a C++11 feature)
