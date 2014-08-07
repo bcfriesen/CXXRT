@@ -9,8 +9,9 @@ class RayWavelengthPoint {
 
     double tau; // optical depth
 
-    double chi; // total absorption opacity
+    double chi; // total opacity (absorption + scattering)
     double eta; // total emissivity
+    double kappa; // total absorption opacity
 
     double source_fn; // source function ( = eta / chi )
 
