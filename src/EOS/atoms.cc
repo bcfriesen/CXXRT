@@ -48,6 +48,7 @@ void Atom::set_continuum_pointers() {
 
         for (auto &next_ion: ions) {
             if (next_ion.ionization_stage == ion.ionization_stage+1) {
+                ion.next_ion = &next_ion;
                 for (auto &level: next_ion.levels) {
                     if (level.energy < std::numeric_limits<double>::epsilon()) {
                         ion.continuum_state = &level;

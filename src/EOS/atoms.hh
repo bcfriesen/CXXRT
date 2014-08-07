@@ -20,6 +20,7 @@ class Ion {
     std::vector<class AtomicLine> lines;
     AtomicLevel* ground_state;
     AtomicLevel* continuum_state;
+    Ion* next_ion;
     void read_atomic_data();
     double photo_xs(const double lambda) const;
 };
