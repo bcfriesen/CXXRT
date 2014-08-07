@@ -7,6 +7,7 @@ add_subdirectory (EOS)
 add_subdirectory (lines)
 
 set (CXXRT_SOURCES
+     ALI.cc
      Lambda_iteration.cc
      calc_ALO.cc
      grid.cc
