@@ -51,6 +51,8 @@ class AtomicLine {
     double radiative_rate_absorption(const std::vector<GridWavelengthPoint> wavelength_grid) const;
     double radiative_rate_emission(const std::vector<GridWavelengthPoint> wavelength_grid, const double temperature) const;
     double collisional_rate_absorption(const double n_e, const double temperature) const;
+    double eta(const double lambda) const; // bound-bound emissivity
+    double kappa(const double lambda) const; // bound-bound opacity
 };
 
 class AtomicLevel {

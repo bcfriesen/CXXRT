@@ -328,3 +328,13 @@ double Ion::photo_xs(const double lambda) const {
 
     return (sigma_0 * F_y * 1.0e-18);
 }
+
+
+double AtomicLine::eta(const double lambda) const {
+    return ((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(lambda, 5)) * (lower_level->g / upper_level->g) * alpha(lambda) * upper_level->number_density;
+}
+
+
+double AtomicLine::kappa(const double lambda) const {
+    return alpha(lambda) * lower_level->number_density - alpha(lambda) * (lower_level->g / upper_level->g) * upper_level->number_density;
+}
