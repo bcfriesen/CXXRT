@@ -79,21 +79,6 @@ int main(int argc, char *argv[]) {
 
     initialize_rays();
 
-    moments_file.open(moments_file_name.c_str());
-    moments_file << std::scientific;
-    moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::setw(15) << "B_lam" << std::endl;
-
-    if (config["print_every_iter"].as<bool>()) {
-        for (GridVoxel& gv: grid) {
-            for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-                moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::setw(15) << planck_function(*(wlp.lambda), gv.temperature) << std::endl;
-            }
-        }
-        moments_file << std::endl;
-    }
-
-    do_ALI();
-
     for (auto &gv: grid) {
         gv.temperature = 5778.0;
         // TODO: this works only for hydrogen! fix when adding more elements!!
@@ -107,29 +92,8 @@ int main(int argc, char *argv[]) {
 
     for (auto &gv: grid) {
         for (auto &atom: gv.atoms) {
-            for (auto &ion: atom.ions) {
-                ion.read_atomic_data();
-            }
-        }
-    }
-
-    for (auto &gv: grid) {
-        for (auto &atom: gv.atoms) {
-            atom.set_continuum_pointers();
-            for (auto &ion: atom.ions) {
-                for (auto &line: ion.lines) {
-                    line.set_line_width(gv.temperature);
-                }
-            }
-        }
-    }
-
-    for (auto &gv: grid) {
-        for (auto &atom: gv.atoms) {
+            // TODO: make this variable when we add more than 1 element
             atom.number_fraction = 1.0;
-            for (auto &ion: atom.ions) {
-                ion.calc_partition_function(gv.temperature);
-            }
         }
     }
 
@@ -141,6 +105,57 @@ int main(int argc, char *argv[]) {
         }
         for (auto &atom: gv.atoms) {
             atom.number_fraction /= tmp;
+        }
+    }
+
+    for (auto &gv: grid) {
+        for (auto &atom: gv.atoms) {
+            for (auto &ion: atom.ions) {
+                ion.read_atomic_data();
+            }
+        }
+    }
+
+    for (auto &gv: grid) {
+        for (auto &atom: gv.atoms) {
+            atom.set_continuum_pointers();
+        }
+    }
+
+    moments_file.open(moments_file_name.c_str());
+    moments_file << std::scientific;
+    moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::setw(15) << "B_lam" << std::endl;
+
+    if (config["print_every_iter"].as<bool>()) {
+        for (GridVoxel& gv: grid) {
+            for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
+                moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::setw(15) << planck_function(*(wlp.lambda), gv.temperature) << std::endl;
+            }
+        }
+        moments_file << std::endl;
+    }
+
+
+
+    //---------------------END OF INITIALIZATION---------------------//
+
+    do_ALI();
+
+    for (auto &gv: grid) {
+        for (auto &atom: gv.atoms) {
+            for (auto &ion: atom.ions) {
+                for (auto &line: ion.lines) {
+                    line.set_line_width(gv.temperature);
+                }
+            }
+        }
+    }
+
+    for (auto &gv: grid) {
+        for (auto &atom: gv.atoms) {
+            for (auto &ion: atom.ions) {
+                ion.calc_partition_function(gv.temperature);
+            }
         }
     }
 
