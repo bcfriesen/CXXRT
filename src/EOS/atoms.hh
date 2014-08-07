@@ -25,6 +25,7 @@ class Ion {
     double alpha(const double lambda, const AtomicLevel level) const; // bound-free radiative cross-section
     double eta(const double lambda, const AtomicLevel level, const double n_e, const double temperature) const; // bound-free emissivity (recombination)
     double kappa(const double lambda, const AtomicLevel level, const double n_e, const double temperature) const; // bound-free opacity (photoionization)
+    double LTE_number_density(const AtomicLevel level, const double n_e, const double temperature) const;
 };
 
 class Atom {

@@ -358,3 +358,9 @@ double Ion::eta(const double lambda, const AtomicLevel level, const double n_e, 
 double Ion::kappa(const double lambda, const AtomicLevel level, const double n_e, const double temperature) const {
     return (level.number_density - LTE_number_density(*(continuum_state), n_e, temperature) * std::exp(-(h_planck * c_light) / (lambda * k_boltzmann * temperature))) * alpha(lambda, level);
 }
+
+
+// This is the Menzel (as opposed to Zwaan) definition. See Hauschildt & Baron (2014) or Mihalas (1978).
+double Ion::LTE_number_density(const AtomicLevel level, const double n_e, const double temperature) const {
+    return (double(level.g) / double(continuum_state->g)) * continuum_state->number_density * n_e * ((2.0 * std::pow(h_planck, 3)) / std::pow(2.0 * pi * m_electron * k_boltzmann * temperature, 3.0/2.0)) * std::exp((ionization_potential - level.energy) / (k_boltzmann * temperature));
+}
