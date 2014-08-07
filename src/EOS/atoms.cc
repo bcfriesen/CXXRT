@@ -226,17 +226,17 @@ std::ostream& operator<<(std::ostream& os, const Ion& ion) {
 }
 
 
-double AtomicLine::Einstein_B() {
+double AtomicLine::Einstein_B() const {
     return (4.0 * std::pow(pi, 2) * std::pow(e_charge, 2) * wavelength) / (h_planck * m_electron * std::pow(c_light, 2)) * oscillator_strength;
 }
 
 
-double AtomicLine::Einstein_A() {
+double AtomicLine::Einstein_A() const {
     return ((2.0 * h_planck * c_light) / std::pow(wavelength, 3)) * Einstein_B();
 }
 
 
-double AtomicLine::alpha(const double lambda) {
+double AtomicLine::alpha(const double lambda) const {
     return ((h_planck * c_light) / (4.0 * pi)) * (wavelength / c_light) * Einstein_B() * line_profile(lambda, wavelength, Delta_lambda);
 }
 
@@ -247,7 +247,7 @@ void AtomicLine::set_line_width(const double temperature) {
 }
 
 
-double AtomicLine::radiative_rate_absorption(const std::vector<GridWavelengthPoint> wavelength_grid) {
+double AtomicLine::radiative_rate_absorption(const std::vector<GridWavelengthPoint> wavelength_grid) const {
     double result = 0.0;
     for (auto it = wavelength_grid.begin(); it != wavelength_grid.end()-1; ++it) {
         auto it_next = it;
@@ -259,7 +259,7 @@ double AtomicLine::radiative_rate_absorption(const std::vector<GridWavelengthPoi
 }
 
 
-double AtomicLine::radiative_rate_emission(const std::vector<GridWavelengthPoint> wavelength_grid, const double temperature) {
+double AtomicLine::radiative_rate_emission(const std::vector<GridWavelengthPoint> wavelength_grid, const double temperature) const {
     double result = 0.0;
     for (auto it = wavelength_grid.begin(); it != wavelength_grid.end()-1; ++it) {
         auto it_next = it;
@@ -275,7 +275,7 @@ double AtomicLine::radiative_rate_emission(const std::vector<GridWavelengthPoint
 
 
 // TODO: allow user to choose other rates besides this (the Van Regemorter (1962) rate)
-double AtomicLine::collisional_rate_absorption(const double n_e, const double temperature) {
+double AtomicLine::collisional_rate_absorption(const double n_e, const double temperature) const {
     double result = 0.0;
     const double y = (upper_level->energy - lower_level->energy) / (k_boltzmann * temperature); // defined in van Regemorter (1962)
     const double P_y = (3.0 * std::sqrt(3)) / (2.0 * pi) * (1.0 - y * std::exp(y) * gsl_sf_expint_E1(y));; // the integral in Eq 18 of van Regemorter (1962)

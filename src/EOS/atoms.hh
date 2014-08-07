@@ -42,15 +42,15 @@ class AtomicLine {
     double oscillator_strength;
     class AtomicLevel* lower_level;
     class AtomicLevel* upper_level;
-    double Einstein_A();
-    double Einstein_B();
+    double Einstein_A() const;
+    double Einstein_B() const;
     double Delta_lambda; // Intrinsic line width.
     double (*line_profile) (const double lambda, const double lambda_0, const double Delta_lambda); // Function pointer to normalized line profile, e.g., Gaussian, Lorentzian, etc.
-    double alpha(const double lambda); // Radiative cross-section. We assume complete redistribution so there is no need to distinguish between alpha_{i->j} and alpha_{j->i}.
+    double alpha(const double lambda) const; // Radiative cross-section. We assume complete redistribution so there is no need to distinguish between alpha_{i->j} and alpha_{j->i}.
     void set_line_width(const double temperature);
-    double radiative_rate_absorption(const std::vector<GridWavelengthPoint> wavelength_grid);
-    double radiative_rate_emission(const std::vector<GridWavelengthPoint> wavelength_grid, const double temperature);
-    double collisional_rate_absorption(const double n_e, const double temperature);
+    double radiative_rate_absorption(const std::vector<GridWavelengthPoint> wavelength_grid) const;
+    double radiative_rate_emission(const std::vector<GridWavelengthPoint> wavelength_grid, const double temperature) const;
+    double collisional_rate_absorption(const double n_e, const double temperature) const;
 };
 
 class AtomicLevel {
