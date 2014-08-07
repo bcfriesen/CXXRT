@@ -287,46 +287,53 @@ double AtomicLine::collisional_rate_absorption(const double n_e, const double te
 }
 
 
-double Ion::photo_xs(const double lambda) const {
+double Ion::photo_xs(const double lambda, const AtomicLevel level) const {
 
     if (ionization_stage == atomic_number) {
         std::cerr << "ERROR: A fully ionized atom has no photoionization cross-section ..." << std::endl;
         exit(1);
     }
 
-    // Convert photon from wavelength in cm to energy in eV
-    const double E = (h_planck * c_light / lambda) / ev2erg;
+    double result = 0.0;
 
-    // Fitting parameters from Verner et al.
-    double sigma_0;
-    double E_0;
-    double y_w;
-    double y_a;
-    double P;
-    double y_0;
-    double y_1;
+    // Ground state cross-sections have semi-analytic formulae from Verner et al. (1996).
+    if (level.energy < std::numeric_limits<double>::epsilon()) {
+        // Convert photon from wavelength in cm to energy in eV
+        const double E = (h_planck * c_light / lambda) / ev2erg;
 
-    switch (atomic_number) {
-    case 1:
-        switch (ionization_stage) {
-        case 0:
-            sigma_0 = 5.475e+4;
-            E_0     = 4.298e-1;
-            y_w     = 0.0e+0;
-            y_a     = 3.288e+1;
-            P       = 2.963e+0;
-            y_0     = 0.0e+0;
-            y_1     = 0.0e+0;
+        // Fitting parameters from Verner et al.
+        double sigma_0;
+        double E_0;
+        double y_w;
+        double y_a;
+        double P;
+        double y_0;
+        double y_1;
 
+        switch (atomic_number) {
+        case 1:
+            switch (ionization_stage) {
+            case 0:
+                sigma_0 = 5.475e+4;
+                E_0     = 4.298e-1;
+                y_w     = 0.0e+0;
+                y_a     = 3.288e+1;
+                P       = 2.963e+0;
+                y_0     = 0.0e+0;
+                y_1     = 0.0e+0;
+
+            }
         }
+
+        const double x = (E / E_0) - y_0;
+        const double y = std::sqrt(std::pow(x, 2) + std::pow(y_1, 2));
+
+        const double F_y = (std::pow(x - 1.0, 2) + std::pow(y_w, 2)) * std::pow(y, 0.5 * P - 5.5) * std::pow(1.0 + std::sqrt(y / y_a), -P);
+
+        result = sigma_0 * F_y * 1.0e-18;
     }
 
-    const double x = (E / E_0) - y_0;
-    const double y = std::sqrt(std::pow(x, 2) + std::pow(y_1, 2));
-
-    const double F_y = (std::pow(x - 1.0, 2) + std::pow(y_w, 2)) * std::pow(y, 0.5 * P - 5.5) * std::pow(1.0 + std::sqrt(y / y_a), -P);
-
-    return (sigma_0 * F_y * 1.0e-18);
+    return result;
 }
 
 
