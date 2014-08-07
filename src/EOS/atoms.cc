@@ -331,6 +331,9 @@ double Ion::alpha(const double lambda, const AtomicLevel level) const {
         const double F_y = (std::pow(x - 1.0, 2) + std::pow(y_w, 2)) * std::pow(y, 0.5 * P - 5.5) * std::pow(1.0 + std::sqrt(y / y_a), -P);
 
         result = sigma_0 * F_y * 1.0e-18;
+    } else {
+        // TODO: fill in radiative bound-free cross-sections for excited states!
+        result = 0.0;
     }
 
     return result;
