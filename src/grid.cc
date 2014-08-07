@@ -141,3 +141,32 @@ void GridVoxel::calc_LTE_populations() {
         }
     }
 }
+
+
+void GridVoxel::calculate_emissivity_and_opacity(const double lambda) {
+    double eta_tot = 0.0;
+    double kappa_tot = 0.0;
+    for (auto &atom: atoms) {
+        for (auto &ion: atom.ions) {
+            for (auto &line: ion.lines) {
+                eta_tot += line.eta(lambda);
+                kappa_tot += line.kappa(lambda);
+            }
+        }
+    }
+
+    // Since we don't treat anisotropic sources or sinks, all intersecting rays at this voxel get the same value for eta and kappa.
+    for (auto rid_it = ray_intersection_data.begin(); rid_it != ray_intersection_data.end()-1; ++rid_it) {
+        const auto ray_it = rid_it->ray->raydata.begin() + rid_it->intersection_point;
+
+        // Find the requested wavelength point on the rays.
+        // TODO: make this faster than a crude linear search.
+        std::vector<RayWavelengthPoint>::iterator wlp_it;
+        for (wlp_it = ray_it->wavelength_grid.begin(); wlp_it != ray_it->wavelength_grid.end(); ++wlp_it) {
+            if (std::abs(*(wlp_it->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                break;
+        }
+        wlp_it->eta = eta_tot;
+        wlp_it->kappa = kappa_tot;
+    }
+}
