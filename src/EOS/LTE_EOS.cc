@@ -5,8 +5,11 @@
 #include "saha_equation.hh"
 #include "atoms.hh"
 #include "../grid.hh"
+#include "Phi.hh"
 
-double f_ij (Atom atom, const double n_e, const double temperature) {
+// The fraction of species k in ionization stage j relative to the total number
+// of atoms of that species. (See Mihalas p 114). This is Mihalas Eq (5-17).
+double f_ij (const Atom atom, const Ion ion, const double n_e, const double temperature) {
     double numerator = 1.0;
     for (auto ion_it: atom.ions) {
         // If the requested j+1'th ionization stage is more than fully ionized,
@@ -15,21 +18,21 @@ double f_ij (Atom atom, const double n_e, const double temperature) {
         // the fully-ionized atom.
         if (ion_it.ionization_stage+1 > atom.atomic_number) {
             continue;
-        } else {
-            numerator *= saha_equation(atom, ion_it.ionization_stage, n_e, temperature);
+        } else if (ion_it.ionization_stage >= ion.ionization_stage) {
+            numerator *= (n_e * Phi_tilde(ion_it, atom, temperature));
         }
     }
 
     double denominator = 0.0;
-    for (unsigned int i = 0; i < atom.ions.size()-1; ++i) {
+    for (auto ion_it: atom.ions) {
         double tmp = 1.0;
-        for (unsigned int j = 0; j <= i; ++j) {
-            tmp *= saha_equation(atom, j, n_e, temperature);
+        for (auto ion_it2: atom.ions) {
+            if (ion_it2.ionization_stage >= ion_it.ionization_stage && ion_it2.ionization_stage < ion.atomic_number) {
+                tmp *= (n_e * Phi_tilde(ion_it2, atom, temperature));
+            }
         }
         denominator += tmp;
     }
-    denominator += 1.0;
-
     return (numerator/denominator);
 }
 
@@ -39,7 +42,7 @@ double RHS(GridVoxel &gv) {
     for (auto atom: gv.atoms) {
         double tmp = 0.0;
         for (auto ion: atom.ions) {
-            tmp += ion.ionization_stage * f_ij(atom, gv.n_e, gv.temperature);
+            tmp += ion.ionization_stage * f_ij(atom, ion, gv.n_e, gv.temperature);
         }
         tmp *= atom.number_fraction;
         result += tmp;
