@@ -14,6 +14,7 @@
 #include "globals.hh"
 #include "constants.hh"
 #include "planck_function.hh"
+#include "initialize_rays.hh"
 
 
 std::vector<class GridVoxel> grid;
@@ -35,7 +36,6 @@ int main(int argc, char *argv[]) {
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
     const double log10_rho_min = config["log10_rho_min"].as<double>();
     const double log10_rho_max = config["log10_rho_max"].as<double>();
-    const double epsilon = config["epsilon"].as<double>();
 
     double log10_rho = log10_rho_min;
     const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(n_depth_pts-1);
@@ -77,53 +77,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << std::scientific;
 
-    const int n_mu_pts = config["n_mu_pts"].as<int>();
-    rays.resize(n_mu_pts);
-    const double mu_min = -1.0;
-    const double mu_max = +1.0;
-    double mu = mu_min;
-    for (Ray& r: rays) {
-        if (std::fabs(mu) < std::numeric_limits<double>::epsilon()) {
-            std::cerr << "ERROR: mu too close to zero! : " << mu << std::endl;
-            exit(1);
-        }
-        r.bind_to_grid(mu);
-        for (RayData& rd: r.raydata) {
-            for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
-                rwlp.epsilon = epsilon;
-            }
-        }
-        mu += (mu_max - mu_min) / double(rays.size()-1);
-
-        for (RayData& rd: r.raydata) {
-            for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
-                rwlp.calc_chi(rd.gridvoxel->rho, *(rwlp.lambda));
-            }
-        }
-
-        for (auto wlv: wavelength_values) {
-            r.calc_tau(wlv);
-            r.calc_SC_coeffs(wlv);
-        }
-
-        for (RayData& rd: r.raydata) {
-            for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
-                rwlp.set_to_LTE(rd.gridvoxel->temperature);
-            }
-        }
-
-        for (auto wlv: wavelength_values) {
-            r.formal_soln(wlv);
-        }
-    }
-
-    for (GridVoxel& gv: grid) {
-        for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-            gv.calc_J(*(wlp.lambda));
-            gv.calc_H(*(wlp.lambda));
-            gv.calc_K(*(wlp.lambda));
-        }
-    }
+    initialize_rays();
 
     moments_file.open(moments_file_name.c_str());
     moments_file << std::scientific;

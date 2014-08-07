@@ -11,6 +11,7 @@ set (CXXRT_SOURCES
      Lambda_iteration.cc
      calc_ALO.cc
      grid.cc
+     initialize_rays.cc
      main.cc
      planck_function.cc
      ray.cc
