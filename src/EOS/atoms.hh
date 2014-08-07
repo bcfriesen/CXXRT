@@ -22,7 +22,7 @@ class Ion {
     AtomicLevel* continuum_state;
     Ion* next_ion;
     void read_atomic_data();
-    double photo_xs(const double lambda, const AtomicLevel level) const; // bound-free radiative cross-section
+    double alpha(const double lambda, const AtomicLevel level) const; // bound-free radiative cross-section
 };
 
 class Atom {
@@ -62,6 +62,8 @@ class AtomicLevel {
     double J;
     std::vector<class AtomicLine*> lines;
     double number_density;
+    double eta(const double lambda) const; // bound-free emissivity (recombination)
+    double kappa(const double lambda) const; // bound-free opacity (photoionization)
 };
 
 std::ostream& operator<<(std::ostream& os, const Ion& ion);

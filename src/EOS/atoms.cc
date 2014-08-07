@@ -287,7 +287,7 @@ double AtomicLine::collisional_rate_absorption(const double n_e, const double te
 }
 
 
-double Ion::photo_xs(const double lambda, const AtomicLevel level) const {
+double Ion::alpha(const double lambda, const AtomicLevel level) const {
 
     if (ionization_stage == atomic_number) {
         std::cerr << "ERROR: A fully ionized atom has no photoionization cross-section ..." << std::endl;
