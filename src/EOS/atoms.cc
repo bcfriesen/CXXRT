@@ -63,7 +63,7 @@ void Atom::set_continuum_pointers() {
 Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stage_in)
     : atomic_number(atomic_number_in),
       ionization_stage(ionization_stage_in) {
-      }
+}
 
 
 void Ion::read_atomic_data() {
@@ -264,8 +264,8 @@ double AtomicLine::radiative_rate_emission(const std::vector<GridWavelengthPoint
         auto it_next = it;
         std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
         double f1, f2;
-        f1 = alpha(*(it->lambda)) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(*(it->lambda), 5)) + it->J) * std::exp(-(h_planck * c_light) / (k_boltzmann * *(it->lambda) * temperature));
-        f2 = alpha(*(it_next->lambda)) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(*(it_next->lambda), 5)) + it_next->J) * std::exp(-(h_planck * c_light) / (k_boltzmann * *(it_next->lambda) * temperature));
+        f1 = alpha(*(it->lambda)) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(*(it->lambda), 5)) + it->J) * std::exp(-(h_planck * c_light) / (k_boltzmann **(it->lambda) * temperature));
+        f2 = alpha(*(it_next->lambda)) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(*(it_next->lambda), 5)) + it_next->J) * std::exp(-(h_planck * c_light) / (k_boltzmann **(it_next->lambda) * temperature));
         result += 0.5 * (*(it_next->lambda) - *(it->lambda)) * (f1 + f2);
     }
     result *= (4.0 * pi) / (h_planck * c_light);
@@ -306,18 +306,18 @@ double Ion::photo_xs(const double lambda) const {
     double y_1;
 
     switch (atomic_number) {
-        case 1:
-            switch (ionization_stage) {
-                case 0:
-                    sigma_0 = 5.475e+4;
-                    E_0     = 4.298e-1;
-                    y_w     = 0.0e+0;
-                    y_a     = 3.288e+1;
-                    P       = 2.963e+0;
-                    y_0     = 0.0e+0;
-                    y_1     = 0.0e+0;
+    case 1:
+        switch (ionization_stage) {
+        case 0:
+            sigma_0 = 5.475e+4;
+            E_0     = 4.298e-1;
+            y_w     = 0.0e+0;
+            y_a     = 3.288e+1;
+            P       = 2.963e+0;
+            y_0     = 0.0e+0;
+            y_1     = 0.0e+0;
 
-            }
+        }
     }
 
     const double x = (E / E_0) - y_0;
