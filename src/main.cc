@@ -174,6 +174,15 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    for (auto &r: rays) {
+        for (auto wlv: wavelength_values) {
+            r.calc_tau(wlv);
+            r.calc_SC_coeffs(wlv);
+        }
+    }
+
+    do_ALI();
+
     moments_file.close();
     log_file.close();
 
