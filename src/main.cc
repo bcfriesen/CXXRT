@@ -169,6 +169,9 @@ int main(int argc, char *argv[]) {
 
     for (auto &gv: grid) {
         gv.calc_LTE_populations();
+        for (auto wlp: gv.wavelength_grid) {
+            gv.calculate_emissivity_and_opacity(*(wlp.lambda));
+        }
     }
 
     moments_file.close();
