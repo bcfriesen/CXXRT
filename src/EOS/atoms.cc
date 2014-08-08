@@ -297,7 +297,7 @@ double Ion::alpha(const double lambda, const AtomicLevel level) const {
     double result = 0.0;
 
     // Ground state cross-sections have semi-analytic formulae from Verner et al. (1996).
-    if (level.energy < std::numeric_limits<double>::epsilon()) {
+    if (level.energy < std::numeric_limits<double>::epsilon() && (lambda * h_planck * c_light > ionization_potential - level.energy)) {
         // Convert photon from wavelength in cm to energy in eV
         const double E = (h_planck * c_light / lambda) / ev2erg;
 
