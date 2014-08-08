@@ -20,4 +20,6 @@ log_file: main.log
 
 print_every_iter: false
 
+spectrum_file: spectrum.dat
+
 atomic_data_root_folder: /home/brian/CXXRT_atomic_data
