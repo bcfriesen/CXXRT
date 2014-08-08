@@ -47,10 +47,8 @@ double RHS(GridVoxel &gv) {
         tmp *= atom.number_fraction;
         result += tmp;
     }
-    result = 1.0 / result;
-    result = result + 1.0;
-    result = result * gv.n_e;
-    result = result - gv.n_g;
+    result *= (gv.n_g - gv.n_e);
+    result = gv.n_e - result;
 
     return result;
 }
