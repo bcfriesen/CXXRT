@@ -192,10 +192,11 @@ int main(int argc, char *argv[]) {
     for (auto gv: grid) {
         if (std::abs(gv.z - radius_max) < std::numeric_limits<double>::epsilon()) {
             for (auto gwlp: gv.wavelength_grid) {
-                spectrum_file << *(gwlp.lambda) << " " << gwlp.H << std::endl;
+                spectrum_file << *(gwlp.lambda) << " " << 4.0 * pi * gwlp.H << std::endl;
             }
         }
     }
+
 
     spectrum_file.close();
     moments_file.close();
