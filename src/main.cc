@@ -80,7 +80,6 @@ int main(int argc, char *argv[]) {
     initialize_rays();
 
     for (auto &gv: grid) {
-        gv.temperature = 5778.0;
         // TODO: this works only for hydrogen! fix when adding more elements!!
         gv.n_g = gv.rho / H_mass;
     }
