@@ -171,5 +171,18 @@ void GridVoxel::calculate_emissivity_and_opacity(const double lambda) {
         wlp_it->kappa = kappa_tot;
         wlp_it->sigma = n_e * sigma_T;
         wlp_it->chi = wlp_it->kappa + wlp_it->sigma;
+
+        // Find the requested wavelength point on the grid voxel.
+        // TODO: make this faster than a crude linear search.
+        std::vector<GridWavelengthPoint>::iterator grid_wlp;
+        for (grid_wlp = wavelength_grid.begin(); grid_wlp != wavelength_grid.end(); ++grid_wlp) {
+            if (std::abs(*(grid_wlp->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                break;
+        }
+        // In general the thermalization parameter is a ray-dependent quantity
+        // since it depends on kappa (which is ray-dependent). However in the
+        // equivalent-two-level-atom formalism it is ray-independent, so just
+        // set the grid scalar value to the ray value.
+        grid_wlp->epsilon = wlp_it->kappa / (wlp_it->kappa + wlp_it->sigma);
     }
 }

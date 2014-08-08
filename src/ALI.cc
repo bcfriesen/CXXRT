@@ -14,7 +14,6 @@ void do_ALI() {
 
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
     const unsigned int max_iter = config["max_iter"].as<int>();
-    const double epsilon = config["epsilon"].as<double>();
 
     for (double wlv: wavelength_values) {
         Eigen::MatrixXd Lambda_star = calc_ALO(wlv);
@@ -33,6 +32,7 @@ void do_ALI() {
             J_old(i) = grid_wlp->J;
         }
         Eigen::VectorXd rhs;
+        Eigen::VectorXd epsilon(n_depth_pts);
 
         log_file << "Beginning ALI ..." << std::endl;
         for (unsigned int i = 0; i < max_iter; ++i) {
@@ -56,14 +56,19 @@ void do_ALI() {
                         break;
                 }
                 J_fs(j) = grid_wlp->J;
+                epsilon(j) = grid_wlp->epsilon;
             }
-            rhs = J_fs - (1.0 - epsilon)*Lambda_star*J_old;
+            rhs = Lambda_star*J_old;
+            for (unsigned int j = 0; j < n_depth_pts; ++j) {
+                rhs(j) *= (1.0 - epsilon(j));
+            }
+            rhs = J_fs - rhs;
 
             std::vector< Eigen::Triplet<double> > tripletList;
             tripletList.reserve(n_depth_pts);
 
             for (unsigned int k = 0; k < n_depth_pts; ++k) {
-                tripletList.push_back(Eigen::Triplet<double> (k, k, 1.0 - (1.0 - epsilon)*(Lambda_star(k, k))));
+                tripletList.push_back(Eigen::Triplet<double> (k, k, 1.0 - (1.0 - epsilon(k))*(Lambda_star(k, k))));
             }
             Eigen::SparseMatrix<double> mtx(n_depth_pts, n_depth_pts);
             mtx.setFromTriplets(tripletList.begin(), tripletList.end());

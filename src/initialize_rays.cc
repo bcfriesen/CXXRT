@@ -50,6 +50,19 @@ void initialize_rays() {
             gv.calc_J(*(wlp.lambda));
             gv.calc_H(*(wlp.lambda));
             gv.calc_K(*(wlp.lambda));
+
+            // In the absence of anisotropic sources/sinks, the thermalization
+            // parameter epsilon will be the same for every ray at their
+            // respective points where they intersect this voxel. So just use
+            // the first one to set the value of epsilon for the grid.
+            auto rip = gv.ray_intersection_data.at(0).ray->raydata.begin() + gv.ray_intersection_data.at(0).intersection_point;
+            // Find the requested wavelength point on the rays.
+            std::vector<RayWavelengthPoint>::const_iterator wlp_it;
+            for (wlp_it = rip->wavelength_grid.begin(); wlp_it != rip->wavelength_grid.begin(); ++wlp_it) {
+                if (std::abs(*(wlp_it->lambda) - *(wlp.lambda)) < std::numeric_limits<double>::epsilon())
+                    break;
+            }
+            wlp.epsilon = wlp_it->epsilon;
         }
     }
 }
