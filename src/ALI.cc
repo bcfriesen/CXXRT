@@ -88,6 +88,7 @@ void do_ALI() {
                 }
             }
 
+            const double max_tol = 1.0e-8;
             double rmsd = calc_rmsd(J_old, J_new);
             log_file << "RMSD of relative change in J: " << rmsd << std::endl;
             J_old = J_new;
@@ -101,6 +102,8 @@ void do_ALI() {
                 }
                 grid_wlp->J = J_old(j);
             }
+            if (rmsd < max_tol)
+                break;
 
             if (config["print_every_iter"].as<bool>()) {
                 for (GridVoxel& gv: grid) {
