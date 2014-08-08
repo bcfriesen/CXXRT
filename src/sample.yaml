@@ -1,6 +1,6 @@
 n_depth_pts:  20
 n_mu_pts: 20
-n_wavelength_pts: 20
+n_wavelength_pts: 200
 
 epsilon: 1.0e-4
 
