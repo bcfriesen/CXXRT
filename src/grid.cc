@@ -3,6 +3,7 @@
 #include <limits>
 
 #include "grid.hh"
+#include "constants.hh"
 #include "EOS/Phi.hh"
 #include "EOS/LTE_EOS.hh"
 
@@ -168,5 +169,7 @@ void GridVoxel::calculate_emissivity_and_opacity(const double lambda) {
         }
         wlp_it->eta = eta_tot;
         wlp_it->kappa = kappa_tot;
+        wlp_it->sigma = n_e * sigma_T;
+        wlp_it->chi = wlp_it->kappa + wlp_it->sigma;
     }
 }

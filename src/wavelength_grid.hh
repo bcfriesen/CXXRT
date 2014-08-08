@@ -12,6 +12,7 @@ class RayWavelengthPoint {
     double chi; // total opacity (absorption + scattering)
     double eta; // total emissivity
     double kappa; // total absorption opacity
+    double sigma; // scattering opacity (independent of wavelength if we use only Thomson scattering)
 
     double source_fn; // source function ( = eta / chi )
 
