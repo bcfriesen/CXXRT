@@ -156,7 +156,7 @@ void GridVoxel::calculate_emissivity_and_opacity(const double lambda) {
     }
 
     // Since we don't treat anisotropic sources or sinks, all intersecting rays at this voxel get the same value for eta and kappa.
-    for (auto rid_it = ray_intersection_data.begin(); rid_it != ray_intersection_data.end()-1; ++rid_it) {
+    for (auto rid_it = ray_intersection_data.begin(); rid_it != ray_intersection_data.end(); ++rid_it) {
         const auto ray_it = rid_it->ray->raydata.begin() + rid_it->intersection_point;
 
         // Find the requested wavelength point on the rays.
