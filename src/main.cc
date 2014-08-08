@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
 
     for (GridVoxel& gv: grid) {
         gv.rho = std::pow(10.0, log10_rho);
-        gv.temperature = 5778.0;
+        gv.temperature = config["blackbody_temperature"].as<double>();
         log10_rho += log10_delta_rho;
         for (double &wlv: wavelength_values) {
             GridWavelengthPoint gwlp_tmp;
