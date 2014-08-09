@@ -20,6 +20,10 @@ Atom::Atom(const unsigned int atomic_number_in)
     std::ifstream atomic_data_file;
     std::string one_line;
     atomic_data_file.open(atomic_data_file_name.c_str()); // in C++11 the argument of open() can be a string
+    if (!atomic_data_file.good()) {
+        std::cerr << "ERROR: could not open atomic data file for reading!: " << atomic_data_file_name << std::endl;
+        exit(1);
+    }
     unsigned int atomic_number_from_file;
     while (std::getline(atomic_data_file, one_line)) {
         std::istringstream iss(one_line);
