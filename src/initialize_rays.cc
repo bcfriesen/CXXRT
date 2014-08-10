@@ -29,9 +29,9 @@ void initialize_rays() {
             }
         }
 
-        for (auto wlv: wavelength_values) {
-            r.calc_tau(wlv);
-            r.calc_SC_coeffs(wlv);
+        for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+            r.calc_tau(*wlv);
+            r.calc_SC_coeffs(*wlv);
         }
 
         for (RayData& rd: r.raydata) {
@@ -40,8 +40,8 @@ void initialize_rays() {
             }
         }
 
-        for (auto wlv: wavelength_values) {
-            r.formal_soln(wlv);
+        for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+            r.formal_soln(*wlv);
         }
     }
 

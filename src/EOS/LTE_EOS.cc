@@ -11,24 +11,24 @@
 // of atoms of that species. (See Mihalas p 114). This is Mihalas Eq (5-17).
 double f_ij (const Atom atom, const Ion ion, const double n_e, const double temperature) {
     double numerator = 1.0;
-    for (auto ion_it: atom.ions) {
+    for (auto ion_it = atom.ions.begin(); ion_it != atom.ions.end(); ++ion_it) {
         // If the requested j+1'th ionization stage is more than fully ionized,
         // then skip it. This case should happen only once: when trying to
         // calculate the Saha equation where the lower ionization stage j is
         // the fully-ionized atom.
-        if (ion_it.ionization_stage+1 > atom.atomic_number) {
+        if (ion_it->ionization_stage+1 > atom.atomic_number) {
             continue;
-        } else if (ion_it.ionization_stage >= ion.ionization_stage) {
-            numerator *= (n_e * Phi_tilde(ion_it, atom, temperature));
+        } else if (ion_it->ionization_stage >= ion.ionization_stage) {
+            numerator *= (n_e * Phi_tilde(*ion_it, atom, temperature));
         }
     }
 
     double denominator = 0.0;
-    for (auto ion_it: atom.ions) {
+    for (auto ion_it = atom.ions.begin(); ion_it != atom.ions.end(); ++ion_it) {
         double tmp = 1.0;
-        for (auto ion_it2: atom.ions) {
-            if (ion_it2.ionization_stage >= ion_it.ionization_stage && ion_it2.ionization_stage < ion.atomic_number) {
-                tmp *= (n_e * Phi_tilde(ion_it2, atom, temperature));
+        for (auto ion_it2 = atom.ions.begin(); ion_it2 != atom.ions.end(); ++ion_it2) {
+            if (ion_it2->ionization_stage >= ion_it->ionization_stage && ion_it2->ionization_stage < ion.atomic_number) {
+                tmp *= (n_e * Phi_tilde(*ion_it2, atom, temperature));
             }
         }
         denominator += tmp;
@@ -39,12 +39,12 @@ double f_ij (const Atom atom, const Ion ion, const double n_e, const double temp
 
 double RHS(GridVoxel &gv) {
     double result = 0.0;
-    for (auto atom: gv.atoms) {
+    for (auto atom = gv.atoms.begin(); atom != gv.atoms.end(); ++atom) {
         double tmp = 0.0;
-        for (auto ion: atom.ions) {
-            tmp += ion.ionization_stage * f_ij(atom, ion, gv.n_e, gv.temperature);
+        for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+            tmp += ion->ionization_stage * f_ij(*atom, *ion, gv.n_e, gv.temperature);
         }
-        tmp *= atom.number_fraction;
+        tmp *= atom->number_fraction;
         result += tmp;
     }
     result *= (gv.n_g - gv.n_e);

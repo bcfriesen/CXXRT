@@ -129,14 +129,14 @@ void GridVoxel::calc_K(const double lambda) {
 
 
 void GridVoxel::calc_LTE_populations() {
-    for (auto &atom: atoms) {
-        for (auto &ion: atom.ions) {
-            for (auto &level: ion.levels) {
-                if (ion.ionization_stage < ion.atomic_number) {
-                    level.number_density = atom.number_fraction * (n_g - n_e) * n_e * f_ij(atom, *(ion.next_ion), n_e, temperature) * Phi_tilde(level, ion, atom, temperature);
+    for (auto atom = atoms.begin(); atom != atoms.end(); ++atom) {
+        for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+            for (auto level = ion->levels.begin(); level != ion->levels.end(); ++level) {
+                if (ion->ionization_stage < ion->atomic_number) {
+                    level->number_density = atom->number_fraction * (n_g - n_e) * n_e * f_ij(*atom, *(ion->next_ion), n_e, temperature) * Phi_tilde(*level, *ion, *atom, temperature);
                 } else {
                     // Treat fully ionized atom specially.
-                    level.number_density = atom.number_fraction * (n_g - n_e) * f_ij(atom, ion, n_e, temperature);
+                    level->number_density = atom->number_fraction * (n_g - n_e) * f_ij(*atom, *ion, n_e, temperature);
                 }
             }
         }
@@ -147,11 +147,11 @@ void GridVoxel::calc_LTE_populations() {
 void GridVoxel::calculate_emissivity_and_opacity(const double lambda) {
     double eta_tot = 0.0;
     double kappa_tot = 0.0;
-    for (auto &atom: atoms) {
-        for (auto &ion: atom.ions) {
-            for (auto &line: ion.lines) {
-                eta_tot += line.eta(lambda);
-                kappa_tot += line.kappa(lambda);
+    for (auto atom = atoms.begin(); atom != atoms.end(); ++atom) {
+        for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+            for (auto line = ion->lines.begin(); line != ion->lines.end(); ++line) {
+                eta_tot += line->eta(lambda);
+                kappa_tot += line->kappa(lambda);
             }
         }
     }

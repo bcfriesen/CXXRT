@@ -64,9 +64,9 @@ std::ostream& operator<<(std::ostream& os, const Ray& r) {
 RayData::RayData() {
     gridvoxel = nullptr;
 
-    for (auto &wlv: wavelength_values) {
+    for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
         RayWavelengthPoint wlp_tmp;
-        wlp_tmp.lambda = &wlv;
+        wlp_tmp.lambda = &(*wlv);
         wavelength_grid.push_back(wlp_tmp);
     }
 

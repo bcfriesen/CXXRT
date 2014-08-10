@@ -44,18 +44,18 @@ Atom::Atom(const unsigned int atomic_number_in)
 // of the next ionization stage (as opposed to promotion from the bound state
 // to an excited state of the next ionization stage).
 void Atom::set_continuum_pointers() {
-    for (auto &ion: ions) {
+    for (auto ion = ions.begin(); ion != ions.end(); ++ion) {
 
         // A fully ionized atom has no higher continuum state.
-        if (ion.ionization_stage == atomic_number)
-            ion.continuum_state = nullptr;
+        if (ion->ionization_stage == atomic_number)
+            ion->continuum_state = nullptr;
 
-        for (auto &next_ion: ions) {
-            if (next_ion.ionization_stage == ion.ionization_stage+1) {
-                ion.next_ion = &next_ion;
-                for (auto &level: next_ion.levels) {
-                    if (level.energy < std::numeric_limits<double>::epsilon()) {
-                        ion.continuum_state = &level;
+        for (auto next_ion = ions.begin(); next_ion != ions.end(); ++next_ion) {
+            if (next_ion->ionization_stage == ion->ionization_stage+1) {
+                ion->next_ion = &(*next_ion);
+                for (auto level = next_ion->levels.begin(); level != next_ion->levels.end(); ++level) {
+                    if (level->energy < std::numeric_limits<double>::epsilon()) {
+                        ion->continuum_state = &(*level);
                         break;
                     }
                 }
@@ -115,12 +115,12 @@ void Ion::read_atomic_data() {
             // two levels are similar to within some tolerance, they are defined as
             // duplicates.
 
-            for (auto level: levels) {
+            for (auto level = levels.begin(); level != levels.end(); ++level) {
                 double difference;
-                if (level.energy < std::numeric_limits<double>::epsilon()) {
-                    difference = std::abs(lower_level.energy - level.energy);
+                if (level->energy < std::numeric_limits<double>::epsilon()) {
+                    difference = std::abs(lower_level.energy - level->energy);
                 } else {
-                    difference = std::abs(lower_level.energy - level.energy) / level.energy;
+                    difference = std::abs(lower_level.energy - level->energy) / level->energy;
                 }
                 if (difference > tolerance) {
                     duplicate = false;
@@ -133,8 +133,8 @@ void Ion::read_atomic_data() {
                 levels.push_back(lower_level);
             }
             // Now add the upper level if necessary.
-            for (auto level: levels) {
-                const double difference = std::abs(upper_level.energy - level.energy) / level.energy;
+            for (auto level = levels.begin(); level != levels.end(); ++level) {
+                const double difference = std::abs(upper_level.energy - level->energy) / level->energy;
                 if (difference > tolerance) {
                     duplicate = false;
                 } else {
@@ -149,9 +149,9 @@ void Ion::read_atomic_data() {
 
         // Set up the pointer for the ground state. By definition the energy of
         // the ground state is zero.
-        for (auto &level: levels) {
-            if (level.energy < std::numeric_limits<double>::epsilon())
-                ground_state = &level;
+        for (auto level = levels.begin(); level != levels.end(); ++level) {
+            if (level->energy < std::numeric_limits<double>::epsilon())
+                ground_state = &(*level);
         }
 
         atomic_data_file.close();
@@ -173,27 +173,27 @@ void Ion::read_atomic_data() {
             atomic_line.oscillator_strength = std::pow(10.0, log_gf) / double(g);
 
             // Now search through the model atom energy levels to find the lower and upper levels for this line.
-            for (auto &level: levels) {
-                if (level.energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
-                    if (std::abs(first_energy_level*h_planck*c_light - level.energy) < tolerance)
-                        atomic_line.lower_level = &level;
-                } else if ((std::abs(first_energy_level*h_planck*c_light - level.energy) / level.energy) < tolerance) {
-                    atomic_line.lower_level = &level;
+            for (auto level = levels.begin(); level != levels.end(); ++level) {
+                if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
+                    if (std::abs(first_energy_level*h_planck*c_light - level->energy) < tolerance)
+                        atomic_line.lower_level = &(*level);
+                } else if ((std::abs(first_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
+                    atomic_line.lower_level = &(*level);
                 }
             }
-            for (auto &level: levels) {
-                if (level.energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
-                    if (std::abs(second_energy_level*h_planck*c_light - level.energy) < tolerance)
-                        atomic_line.upper_level = &level;
-                } else if ((std::abs(second_energy_level*h_planck*c_light - level.energy) / level.energy) < tolerance) {
-                    atomic_line.upper_level = &level;
+            for (auto level = levels.begin(); level != levels.end(); ++level) {
+                if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
+                    if (std::abs(second_energy_level*h_planck*c_light - level->energy) < tolerance)
+                        atomic_line.upper_level = &(*level);
+                } else if ((std::abs(second_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
+                    atomic_line.upper_level = &(*level);
                 }
             }
 
             duplicate = false;
             // We assume the line lists don't have duplicate lines, but it can't hurt to check anyway.
-            for (auto line: lines) {
-                if ((std::abs(atomic_line.wavelength - line.wavelength) / line.wavelength) > tolerance) {
+            for (auto line = lines.begin(); line != lines.end(); ++line) {
+                if ((std::abs(atomic_line.wavelength - line->wavelength) / line->wavelength) > tolerance) {
                     duplicate = false;
                 } else {
                     duplicate = true;
@@ -216,8 +216,8 @@ void Ion::read_atomic_data() {
 void Ion::calc_partition_function(const double temperature) {
     const double beta = 1.0 / (k_boltzmann * temperature);
     double result = 0.0;
-    for (auto level: levels) {
-        result += double(level.g) * std::exp(-beta * level.energy);
+    for (auto level = levels.begin(); level != levels.end(); ++level) {
+        result += double(level->g) * std::exp(-beta * level->energy);
     }
     partition_function = result;
 }

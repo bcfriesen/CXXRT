@@ -79,45 +79,45 @@ int main(int argc, char *argv[]) {
 
     initialize_rays();
 
-    for (auto &gv: grid) {
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         // TODO: this works only for hydrogen! fix when adding more elements!!
-        gv.n_g = gv.rho / H_mass;
+        gv->n_g = gv->rho / H_mass;
     }
 
-    for (auto &gv: grid) {
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         Atom H(1);
-        gv.atoms.push_back(H);
+        gv->atoms.push_back(H);
     }
 
-    for (auto &gv: grid) {
-        for (auto &atom: gv.atoms) {
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
             // TODO: make this variable when we add more than 1 element
-            atom.number_fraction = 1.0;
+            atom->number_fraction = 1.0;
         }
     }
 
     // Normalize number fractions. They must add up to 1.
-    for (auto &gv: grid) {
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         double tmp = 0.0;
-        for (auto &atom: gv.atoms) {
-            tmp += atom.number_fraction;
+        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+            tmp += atom->number_fraction;
         }
-        for (auto &atom: gv.atoms) {
-            atom.number_fraction /= tmp;
+        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+            atom->number_fraction /= tmp;
         }
     }
 
-    for (auto &gv: grid) {
-        for (auto &atom: gv.atoms) {
-            for (auto &ion: atom.ions) {
-                ion.read_atomic_data();
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+            for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+                ion->read_atomic_data();
             }
         }
     }
 
-    for (auto &gv: grid) {
-        for (auto &atom: gv.atoms) {
-            atom.set_continuum_pointers();
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+            atom->set_continuum_pointers();
         }
     }
 
@@ -140,20 +140,20 @@ int main(int argc, char *argv[]) {
 
     do_ALI();
 
-    for (auto &gv: grid) {
-        for (auto &atom: gv.atoms) {
-            for (auto &ion: atom.ions) {
-                for (auto &line: ion.lines) {
-                    line.set_line_width(gv.temperature);
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+            for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+                for (auto line = ion->lines.begin(); line != ion->lines.end(); ++line) {
+                    line->set_line_width(gv->temperature);
                 }
             }
         }
     }
 
-    for (auto &gv: grid) {
-        for (auto &atom: gv.atoms) {
-            for (auto &ion: atom.ions) {
-                ion.calc_partition_function(gv.temperature);
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+            for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+                ion->calc_partition_function(gv->temperature);
             }
         }
     }
@@ -161,22 +161,22 @@ int main(int argc, char *argv[]) {
     log_file << std::endl;
     log_file << "GRID VALUES:" << std::endl;
     log_file << std::setw(15) << "rho" << std::setw(15) << "temperature" << std::setw(15) << "n_e" << std::endl;
-    for (auto &gv: grid) {
-        calc_n_e_LTE(gv);
-        log_file << std::setw(15) << gv.rho << std::setw(15) << gv.temperature << std::setw(15) << gv.n_e << std::endl;
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        calc_n_e_LTE(*gv);
+        log_file << std::setw(15) << gv->rho << std::setw(15) << gv->temperature << std::setw(15) << gv->n_e << std::endl;
     }
 
-    for (auto &gv: grid) {
-        gv.calc_LTE_populations();
-        for (auto wlp: gv.wavelength_grid) {
-            gv.calculate_emissivity_and_opacity(*(wlp.lambda));
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        gv->calc_LTE_populations();
+        for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+            gv->calculate_emissivity_and_opacity(*(wlp->lambda));
         }
     }
 
-    for (auto &r: rays) {
-        for (auto wlv: wavelength_values) {
-            r.calc_tau(wlv);
-            r.calc_SC_coeffs(wlv);
+    for (auto r = rays.begin(); r != rays.end(); ++r) {
+        for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+            r->calc_tau(*wlv);
+            r->calc_SC_coeffs(*wlv);
         }
     }
 
@@ -188,10 +188,10 @@ int main(int argc, char *argv[]) {
     spectrum_file.open(spectrum_file_name.c_str());
     spectrum_file << std::scientific;
 
-    for (auto gv: grid) {
-        if (std::abs(gv.z - radius_max) < std::numeric_limits<double>::epsilon()) {
-            for (auto gwlp: gv.wavelength_grid) {
-                spectrum_file << *(gwlp.lambda) * 1.0e+8 << " " << 4.0 * pi * gwlp.H << std::endl;
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        if (std::abs(gv->z - radius_max) < std::numeric_limits<double>::epsilon()) {
+            for (auto gwlp = gv->wavelength_grid.begin(); gwlp != gv->wavelength_grid.end(); ++gwlp) {
+                spectrum_file << *(gwlp->lambda) * 1.0e+8 << " " << 4.0 * pi * gwlp->H << std::endl;
             }
         }
     }
