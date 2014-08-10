@@ -89,7 +89,7 @@ void Ion::read_atomic_data() {
         atomic_data_file.open(atomic_data_file_name.c_str()); // in C++11 the argument of open() can be a string
         std::string one_line;
         double wavelength, log_gf, first_energy_level, J_first, second_energy_level, J_second;
-        bool duplicate;
+        bool duplicate = false;
         const double tolerance = 1.0e-30;
 
         // The first line is the ionization potential.
@@ -98,16 +98,34 @@ void Ion::read_atomic_data() {
         iss >> ionization_potential;
         ionization_potential *= h_planck * c_light;
 
+        unsigned int num_lines = 0; // count the number of lines; we'll need this later
         while (std::getline(atomic_data_file, one_line)) {
             std::istringstream iss(one_line);
+            num_lines++;
             iss >> wavelength >> log_gf >> first_energy_level >> J_first >> second_energy_level >> J_second;
 
+            double lower_energy_level;
+            double upper_energy_level;
+            double J_lower;
+            double J_upper;
+            if (first_energy_level > second_energy_level) {
+                upper_energy_level = first_energy_level;
+                J_upper = J_first;
+                lower_energy_level = second_energy_level;
+                J_lower = J_second;
+            } else {
+                upper_energy_level = second_energy_level;
+                J_upper = J_second;
+                lower_energy_level = first_energy_level;
+                J_lower = J_first;
+            }
+
             class AtomicLevel upper_level, lower_level;
-            lower_level.energy = first_energy_level * h_planck * c_light;  // convert cm^-1 to erg
-            lower_level.J = J_first;
+            lower_level.energy = lower_energy_level * h_planck * c_light;  // convert cm^-1 to erg
+            lower_level.J = J_lower;
             lower_level.g = int(2.0*lower_level.J + 1.0);
-            upper_level.energy = second_energy_level * h_planck * c_light; // convert cm^-1 to erg
-            upper_level.J = J_second;
+            upper_level.energy = upper_energy_level * h_planck * c_light; // convert cm^-1 to erg
+            upper_level.J = J_upper;
             upper_level.g = int(2.0*upper_level.J + 1.0);
 
             // Add the lower level of the line to the model atom only if it hasn't been
@@ -156,6 +174,8 @@ void Ion::read_atomic_data() {
 
         atomic_data_file.close();
 
+        lines.resize(num_lines);
+
         // Now read the file again to get the lines.
 
         atomic_data_file.open(atomic_data_file_name.c_str()); // in C++ the argument of open() can be a string
@@ -163,37 +183,84 @@ void Ion::read_atomic_data() {
         // The first line is the ionization potential so skip it this time.
         std::getline(atomic_data_file, one_line);
 
+        unsigned int i = 0;
         while (std::getline(atomic_data_file, one_line)) {
             std::istringstream iss(one_line);
             iss >> wavelength >> log_gf >> first_energy_level >> J_first >> second_energy_level >> J_second;
 
-            class AtomicLine atomic_line;
-            atomic_line.wavelength = wavelength*1.0e-7; // Kurucz wavelengths are in nanometers
+            //std::cout << "Trying to match line: " << wavelength*1.0e+1 << " A ..." << std::endl;
+
+            double lower_energy_level;
+            double upper_energy_level;
+            if (first_energy_level > second_energy_level) {
+                upper_energy_level = first_energy_level;
+                lower_energy_level = second_energy_level;
+            } else {
+                upper_energy_level = second_energy_level;
+                lower_energy_level = first_energy_level;
+            }
+
+            //std::cout << "Line lower energy: " << lower_energy_level*h_planck*c_light << std::endl;
+            //std::cout << "Line upper energy: " << upper_energy_level*h_planck*c_light << std::endl;
+
+            lines.at(i).wavelength = wavelength*1.0e-7; // Kurucz wavelengths are in nanometers
             const int g = int(2.0*J_first + 1.0);
-            atomic_line.oscillator_strength = std::pow(10.0, log_gf) / double(g);
+            const double oscillator_strength = std::pow(10.0, log_gf) / double(g);
+
+            bool found_match = false;
 
             // Now search through the model atom energy levels to find the lower and upper levels for this line.
             for (auto level = levels.begin(); level != levels.end(); ++level) {
                 if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
-                    if (std::abs(first_energy_level*h_planck*c_light - level->energy) < tolerance)
-                        atomic_line.lower_level = &(*level);
-                } else if ((std::abs(first_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
-                    atomic_line.lower_level = &(*level);
+                    if (std::abs(lower_energy_level*h_planck*c_light - level->energy) < tolerance) {
+                        lines.at(i).lower_level = &(*level);
+                        //std::cout << "Matched lower level of line (ground state): " << level->energy << std::endl;
+                        found_match = true;
+                        break;
+                    }
+                } else if ((std::abs(lower_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
+                    lines.at(i).lower_level = &(*level);
+                    //std::cout << "Matched lower level of line: " << level->energy << std::endl;
+                    found_match = true;
+                    break;
+                } else {
+                    found_match = false;
                 }
             }
+            if (!found_match) {
+                std::cerr << "ERROR: could not find match to lower level of line: " << wavelength*1.0e+1 << std::endl;
+                exit(1);
+            }
+
             for (auto level = levels.begin(); level != levels.end(); ++level) {
                 if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
-                    if (std::abs(second_energy_level*h_planck*c_light - level->energy) < tolerance)
-                        atomic_line.upper_level = &(*level);
-                } else if ((std::abs(second_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
-                    atomic_line.upper_level = &(*level);
+                    if (std::abs(upper_energy_level*h_planck*c_light - level->energy) < tolerance) {
+                        lines.at(i).upper_level = &(*level);
+                        //std::cout << "Matched upper level of line (ground state): " << level->energy << std::endl;
+                        found_match = true;
+                        break;
+                    }
+                } else if ((std::abs(upper_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
+                    lines.at(i).upper_level = &(*level);
+                    //std::cout << "Matched upper level of line: " << level->energy << std::endl;
+                    found_match = true;
+                    break;
+                } else {
+                    found_match = false;
                 }
             }
+            if (!found_match) {
+                std::cerr << "ERROR: could not find match to upper level of line: " << wavelength*1.0e+1 << std::endl;
+                exit(1);
+            }
+
+            lines.at(i).lower_level->g = g;
+            lines.at(i).oscillator_strength = oscillator_strength;
 
             duplicate = false;
             // We assume the line lists don't have duplicate lines, but it can't hurt to check anyway.
             for (auto line = lines.begin(); line != lines.end(); ++line) {
-                if ((std::abs(atomic_line.wavelength - line->wavelength) / line->wavelength) > tolerance) {
+                if ((std::abs(lines.at(i).wavelength - line->wavelength) / line->wavelength) > tolerance) {
                     duplicate = false;
                 } else {
                     duplicate = true;
@@ -202,11 +269,9 @@ void Ion::read_atomic_data() {
             }
 
             // TODO: allow user to choose which line profile to use. For now the default is Gaussian.
-            atomic_line.line_profile = gauss_profile;
+            lines.at(i).line_profile = gauss_profile;
 
-            if (!duplicate) {
-                lines.push_back(atomic_line);
-            }
+            i++;
         }
         atomic_data_file.close();
     }
