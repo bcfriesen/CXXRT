@@ -216,8 +216,8 @@ void Ion::read_atomic_data() {
 void Ion::calc_partition_function(const double temperature) {
     const double beta = 1.0 / (k_boltzmann * temperature);
     double result = 0.0;
-    for (auto level: levels) {
-        result += double(level.g) * std::exp(-beta * level.energy);
+    for (auto level = levels.begin(); level != levels.end(); ++level) {
+        result += double(level->g) * std::exp(-beta * level->energy);
     }
     partition_function = result;
 }
