@@ -39,12 +39,12 @@ double f_ij (const Atom atom, const Ion ion, const double n_e, const double temp
 
 double RHS(GridVoxel &gv) {
     double result = 0.0;
-    for (auto atom: gv.atoms) {
+    for (auto atom = gv.atoms.begin(); atom != gv.atoms.end(); ++atom) {
         double tmp = 0.0;
-        for (auto ion: atom.ions) {
-            tmp += ion.ionization_stage * f_ij(atom, ion, gv.n_e, gv.temperature);
+        for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+            tmp += ion->ionization_stage * f_ij(*atom, *ion, gv.n_e, gv.temperature);
         }
-        tmp *= atom.number_fraction;
+        tmp *= atom->number_fraction;
         result += tmp;
     }
     result *= (gv.n_g - gv.n_e);
