@@ -147,11 +147,11 @@ void GridVoxel::calc_LTE_populations() {
 void GridVoxel::calculate_emissivity_and_opacity(const double lambda) {
     double eta_tot = 0.0;
     double kappa_tot = 0.0;
-    for (auto &atom: atoms) {
-        for (auto &ion: atom.ions) {
-            for (auto &line: ion.lines) {
-                eta_tot += line.eta(lambda);
-                kappa_tot += line.kappa(lambda);
+    for (auto atom = atoms.begin(); atom != atoms.end(); ++atom) {
+        for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+            for (auto line = ion->lines.begin(); line != ion->lines.end(); ++line) {
+                eta_tot += line->eta(lambda);
+                kappa_tot += line->kappa(lambda);
             }
         }
     }
