@@ -44,18 +44,18 @@ Atom::Atom(const unsigned int atomic_number_in)
 // of the next ionization stage (as opposed to promotion from the bound state
 // to an excited state of the next ionization stage).
 void Atom::set_continuum_pointers() {
-    for (auto &ion: ions) {
+    for (auto ion = ions.begin(); ion != ions.end(); ++ion) {
 
         // A fully ionized atom has no higher continuum state.
-        if (ion.ionization_stage == atomic_number)
-            ion.continuum_state = nullptr;
+        if (ion->ionization_stage == atomic_number)
+            ion->continuum_state = nullptr;
 
-        for (auto &next_ion: ions) {
-            if (next_ion.ionization_stage == ion.ionization_stage+1) {
-                ion.next_ion = &next_ion;
-                for (auto &level: next_ion.levels) {
-                    if (level.energy < std::numeric_limits<double>::epsilon()) {
-                        ion.continuum_state = &level;
+        for (auto next_ion = ions.begin(); next_ion != ions.end(); ++next_ion) {
+            if (next_ion->ionization_stage == ion->ionization_stage+1) {
+                ion->next_ion = &(*next_ion);
+                for (auto level = next_ion->levels.begin(); level != next_ion->levels.end(); ++level) {
+                    if (level->energy < std::numeric_limits<double>::epsilon()) {
+                        ion->continuum_state = &(*level);
                         break;
                     }
                 }
