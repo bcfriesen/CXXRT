@@ -138,8 +138,6 @@ int main(int argc, char *argv[]) {
 
     //---------------------END OF INITIALIZATION---------------------//
 
-    do_ALI();
-
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
             for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
