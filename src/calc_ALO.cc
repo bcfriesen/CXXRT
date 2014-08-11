@@ -31,24 +31,25 @@ Eigen::SparseMatrix<double> calc_ALO (const double lambda) {
                 if (std::abs(*(wlp_it->lambda) - lambda) < std::numeric_limits<double>::epsilon())
                     break;
             }
-            auto it_prev = it;
-            if (it != rid.ray->raydata.begin())
-                std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
 
+            auto it_prev = it;
             std::vector<RayWavelengthPoint>::const_iterator wlp_it_prev;
-            for (wlp_it_prev = it_prev->wavelength_grid.begin(); wlp_it_prev != it_prev->wavelength_grid.end(); ++wlp_it_prev) {
-                if (std::abs(*(wlp_it_prev->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                    break;
+            if (it != rid.ray->raydata.begin()) {
+                std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
+                for (wlp_it_prev = it_prev->wavelength_grid.begin(); wlp_it_prev != it_prev->wavelength_grid.end(); ++wlp_it_prev) {
+                    if (std::abs(*(wlp_it_prev->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                        break;
+                }
             }
 
             auto it_next = it;
-            if (it != rid.ray->raydata.end()-1)
-                std::advance(it_next, +1); // use std::nextwhen more C++ compilers are C++11-compliant
-
             std::vector<RayWavelengthPoint>::const_iterator wlp_it_next;
-            for (wlp_it_next = it_next->wavelength_grid.begin(); wlp_it_next != it_next->wavelength_grid.end(); ++wlp_it_next) {
-                if (std::abs(*(wlp_it_next->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                    break;
+            if (it != rid.ray->raydata.end()-1) {
+                std::advance(it_next, +1); // use std::next when more C++ compilers are C++11-compliant
+                for (wlp_it_next = it_next->wavelength_grid.begin(); wlp_it_next != it_next->wavelength_grid.end(); ++wlp_it_next) {
+                    if (std::abs(*(wlp_it_next->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                        break;
+                }
             }
 
             if (it == rid.ray->raydata.begin()) {
