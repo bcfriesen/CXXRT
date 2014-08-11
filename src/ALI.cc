@@ -76,7 +76,7 @@ void do_ALI() {
             rhs = J_fs - rhs;
 
             std::vector< Eigen::Triplet<double> > tripletList;
-            tripletList.reserve(n_depth_pts);
+            tripletList.reserve(3*n_depth_pts-2);
 
             tripletList.push_back(Eigen::Triplet<double> (0, 0, 1.0 - (1.0 - epsilon(0))*(Lambda_star(0, 0))));
             tripletList.push_back(Eigen::Triplet<double> (1, 0, 1.0 - (1.0 - epsilon(1))*(Lambda_star(1, 0))));

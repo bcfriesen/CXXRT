@@ -11,7 +11,7 @@ Eigen::SparseMatrix<double> calc_ALO (const double lambda) {
     Eigen::SparseMatrix<double> Lambda_star(n_depth_pts, n_depth_pts);
 
     std::vector< Eigen::Triplet<double> > tripletList;
-    tripletList.reserve(n_depth_pts);
+    tripletList.reserve(3*n_depth_pts-2);
 
     std::vector<double>  Lambda_star_contrib;
     for (unsigned int i = 0; i < n_depth_pts; ++i) {
