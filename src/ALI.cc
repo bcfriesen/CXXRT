@@ -13,7 +13,9 @@
 void do_ALI() {
 
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
-    const unsigned int max_iter = config["max_iter"].as<int>();
+
+    double rmsd;
+    const double max_tol = 1.0e-8;
 
     for (double wlv: wavelength_values) {
         Eigen::MatrixXd Lambda_star = calc_ALO(wlv);
@@ -34,8 +36,7 @@ void do_ALI() {
         Eigen::VectorXd rhs;
         Eigen::VectorXd epsilon(n_depth_pts);
 
-        log_file << "Beginning ALI ..." << std::endl;
-        for (unsigned int i = 0; i < max_iter; ++i) {
+        do {
             for (Ray& r: rays) {
                 for (RayData &rd: r.raydata) {
                     rd.calc_source_fn(wlv);
@@ -88,9 +89,7 @@ void do_ALI() {
                 }
             }
 
-            const double max_tol = 1.0e-8;
-            double rmsd = calc_rmsd(J_old, J_new);
-            log_file << "RMSD of relative change in J: " << rmsd << std::endl;
+            rmsd = calc_rmsd(J_old, J_new);
             J_old = J_new;
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
                 // Find the requested wavelength point on the grid voxel.
@@ -113,7 +112,7 @@ void do_ALI() {
                 }
                 moments_file << std::endl;
             }
-        }
+        } while (rmsd > max_tol);
     }
 
 
