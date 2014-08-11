@@ -18,6 +18,8 @@ void do_ALI() {
     const double max_tol = 1.0e-8;
 
     for (double wlv: wavelength_values) {
+        log_file << "Starting ALI on wavelength point " << wlv*1.0e+8 << " A ... ";
+        unsigned int iter = 0;
         Eigen::MatrixXd Lambda_star = calc_ALO(wlv);
 
         Eigen::VectorXd J_old(n_depth_pts);
@@ -112,7 +114,9 @@ void do_ALI() {
                 }
                 moments_file << std::endl;
             }
+            iter++;
         } while (rmsd > max_tol);
+        log_file << " Converged to relative error: " << rmsd << " after " << iter << " iterations." << std::endl;
     }
 
 
