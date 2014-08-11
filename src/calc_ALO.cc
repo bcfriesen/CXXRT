@@ -13,8 +13,15 @@ Eigen::SparseMatrix<double> calc_ALO (const double lambda) {
     std::vector< Eigen::Triplet<double> > tripletList;
     tripletList.reserve(3*n_depth_pts-2);
 
-    std::vector<double>  Lambda_star_contrib;
+    std::vector<double> I_hat_im1;
+    std::vector<double> I_hat_i;
+    std::vector<double> I_hat_ip1;
+    std::vector<double> mu_im1;
+    std::vector<double> mu_i;
+    std::vector<double> mu_ip1;
+
     for (unsigned int i = 0; i < n_depth_pts; ++i) {
+
         for (struct RayIntersectionData& rid: grid.at(i).ray_intersection_data) {
             auto it = rid.ray->raydata.begin() + rid.intersection_point;
 
@@ -26,77 +33,104 @@ Eigen::SparseMatrix<double> calc_ALO (const double lambda) {
                     break;
             }
 
-            auto it_prev = it;
-            std::vector<RayWavelengthPoint>::const_iterator wlp_it_prev;
-            if (it != rid.ray->raydata.begin()) {
-                std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
-                for (wlp_it_prev = it_prev->wavelength_grid.begin(); wlp_it_prev != it_prev->wavelength_grid.end(); ++wlp_it_prev) {
-                    if (std::abs(*(wlp_it_prev->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                        break;
-                }
-            }
-
-            auto it_next = it;
-            std::vector<RayWavelengthPoint>::const_iterator wlp_it_next;
-            if (it != rid.ray->raydata.end()-1) {
+            if (it == rid.ray->raydata.begin()) {
+                auto it_next = it;
+                std::vector<RayWavelengthPoint>::const_iterator wlp_it_next;
                 std::advance(it_next, +1); // use std::next when more C++ compilers are C++11-compliant
                 for (wlp_it_next = it_next->wavelength_grid.begin(); wlp_it_next != it_next->wavelength_grid.end(); ++wlp_it_next) {
                     if (std::abs(*(wlp_it_next->lambda) - lambda) < std::numeric_limits<double>::epsilon())
                         break;
                 }
-            }
-
-            if (it == rid.ray->raydata.begin()) {
-                it_prev->gridvoxel->I_hat_im1.push_back(0.0);
-                it->gridvoxel->I_hat_i.push_back(wlp_it->beta);
-                it_next->gridvoxel->I_hat_ip1.push_back(wlp_it->beta * std::exp(-wlp_it->Delta_tau) + wlp_it_next->alpha);
-                it_prev->gridvoxel->mu_im1.push_back(it->mu);
-                it->gridvoxel->mu_i.push_back(it->mu);
-                it_next->gridvoxel->mu_ip1.push_back(it->mu);
-            } else {
-                it_prev->gridvoxel->I_hat_im1.push_back(wlp_it_prev->gamma);
-                it->gridvoxel->I_hat_i.push_back(wlp_it_prev->gamma * std::exp(-wlp_it_prev->Delta_tau) + wlp_it->beta);
-                if (it == rid.ray->raydata.end()-1) {
-                    it_next->gridvoxel->I_hat_ip1.push_back((wlp_it_prev->gamma * std::exp(-wlp_it_prev->Delta_tau) + wlp_it->beta) * std::exp(-wlp_it->Delta_tau));
-                } else {
-                    it_next->gridvoxel->I_hat_ip1.push_back((wlp_it_prev->gamma * std::exp(-wlp_it_prev->Delta_tau) + wlp_it->beta) * std::exp(-wlp_it->Delta_tau) + wlp_it_next->alpha);
+                I_hat_i.push_back(wlp_it->beta);
+                mu_i.push_back(it->mu);
+                I_hat_ip1.push_back(wlp_it->beta * std::exp(-wlp_it->Delta_tau) + wlp_it_next->alpha);
+                mu_ip1.push_back(it->mu);
+            } else if (it == rid.ray->raydata.end()-1) {
+                auto it_prev = it;
+                std::vector<RayWavelengthPoint>::const_iterator wlp_it_prev;
+                std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
+                for (wlp_it_prev = it_prev->wavelength_grid.begin(); wlp_it_prev != it_prev->wavelength_grid.end(); ++wlp_it_prev) {
+                    if (std::abs(*(wlp_it_prev->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                        break;
                 }
-                it_prev->gridvoxel->mu_im1.push_back(it->mu);
-                it->gridvoxel->mu_i.push_back(it->mu);
-                it_next->gridvoxel->mu_ip1.push_back(it->mu);
+                I_hat_i.push_back(wlp_it->beta);
+                mu_i.push_back(it->mu);
+                I_hat_im1.push_back(wlp_it_prev->gamma);
+                mu_im1.push_back(it->mu);
+            } else {
+                auto it_next = it;
+                std::vector<RayWavelengthPoint>::const_iterator wlp_it_next;
+                std::advance(it_next, +1); // use std::next when more C++ compilers are C++11-compliant
+                for (wlp_it_next = it_next->wavelength_grid.begin(); wlp_it_next != it_next->wavelength_grid.end(); ++wlp_it_next) {
+                    if (std::abs(*(wlp_it_next->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                        break;
+                }
+                auto it_prev = it;
+                std::vector<RayWavelengthPoint>::const_iterator wlp_it_prev;
+                std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
+                for (wlp_it_prev = it_prev->wavelength_grid.begin(); wlp_it_prev != it_prev->wavelength_grid.end(); ++wlp_it_prev) {
+                    if (std::abs(*(wlp_it_prev->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                        break;
+                }
+                I_hat_i.push_back(wlp_it_prev->gamma * std::exp(-wlp_it_prev->Delta_tau) + wlp_it->beta);
+                mu_i.push_back(it->mu);
+                I_hat_im1.push_back(wlp_it_prev->gamma);
+                mu_im1.push_back(it->mu);
+                I_hat_ip1.push_back((wlp_it_prev->gamma * std::exp(-wlp_it_prev->Delta_tau) + wlp_it->beta) * std::exp(-wlp_it->Delta_tau) + wlp_it_next->alpha);
+                mu_ip1.push_back(it->mu);
             }
         }
 
-        double result = 0.0;
+        //std::cout << "z: " << grid.at(i).z << std::endl;
+        //std::cout << "I_hat_im1:" << std::endl;
+        //for (auto i_hat: grid.at(i).I_hat_im1) {
+            //std::cout << i_hat << std::endl;
+        //}
+        //std::cout << "I_hat_i:" << std::endl;
+        //for (auto i_hat: grid.at(i).I_hat_i) {
+            //std::cout << i_hat << std::endl;
+        //}
+        //std::cout << "I_hat_ip1:" << std::endl;
+        //for (auto i_hat: grid.at(i).I_hat_ip1) {
+            //std::cout << i_hat << std::endl;
+        //}
 
-        if (i > 0) {
-            for (unsigned int j = 0; j < grid.at(i).I_hat_im1.size()-1; ++j) {
-                result += 0.5 * (grid.at(i).I_hat_im1.at(j) + grid.at(i).I_hat_im1.at(j+1)) * (grid.at(i).mu_im1.at(j+1) - grid.at(i).mu_im1.at(j));
-            }
-            result *= 0.5;
-            tripletList.push_back(Eigen::Triplet<double> (i-1, i, result));
-            grid.at(i).I_hat_im1.erase(grid.at(i).I_hat_im1.begin(), grid.at(i).I_hat_im1.end());
-        }
+        double result;
 
         result = 0.0;
-        for (unsigned int j = 0; j < grid.at(i).I_hat_i.size()-1; ++j) {
-            result += 0.5 * (grid.at(i).I_hat_i.at(j) + grid.at(i).I_hat_i.at(j+1)) * (grid.at(i).mu_i.at(j+1) - grid.at(i).mu_i.at(j));
+        for (unsigned int j = 0; j < I_hat_i.size()-1; ++j) {
+            result += 0.5 * (I_hat_i.at(j) + I_hat_i.at(j+1)) * (mu_i.at(j+1) - mu_i.at(j));
         }
         result *= 0.5;
         tripletList.push_back(Eigen::Triplet<double> (i, i, result));
-        grid.at(i).I_hat_i.erase(grid.at(i).I_hat_i.begin(), grid.at(i).I_hat_i.end());
+
+        if (i > 0) {
+            result = 0.0;
+            for (unsigned int j = 0; j < I_hat_im1.size()-1; ++j) {
+                result += 0.5 * (I_hat_im1.at(j) + I_hat_im1.at(j+1)) * (mu_im1.at(j+1) - mu_im1.at(j));
+            }
+            result *= 0.5;
+            tripletList.push_back(Eigen::Triplet<double> (i-1, i, result));
+        }
 
         if (i < n_depth_pts-1) {
             result = 0.0;
-            for (unsigned int j = 0; j < grid.at(i).I_hat_ip1.size()-1; ++j) {
-                result += 0.5 * (grid.at(i).I_hat_ip1.at(j) + grid.at(i).I_hat_ip1.at(j+1)) * (grid.at(i).mu_ip1.at(j+1) - grid.at(i).mu_ip1.at(j));
+            for (unsigned int j = 0; j < I_hat_ip1.size()-1; ++j) {
+                result += 0.5 * (I_hat_ip1.at(j) + I_hat_ip1.at(j+1)) * (mu_ip1.at(j+1) - mu_ip1.at(j));
             }
             result *= 0.5;
             tripletList.push_back(Eigen::Triplet<double> (i+1, i, result));
-            grid.at(i).I_hat_ip1.erase(grid.at(i).I_hat_ip1.begin(), grid.at(i).I_hat_ip1.end());
         }
+
+        I_hat_im1.erase(I_hat_im1.begin(), I_hat_im1.end());
+        I_hat_i.erase(I_hat_i.begin(), I_hat_i.end());
+        I_hat_ip1.erase(I_hat_ip1.begin(), I_hat_ip1.end());
+        mu_im1.erase(mu_im1.begin(), mu_im1.end());
+        mu_i.erase(mu_i.begin(), mu_i.end());
+        mu_ip1.erase(mu_ip1.begin(), mu_ip1.end());
     }
+
     Lambda_star.setFromTriplets(tripletList.begin(), tripletList.end());
-    std::cout << Lambda_star << std::endl;
+    //std::cout << Lambda_star << std::endl;
     return (Lambda_star);
 }

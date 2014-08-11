@@ -79,13 +79,13 @@ void do_ALI() {
             tripletList.reserve(3*n_depth_pts-2);
 
             tripletList.push_back(Eigen::Triplet<double> (0, 0, 1.0 - (1.0 - epsilon(0))*(Lambda_star(0, 0))));
-            tripletList.push_back(Eigen::Triplet<double> (1, 0, 1.0 - (1.0 - epsilon(1))*(Lambda_star(1, 0))));
+            tripletList.push_back(Eigen::Triplet<double> (1, 0, 1.0 -                    (Lambda_star(1, 0))));
             for (unsigned int k = 1; k < n_depth_pts-1; ++k) {
-                tripletList.push_back(Eigen::Triplet<double> (k-1, k, 1.0 - (1.0 - epsilon(k-1))*(Lambda_star(k-1, k))));
+                tripletList.push_back(Eigen::Triplet<double> (k-1, k, 1.0 -                      (Lambda_star(k-1, k))));
                 tripletList.push_back(Eigen::Triplet<double> (k,   k, 1.0 - (1.0 - epsilon(k  ))*(Lambda_star(k  , k))));
-                tripletList.push_back(Eigen::Triplet<double> (k+1, k, 1.0 - (1.0 - epsilon(k+1))*(Lambda_star(k+1, k))));
+                tripletList.push_back(Eigen::Triplet<double> (k+1, k, 1.0 -                      (Lambda_star(k+1, k))));
             }
-            tripletList.push_back(Eigen::Triplet<double> (n_depth_pts-2, n_depth_pts-1, 1.0 - (1.0 - epsilon(n_depth_pts-2))*(Lambda_star(n_depth_pts-2, n_depth_pts-1))));
+            tripletList.push_back(Eigen::Triplet<double> (n_depth_pts-2, n_depth_pts-1, 1.0 -                                (Lambda_star(n_depth_pts-2, n_depth_pts-1))));
             tripletList.push_back(Eigen::Triplet<double> (n_depth_pts-1, n_depth_pts-1, 1.0 - (1.0 - epsilon(n_depth_pts-1))*(Lambda_star(n_depth_pts-1, n_depth_pts-1))));
 
             Eigen::SparseMatrix<double> mtx(n_depth_pts, n_depth_pts);
@@ -94,8 +94,8 @@ void do_ALI() {
             cg.compute(mtx);
             // Iterate the conjugate gradient method on the ALI linear system until it converges.
             unsigned int n_cg_iter = 0;
-            const unsigned int max_cg_iter = 20;
-            const double max_err_tol = 1.0e-10;
+            const unsigned int max_cg_iter = 100;
+            const double max_err_tol = 1.0e-6;
             while (true) {
                 J_new = cg.solve(rhs);
                 n_cg_iter++;
