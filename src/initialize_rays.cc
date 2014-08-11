@@ -3,7 +3,6 @@
 
 void initialize_rays() {
 
-    const double epsilon = config["epsilon"].as<double>();
     const int n_mu_pts = config["n_mu_pts"].as<int>();
 
     rays.resize(n_mu_pts);
@@ -16,11 +15,6 @@ void initialize_rays() {
             exit(1);
         }
         r.bind_to_grid(mu);
-        for (RayData& rd: r.raydata) {
-            for (RayWavelengthPoint& rwlp: rd.wavelength_grid) {
-                rwlp.epsilon = epsilon;
-            }
-        }
         mu += (mu_max - mu_min) / double(rays.size()-1);
 
         for (RayData& rd: r.raydata) {
