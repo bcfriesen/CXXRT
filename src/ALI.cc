@@ -82,7 +82,7 @@ void do_ALI() {
             tripletList.push_back(Eigen::Triplet<double> (1, 0, 1.0 - (1.0 - epsilon(1))*(Lambda_star(1, 0))));
             for (unsigned int k = 1; k < n_depth_pts-1; ++k) {
                 tripletList.push_back(Eigen::Triplet<double> (k-1, k, 1.0 - (1.0 - epsilon(k-1))*(Lambda_star(k-1, k))));
-                tripletList.push_back(Eigen::Triplet<double> (k, k, 1.0 - (1.0 - epsilon(k))*(Lambda_star(k, k))));
+                tripletList.push_back(Eigen::Triplet<double> (k,   k, 1.0 - (1.0 - epsilon(k  ))*(Lambda_star(k  , k))));
                 tripletList.push_back(Eigen::Triplet<double> (k+1, k, 1.0 - (1.0 - epsilon(k+1))*(Lambda_star(k+1, k))));
             }
             tripletList.push_back(Eigen::Triplet<double> (n_depth_pts-2, n_depth_pts-1, 1.0 - (1.0 - epsilon(n_depth_pts-2))*(Lambda_star(n_depth_pts-2, n_depth_pts-1))));
