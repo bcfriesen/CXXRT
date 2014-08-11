@@ -171,6 +171,7 @@ void GridVoxel::calculate_emissivity_and_opacity(const double lambda) {
         wlp_it->kappa = kappa_tot;
         wlp_it->sigma = n_e * sigma_T;
         wlp_it->chi = wlp_it->kappa + wlp_it->sigma;
+        wlp_it->epsilon = wlp_it->kappa / (wlp_it->kappa + wlp_it->sigma);
 
         // Find the requested wavelength point on the grid voxel.
         // TODO: make this faster than a crude linear search.
