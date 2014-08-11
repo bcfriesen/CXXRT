@@ -11,7 +11,7 @@
 class RayData {
   public:
     RayData();
-    const class GridVoxel* gridvoxel;
+    class GridVoxel* gridvoxel;
     double mu;
     std::vector<RayWavelengthPoint> wavelength_grid;
     void calc_source_fn(const double lambda);

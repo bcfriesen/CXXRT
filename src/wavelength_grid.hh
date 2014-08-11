@@ -1,6 +1,8 @@
 #ifndef WAVELENGTH_GRID_HH
 #define WAVELENGTH_GRID_HH
 
+#include <vector>
+
 class RayWavelengthPoint {
   public:
     double *lambda; // wavelength
