@@ -17,10 +17,10 @@ void do_ALI() {
     double rmsd;
     const double max_tol = 1.0e-8;
 
-    for (double wlv: wavelength_values) {
-        log_file << "Starting ALI on wavelength point " << wlv*1.0e+8 << " A ... ";
+    for (std::vector<double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+        log_file << "Starting ALI on wavelength point " << *wlv * 1.0e+8 << " A ... ";
         unsigned int iter = 0;
-        Eigen::MatrixXd Lambda_star = calc_ALO(wlv);
+        Eigen::MatrixXd Lambda_star = calc_ALO(*wlv);
 
         Eigen::VectorXd J_old(n_depth_pts);
         Eigen::VectorXd J_new(n_depth_pts);
@@ -30,7 +30,7 @@ void do_ALI() {
             // TODO: make this faster than a crude linear search.
             std::vector<GridWavelengthPoint>::iterator grid_wlp;
             for (grid_wlp = grid.at(i).wavelength_grid.begin(); grid_wlp != grid.at(i).wavelength_grid.end(); ++grid_wlp) {
-                if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
+                if (std::abs(*(grid_wlp->lambda) - *wlv) < std::numeric_limits<double>::epsilon())
                     break;
             }
             J_old(i) = grid_wlp->J;
@@ -41,21 +41,21 @@ void do_ALI() {
         do {
             for (Ray& r: rays) {
                 for (RayData &rd: r.raydata) {
-                    rd.calc_source_fn(wlv);
+                    rd.calc_source_fn(*wlv);
                 }
-                r.formal_soln(wlv);
+                r.formal_soln(*wlv);
             }
             for (GridVoxel& gv: grid) {
-                gv.calc_J(wlv);
-                gv.calc_H(wlv);
-                gv.calc_K(wlv);
+                gv.calc_J(*wlv);
+                gv.calc_H(*wlv);
+                gv.calc_K(*wlv);
             }
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
                 // Find the requested wavelength point on the grid voxel.
                 // TODO: make this faster than a crude linear search.
                 std::vector<GridWavelengthPoint>::iterator grid_wlp;
                 for (grid_wlp = grid.at(j).wavelength_grid.begin(); grid_wlp != grid.at(j).wavelength_grid.end(); ++grid_wlp) {
-                    if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
+                    if (std::abs(*(grid_wlp->lambda) - *wlv) < std::numeric_limits<double>::epsilon())
                         break;
                 }
                 J_fs(j) = grid_wlp->J;
@@ -98,7 +98,7 @@ void do_ALI() {
                 // TODO: make this faster than a crude linear search.
                 std::vector<GridWavelengthPoint>::iterator grid_wlp;
                 for (grid_wlp = grid.at(j).wavelength_grid.begin(); grid_wlp != grid.at(j).wavelength_grid.end(); ++grid_wlp) {
-                    if (std::abs(*(grid_wlp->lambda) - wlv) < std::numeric_limits<double>::epsilon())
+                    if (std::abs(*(grid_wlp->lambda) - *wlv) < std::numeric_limits<double>::epsilon())
                         break;
                 }
                 grid_wlp->J = J_old(j);
