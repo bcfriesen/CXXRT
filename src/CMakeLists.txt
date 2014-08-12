@@ -9,6 +9,7 @@ add_subdirectory (lines)
 set (CXXRT_SOURCES
      ALI.cc
      Lambda_iteration.cc
+     build_internal_model.cc
      calc_ALO.cc
      grid.cc
      initialize_rays.cc

@@ -15,7 +15,8 @@
 #include "constants.hh"
 #include "planck_function.hh"
 #include "initialize_rays.hh"
-
+#include "build_internal_model.hh"
+#include "read_mesa_model.hh"
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
@@ -30,24 +31,26 @@ int main(int argc, char *argv[]) {
         std::cerr << "Usage: <executable name> <YAML control file>" << std::endl;
         exit(1);
     }
-    config = YAML::LoadFile(argv[1]);
-    const std::string moments_file_name = config["moments_file"].as<std::string>();
-    const std::string log_file_name = config["log_file"].as<std::string>();
-    if (config["n_depth_pts"].as<int>() <= 0) {
-        std::cerr << "ERROR: n_depth_pts is zero or negative!" << std::endl;
-        exit(1);
-    }
-    const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
-    const double log10_rho_min = config["log10_rho_min"].as<double>();
-    const double log10_rho_max = config["log10_rho_max"].as<double>();
-    if (log10_rho_min > log10_rho_max) {
-        std::cerr << "ERROR: log10_rho_min > log10_rho_max!" << std::endl;
-        exit(1);
-    }
 
-    double log10_rho = log10_rho_min;
-    const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(n_depth_pts-1);
-    grid.resize(n_depth_pts);
+    config = YAML::LoadFile(argv[1]);
+
+    const std::string log_file_name = config["log_file"].as<std::string>();
+    log_file.open(log_file_name.c_str());
+    log_file << std::scientific;
+
+    log_file << "PARAMETERS USED:" << std::endl;
+    log_file << config << std::endl << std::endl;
+
+
+    if (config["read_mesa_model"].as<bool>()) {
+        log_file << "Reading MESA model file: " << config["TAMS_mesa_model_name"].as<std::string>() << " ... ";
+        read_mesa_model(config["TAMS_mesa_model_name"].as<std::string>());
+        log_file << "done." << std::endl;
+    } else {
+        log_file << "Building internal model ... ";
+        build_internal_model();
+        log_file << "done." << std::endl;
+    }
 
     // set up the wavelength grid
     const unsigned int n_wavelength_pts = config["n_wavelength_pts"].as<int>();
@@ -61,43 +64,12 @@ int main(int argc, char *argv[]) {
         wavelength_values.push_back(wl_min + double(i) * (wl_max - wl_min) / double(n_wavelength_pts-1));
     }
 
-    log_file.open(log_file_name.c_str());
-    log_file << std::scientific;
-
-    log_file << "PARAMETERS USED:" << std::endl;
-    log_file << config << std::endl << std::endl;
-
-    if (config["blackbody_temperature"].as<double>() <= 0.0) {
-        std::cerr << "ERROR: black body temperature is zero or negative!" << std::endl;
-        exit(1);
-    }
-
     for (GridVoxel& gv: grid) {
-        gv.rho = std::pow(10.0, log10_rho);
-        gv.temperature = config["blackbody_temperature"].as<double>();
-        log10_rho += log10_delta_rho;
         for (double &wlv: wavelength_values) {
             GridWavelengthPoint gwlp_tmp;
             gwlp_tmp.lambda = &wlv;
             gv.wavelength_grid.push_back(gwlp_tmp);
         }
-    }
-
-    // TODO: add a switch that lets the model span the radius limits either linearly or logarithmically
-    const double radius_min = config["radius_min"].as<double>();
-    const double radius_max = config["radius_max"].as<double>();
-    if (radius_min > radius_max) {
-        std::cerr << "ERROR: radius_min > radius_max!" << std::endl;
-        exit(1);
-    }
-    if (radius_min <= 0.0 || radius_max <= 0.0) {
-        std::cerr << "ERROR: radius coordinate cannot be zero or negative!" << std::endl;
-        exit(1);
-    }
-    unsigned int i = 0;
-    for (auto it = grid.rbegin(); it != grid.rend(); ++it) {
-        it->z = radius_min + double(i) * (radius_max - radius_min) / double(n_depth_pts-1);
-        i++;
     }
 
     std::cout << std::scientific;
@@ -146,6 +118,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    const std::string moments_file_name = config["moments_file"].as<std::string>();
     moments_file.open(moments_file_name.c_str());
     moments_file << std::scientific;
     moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::setw(15) << "B_lam" << std::endl;
@@ -211,12 +184,13 @@ int main(int argc, char *argv[]) {
     spectrum_file.open(spectrum_file_name.c_str());
     spectrum_file << std::scientific;
 
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        if (std::abs(gv->z - radius_max) < std::numeric_limits<double>::epsilon()) {
-            for (auto gwlp = gv->wavelength_grid.begin(); gwlp != gv->wavelength_grid.end(); ++gwlp) {
-                spectrum_file << *(gwlp->lambda) * 1.0e+8 << " " << 4.0 * pi * gwlp->H << std::endl;
-            }
-        }
+    auto surface_gv = grid.begin();
+    for (surface_gv = grid.begin(); surface_gv != grid.end()-1; ++surface_gv) {
+        auto next_gv = surface_gv;
+        if (next_gv->z > surface_gv->z) surface_gv = next_gv;
+    }
+    for (auto gwlp = surface_gv->wavelength_grid.begin(); gwlp != surface_gv->wavelength_grid.end(); ++gwlp) {
+        spectrum_file << *(gwlp->lambda) * 1.0e+8 << " " << 4.0 * pi * gwlp->H << std::endl;
     }
 
 

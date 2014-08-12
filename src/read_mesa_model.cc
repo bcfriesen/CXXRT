@@ -45,6 +45,8 @@ void read_mesa_model(const std::string model_name) {
     std::istringstream iss(one_line);
     iss >> tmp >> n_shells;
 
+    grid.resize(n_shells);
+
     // skip next 4 lines
     for (unsigned int i = 0; i < 4; ++i) {
         std::getline(model_file, one_line);
@@ -75,11 +77,9 @@ void read_mesa_model(const std::string model_name) {
         temperature = std::exp(temperature);
         radius = std::exp(radius);
 
-        GridVoxel gv;
-        gv.rho = density;
-        gv.temperature = temperature;
-        gv.z = radius;
-        grid.push_back(gv);
+        grid.at(i).rho = density;
+        grid.at(i).temperature = temperature;
+        grid.at(i).z = radius;
     }
 
     model_file.close();

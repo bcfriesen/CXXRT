@@ -9,7 +9,7 @@
 #include "grid.hh"
 
 void Ray::bind_to_grid(const double mu) {
-    const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
+    const unsigned int n_depth_pts = grid.size();
     raydata.resize(grid.size());
     for (RayData& rd: raydata) {
         rd.mu = mu;
