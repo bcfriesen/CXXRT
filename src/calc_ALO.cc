@@ -1,14 +1,17 @@
 #include <cmath>
 
-#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 #include "globals.hh"
 #include "ray.hh"
 #include "wavelength_grid.hh"
 
-Eigen::MatrixXd calc_ALO (const double lambda) {
+Eigen::SparseMatrix<double> calc_ALO (const double lambda) {
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
-    Eigen::MatrixXd Lambda_star(n_depth_pts, n_depth_pts);
+    Eigen::SparseMatrix<double> Lambda_star(n_depth_pts, n_depth_pts);
+
+    std::vector< Eigen::Triplet<double> > tripletList;
+    tripletList.reserve(n_depth_pts);
 
     std::vector<double>  Lambda_star_contrib;
     for (unsigned int i = 0; i < n_depth_pts; ++i) {
@@ -21,22 +24,23 @@ Eigen::MatrixXd calc_ALO (const double lambda) {
             // TODO: make this faster than a crude linear search.
             std::vector<RayWavelengthPoint>::const_iterator wlp_it;
             for (wlp_it = it->wavelength_grid.begin(); wlp_it != it->wavelength_grid.end(); ++wlp_it) {
-              if (std::abs(*(wlp_it->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                  break;
+                if (std::abs(*(wlp_it->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                    break;
             }
 
             if (it == rid.ray->raydata.begin()) {
-              I_hat.push_back(wlp_it->beta);
+                I_hat.push_back(wlp_it->beta);
             } else {
-              auto it_prev = it; std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
+                auto it_prev = it;
+                std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
 
-              std::vector<RayWavelengthPoint>::const_iterator wlp_it_prev;
-              for (wlp_it_prev = it_prev->wavelength_grid.begin(); wlp_it_prev != it_prev->wavelength_grid.end(); ++wlp_it_prev) {
-                if (std::abs(*(wlp_it_prev->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                    break;
-              }
+                std::vector<RayWavelengthPoint>::const_iterator wlp_it_prev;
+                for (wlp_it_prev = it_prev->wavelength_grid.begin(); wlp_it_prev != it_prev->wavelength_grid.end(); ++wlp_it_prev) {
+                    if (std::abs(*(wlp_it_prev->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                        break;
+                }
 
-              I_hat.push_back(wlp_it_prev->gamma * std::exp(-wlp_it_prev->Delta_tau) + wlp_it->beta);
+                I_hat.push_back(wlp_it_prev->gamma * std::exp(-wlp_it_prev->Delta_tau) + wlp_it->beta);
             }
             mu.push_back(it->mu);
         }
@@ -46,7 +50,8 @@ Eigen::MatrixXd calc_ALO (const double lambda) {
             result += 0.5 * (I_hat.at(j) + I_hat.at(j+1)) * (mu.at(j+1) - mu.at(j));
         }
         result *= 0.5;
-        Lambda_star(i, i) = result;
+        tripletList.push_back(Eigen::Triplet<double> (i, i, result));
     }
+    Lambda_star.setFromTriplets(tripletList.begin(), tripletList.end());
     return (Lambda_star);
 }

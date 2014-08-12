@@ -8,3 +8,4 @@ SOFTWARE DEPENDENCIES:
  - YAML version >= 0.5
  - Eigen
  - CMake version >= 2.8
+ - GSL

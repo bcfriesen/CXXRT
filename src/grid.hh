@@ -18,6 +18,8 @@ class GridVoxel {
     void calc_J(const double lambda);
     void calc_H(const double lambda);
     void calc_K(const double lambda);
+    void calc_LTE_populations();
+    void calculate_emissivity_and_opacity(const double lambda);
 };
 
 #endif
