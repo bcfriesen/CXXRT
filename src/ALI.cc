@@ -1,6 +1,10 @@
 #include <fstream>
 #include <iomanip>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include <Eigen/Sparse>
 
 #include "calc_ALO.hh"
@@ -17,7 +21,11 @@ void do_ALI() {
     double rmsd;
     const double max_tol = 1.0e-8;
 
+#pragma omp parallel
+    {
     for (std::vector<double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+#pragma omp single nowait
+        {
         log_file << "Starting ALI on wavelength point " << *wlv * 1.0e+8 << " A ... ";
         unsigned int iter = 0;
         Eigen::MatrixXd Lambda_star = calc_ALO(*wlv);
@@ -117,7 +125,9 @@ void do_ALI() {
             iter++;
         } while (rmsd > max_tol);
         log_file << " Converged to relative error: " << rmsd << " after " << iter << " iterations." << std::endl;
+        } // #pragma omp single nowait
     }
+    } // #pragma omp parallel
 
 
 }
