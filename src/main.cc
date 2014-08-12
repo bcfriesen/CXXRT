@@ -53,6 +53,10 @@ int main(int argc, char *argv[]) {
     const unsigned int n_wavelength_pts = config["n_wavelength_pts"].as<int>();
     const double wl_min = config["wl_min"].as<double>();
     const double wl_max = config["wl_max"].as<double>();
+    if (wl_min > wl_max) {
+        std::cerr << "ERROR: wl_min > wl_max!" << std::endl;
+        exit(1);
+    }
     for (unsigned int i = 0; i < n_wavelength_pts; ++i) {
         wavelength_values.push_back(wl_min + double(i) * (wl_max - wl_min) / double(n_wavelength_pts-1));
     }
