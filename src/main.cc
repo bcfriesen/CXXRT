@@ -67,6 +67,11 @@ int main(int argc, char *argv[]) {
     log_file << "PARAMETERS USED:" << std::endl;
     log_file << config << std::endl << std::endl;
 
+    if (config["blackbody_temperature"].as<double>() <= 0.0) {
+        std::cerr << "ERROR: black body temperature is zero or negative!" << std::endl;
+        exit(1);
+    }
+
     for (GridVoxel& gv: grid) {
         gv.rho = std::pow(10.0, log10_rho);
         gv.temperature = config["blackbody_temperature"].as<double>();
