@@ -40,6 +40,10 @@ int main(int argc, char *argv[]) {
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
     const double log10_rho_min = config["log10_rho_min"].as<double>();
     const double log10_rho_max = config["log10_rho_max"].as<double>();
+    if (log10_rho_min > log10_rho_max) {
+        std::cerr << "ERROR: log10_rho_min > log10_rho_max!" << std::endl;
+        exit(1);
+    }
 
     double log10_rho = log10_rho_min;
     const double log10_delta_rho = (log10_rho_max - log10_rho_min) / double(n_depth_pts-1);
