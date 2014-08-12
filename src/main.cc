@@ -90,6 +90,10 @@ int main(int argc, char *argv[]) {
         std::cerr << "ERROR: radius_min > radius_max!" << std::endl;
         exit(1);
     }
+    if (radius_min <= 0.0 || radius_max <= 0.0) {
+        std::cerr << "ERROR: radius coordinate cannot be zero or negative!" << std::endl;
+        exit(1);
+    }
     unsigned int i = 0;
     for (auto it = grid.rbegin(); it != grid.rend(); ++it) {
         it->z = radius_min + double(i) * (radius_max - radius_min) / double(n_depth_pts-1);
