@@ -33,6 +33,10 @@ int main(int argc, char *argv[]) {
     config = YAML::LoadFile(argv[1]);
     const std::string moments_file_name = config["moments_file"].as<std::string>();
     const std::string log_file_name = config["log_file"].as<std::string>();
+    if (config["n_depth_pts"].as<int>() <= 0) {
+        std::cerr << "ERROR: n_depth_pts is zero or negative!" << std::endl;
+        exit(1);
+    }
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
     const double log10_rho_min = config["log10_rho_min"].as<double>();
     const double log10_rho_max = config["log10_rho_max"].as<double>();
