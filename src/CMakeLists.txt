@@ -15,6 +15,7 @@ set (CXXRT_SOURCES
      main.cc
      planck_function.cc
      ray.cc
+     read_mesa_model.cc
      rmsd.cc
      wavelength_grid.cc
     )
