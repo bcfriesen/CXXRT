@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <iterator>
 #include <cmath>
+#include <fstream>
 
 #include "planck_function.hh"
 #include "ray.hh"
@@ -30,36 +31,51 @@ void Ray::bind_to_grid(const double mu) {
     }
 }
 
-std::ostream& operator<<(std::ostream& os, const Ray& r) {
-    os << "RAY DATA:" << std::endl;
-    os << std::setw(15) << "z";
-    os << std::setw(15) << "mu";
-    os << std::setw(15) << "first lambda";  // TODO: make this an adjustable parameter so we can print any wavelength-dependent quantities we want.
-    os << std::setw(15) << "I_lam";
-    os << std::setw(15) << "tau";
-    os << std::setw(15) << "chi";
-    os << std::setw(15) << "source_fn";
-    os << std::setw(15) << "Delta_tau";
-    os << std::setw(15) << "alpha";
-    os << std::setw(15) << "beta";
-    os << std::setw(15) << "gamma";
-    os << std::endl;
-    for (const RayData& rd: r.raydata) {
-        os << std::setw(15) << std::scientific << rd.gridvoxel->z;
-        os << std::setw(15) << std::scientific << rd.mu;
-        os << std::setw(15) << std::scientific << rd.wavelength_grid.at(0).lambda;  // TODO: make this an adjustable parameter so we can print any wavelength-dependent quantities we want.
-        os << std::setw(15) << std::scientific << rd.wavelength_grid.at(0).I;  // TODO: make this an adjustable parameter so we can print any wavelength-dependent quantities we want.
-        os << std::setw(15) << std::scientific << rd.wavelength_grid.at(0).tau;  // TODO: make this an adjustable parameter so we can print any wavelength-dependent quantities we want.
-        os << std::setw(15) << std::scientific << rd.wavelength_grid.at(0).chi;  // TODO: make this an adjustable parameter so we can print any wavelength-dependent quantities we want.
-        os << std::setw(15) << std::scientific << rd.wavelength_grid.at(0).source_fn;  // TODO: make this an adjustable parameter so we can print any wavelength-dependent quantities we want.
-        os << std::setw(15) << std::scientific << rd.wavelength_grid.at(0).Delta_tau;  // TODO: make this an adjustable parameter so we can print any wavelength-dependent quantities we want.
-        os << std::setw(15) << std::scientific << rd.wavelength_grid.at(0).alpha;  // TODO: make this an adjustable parameter so we can print any wavelength-dependent quantities we want.
-        os << std::setw(15) << std::scientific << rd.wavelength_grid.at(0).beta;  // TODO: make this an adjustable parameter so we can print any wavelength-dependent quantities we want.
-        os << std::setw(15) << std::scientific << rd.wavelength_grid.at(0).gamma;  // TODO: make this an adjustable parameter so we can print any wavelength-dependent quantities we want.
-        os << std::endl;
+void Ray::print_ray_data(const double lambda) {
+    log_file << std::endl;
+    log_file << std::setw(15) << "# RAY DATA:";
+    log_file << std::setw(15) << "z";
+    log_file << std::setw(15) << "mu";
+    log_file << std::setw(15) << "lambda";
+    log_file << std::setw(15) << "I_lam";
+    log_file << std::setw(15) << "sigma";
+    log_file << std::setw(15) << "kappa";
+    log_file << std::setw(15) << "eta";
+    log_file << std::setw(15) << "tau";
+    log_file << std::setw(15) << "chi";
+    log_file << std::setw(15) << "source_fn";
+    log_file << std::setw(15) << "Delta_tau";
+    log_file << std::setw(15) << "alpha";
+    log_file << std::setw(15) << "beta";
+    log_file << std::setw(15) << "gamma";
+    log_file << std::endl;
+
+    for (auto rd: raydata) {
+        std::vector<RayWavelengthPoint>::iterator wlp_it;
+        for (wlp_it = rd.wavelength_grid.begin(); wlp_it != rd.wavelength_grid.end(); ++wlp_it) {
+            if (std::abs(*(wlp_it->lambda) - lambda) < std::numeric_limits<double>::epsilon())
+                break;
+        }
+
+        log_file << std::setw(30) << std::scientific << rd.gridvoxel->z;
+        log_file << std::setw(15) << std::scientific << rd.mu;
+        log_file << std::setw(15) << std::scientific << *(wlp_it->lambda) * 1.0e+8;
+        log_file << std::setw(15) << std::scientific << wlp_it->I;
+        log_file << std::setw(15) << std::scientific << wlp_it->sigma;
+        log_file << std::setw(15) << std::scientific << wlp_it->kappa;
+        log_file << std::setw(15) << std::scientific << wlp_it->eta;
+        log_file << std::setw(15) << std::scientific << wlp_it->tau;
+        log_file << std::setw(15) << std::scientific << wlp_it->chi;
+        log_file << std::setw(15) << std::scientific << wlp_it->source_fn;
+        log_file << std::setw(15) << std::scientific << wlp_it->Delta_tau;
+        log_file << std::setw(15) << std::scientific << wlp_it->alpha;
+        log_file << std::setw(15) << std::scientific << wlp_it->beta;
+        log_file << std::setw(15) << std::scientific << wlp_it->gamma;
+        log_file << std::endl;
     }
-    return os;
+    log_file << std::endl;
 }
+
 
 RayData::RayData() {
     gridvoxel = nullptr;

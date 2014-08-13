@@ -24,13 +24,12 @@ class Ray {
     void calc_tau(const double lambda);
     void formal_soln(const double lambda);
     void calc_SC_coeffs(const double lambda);
+    void print_ray_data(const double lambda);
 };
 
 struct RayIntersectionData {
     class Ray* ray;
     std::size_t intersection_point;
 };
-
-std::ostream& operator<<(std::ostream& os, const Ray& r);
 
 #endif
