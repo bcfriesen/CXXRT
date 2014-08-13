@@ -7,15 +7,7 @@
 #include "EOS/Phi.hh"
 #include "EOS/LTE_EOS.hh"
 
-bool ray_angle_sort_function(const struct RayIntersectionData rd1, const struct RayIntersectionData rd2) {
-    const auto it1 = rd1.ray->raydata.begin() + rd1.intersection_point;
-    const auto it2 = rd2.ray->raydata.begin() + rd2.intersection_point;
-    return (it1->mu < it2->mu);
-}
-
-
 void GridVoxel::calc_J(const double lambda) {
-    std::sort(ray_intersection_data.begin(), ray_intersection_data.end(), ray_angle_sort_function);
     double result = 0.0;
 
     // Find the requested wavelength point on the grid voxel.
@@ -53,7 +45,6 @@ void GridVoxel::calc_J(const double lambda) {
 
 
 void GridVoxel::calc_H(const double lambda) {
-    std::sort(ray_intersection_data.begin(), ray_intersection_data.end(), ray_angle_sort_function);
     double result = 0.0;
 
     // Find the requested wavelength point on the grid voxel.
@@ -91,7 +82,6 @@ void GridVoxel::calc_H(const double lambda) {
 
 
 void GridVoxel::calc_K(const double lambda) {
-    std::sort(ray_intersection_data.begin(), ray_intersection_data.end(), ray_angle_sort_function);
     double result = 0.0;
 
     // Find the requested wavelength point on the grid voxel.
