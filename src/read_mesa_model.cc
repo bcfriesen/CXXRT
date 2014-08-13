@@ -63,15 +63,15 @@ void read_mesa_model(const std::string model_name) {
         auto e_d(density_string.find_first_of("Dd"));
         if (e_d != std::string::npos)
             density_string[e_d] = 'E';
-        density = std::stod(density_string);
+        density = atof(density_string.c_str()); // use std::stod when more compilers are C++11-compliant
         auto e_t(temperature_string.find_first_of("Dd"));
         if (e_t != std::string::npos)
             temperature_string[e_t] = 'E';
-        temperature = std::stod(temperature_string);
+        temperature = atof(temperature_string.c_str()); // use std::stod when more compilers are C++11-compliant
         auto e_r(radius_string.find_first_of("Dd"));
         if (e_r != std::string::npos)
             radius_string[e_r] = 'E';
-        radius = std::stod(radius_string);
+        radius = atof(radius_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
         density = std::exp(density);
         temperature = std::exp(temperature);
