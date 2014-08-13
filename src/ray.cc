@@ -160,6 +160,7 @@ void Ray::calc_SC_coeffs(const double lambda) {
             // which doesn't already happen at 10^2.
             if (std::fabs(wlp_it->Delta_tau) < std::numeric_limits<double>::epsilon()) {
                 std::cerr << "ERROR: Delta_tau = 0! Your maximum optical depth is too high for floating-point precision!" << std::endl;
+                std::cerr << "The first unresolvable depth point is at z = " << it->gridvoxel->z << std::endl;
                 exit(1);
             }
             wlp_it->alpha = 1.0 - std::exp(-wlp_it->Delta_tau) - ((wlp_it->Delta_tau - 1.0 + std::exp(-wlp_it->Delta_tau)) / wlp_it->Delta_tau);
