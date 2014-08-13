@@ -21,3 +21,6 @@ print_every_iter: false
 spectrum_file: spectrum.dat
 
 atomic_data_root_folder: /home/brian/CXXRT_atomic_data
+
+read_mesa_model: true
+TAMS_mesa_model_name: 1M_at_TAMS.mod

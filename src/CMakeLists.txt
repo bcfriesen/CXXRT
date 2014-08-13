@@ -9,12 +9,14 @@ add_subdirectory (lines)
 set (CXXRT_SOURCES
      ALI.cc
      Lambda_iteration.cc
+     build_internal_model.cc
      calc_ALO.cc
      grid.cc
      initialize_rays.cc
      main.cc
      planck_function.cc
      ray.cc
+     read_mesa_model.cc
      rmsd.cc
      wavelength_grid.cc
     )
