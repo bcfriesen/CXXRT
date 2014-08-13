@@ -10,7 +10,7 @@
 void read_mesa_model(const std::string model_name) {
 
     std::ifstream model_file;
-    model_file.open(model_name);
+    model_file.open(model_name.c_str());
     if (!model_file.good()) {
         std::cerr << "ERROR: could not open MESA TAMS model file: " << model_name << std::endl;
         exit(1);
