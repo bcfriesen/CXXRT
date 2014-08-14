@@ -3,9 +3,6 @@
 #include <cmath>
 #include <iomanip>
 #include <fstream>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include <yaml-cpp/yaml.h>
 
@@ -160,34 +157,22 @@ int main(int argc, char *argv[]) {
     log_file << std::endl;
     log_file << "GRID VALUES:" << std::endl;
     log_file << std::setw(15) << "rho" << std::setw(15) << "temperature" << std::setw(15) << "n_e" << std::endl;
-#pragma omp parallel
-    {
-        for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-#pragma omp single nowait
-            calc_n_e_LTE(*gv);
-            log_file << std::setw(15) << gv->rho << std::setw(15) << gv->temperature << std::setw(15) << gv->n_e << std::endl;
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        calc_n_e_LTE(*gv);
+        log_file << std::setw(15) << gv->rho << std::setw(15) << gv->temperature << std::setw(15) << gv->n_e << std::endl;
+    }
+
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        gv->calc_LTE_populations();
+        for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+            gv->calculate_emissivity_and_opacity(*(wlp->lambda));
         }
     }
 
-#pragma omp parallel
-    {
-        for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-#pragma omp single nowait
-            gv->calc_LTE_populations();
-            for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
-                gv->calculate_emissivity_and_opacity(*(wlp->lambda));
-            }
-        }
-    }
-
-#pragma omp parallel
-    {
-        for (auto r = rays.begin(); r != rays.end(); ++r) {
-#pragma omp single nowait
-            for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
-                r->calc_tau(*wlv);
-                r->calc_SC_coeffs(*wlv);
-            }
+    for (auto r = rays.begin(); r != rays.end(); ++r) {
+        for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+            r->calc_tau(*wlv);
+            r->calc_SC_coeffs(*wlv);
         }
     }
 
