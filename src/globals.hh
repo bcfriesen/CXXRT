@@ -2,6 +2,7 @@
 #define GLOBALS_HH
 
 #include <vector>
+#include <map>
 
 #include <yaml-cpp/yaml.h>
 
@@ -10,7 +11,7 @@ extern std::vector<class Ray> rays;
 
 extern YAML::Node config;
 
-extern std::vector<double> wavelength_values;
+extern std::map<std::size_t, double> wavelength_values;
 
 extern std::ofstream log_file;
 

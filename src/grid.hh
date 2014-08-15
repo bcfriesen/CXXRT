@@ -1,6 +1,8 @@
 #ifndef GRID_HH
 #define GRID_HH
 
+#include <map>
+
 #include "ray.hh"
 #include "wavelength_grid.hh"
 #include "EOS/atoms.hh"
@@ -14,12 +16,12 @@ class GridVoxel {
     double temperature;
     std::vector<struct RayIntersectionData> ray_intersection_data;
     std::vector<Atom> atoms;
-    std::vector<GridWavelengthPoint> wavelength_grid;
-    void calc_J(const double lambda);
-    void calc_H(const double lambda);
-    void calc_K(const double lambda);
+    std::map<std::size_t, GridWavelengthPoint> wavelength_grid;
+    void calc_J(const std::size_t wl_value_hash);
+    void calc_H(const std::size_t wl_value_hash);
+    void calc_K(const std::size_t wl_value_hash);
     void calc_LTE_populations();
-    void calculate_emissivity_and_opacity(const double lambda);
+    void calculate_emissivity_and_opacity(const std::size_t wl_value_hash);
 };
 
 #endif
