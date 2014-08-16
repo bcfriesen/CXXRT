@@ -3,7 +3,7 @@
 
 class RayWavelengthPoint {
   public:
-    double *lambda; // wavelength
+    double lambda; // wavelength
 
     double I; // specific intensity
 
@@ -32,8 +32,8 @@ class RayWavelengthPoint {
 
 class GridWavelengthPoint {
   public:
-    double *lambda; // wavelength
-    //
+    double lambda; // wavelength
+
     // first three moments of the radiation field
     double J;
     double H; // TODO: make this a vector in less symmetric geometries

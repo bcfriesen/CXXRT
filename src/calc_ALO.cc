@@ -6,7 +6,7 @@
 #include "ray.hh"
 #include "wavelength_grid.hh"
 
-Eigen::SparseMatrix<double> calc_ALO (const double lambda) {
+Eigen::SparseMatrix<double> calc_ALO (const std::size_t wl_value_hash) {
     const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
     Eigen::SparseMatrix<double> Lambda_star(n_depth_pts, n_depth_pts);
 
@@ -19,27 +19,12 @@ Eigen::SparseMatrix<double> calc_ALO (const double lambda) {
         for (struct RayIntersectionData& rid: grid.at(i).ray_intersection_data) {
             auto it = rid.ray->raydata.begin() + rid.intersection_point;
 
-            // Find the requested wavelength point.
-            // TODO: make this faster than a crude linear search.
-            std::vector<RayWavelengthPoint>::const_iterator wlp_it;
-            for (wlp_it = it->wavelength_grid.begin(); wlp_it != it->wavelength_grid.end(); ++wlp_it) {
-                if (std::abs(*(wlp_it->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                    break;
-            }
-
             if (it == rid.ray->raydata.begin()) {
-                I_hat.push_back(wlp_it->beta);
+                I_hat.push_back(it->wavelength_grid[wl_value_hash].beta);
             } else {
                 auto it_prev = it;
                 std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
-
-                std::vector<RayWavelengthPoint>::const_iterator wlp_it_prev;
-                for (wlp_it_prev = it_prev->wavelength_grid.begin(); wlp_it_prev != it_prev->wavelength_grid.end(); ++wlp_it_prev) {
-                    if (std::abs(*(wlp_it_prev->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                        break;
-                }
-
-                I_hat.push_back(wlp_it_prev->gamma * std::exp(-wlp_it_prev->Delta_tau) + wlp_it->beta);
+                I_hat.push_back(it_prev->wavelength_grid[wl_value_hash].gamma * std::exp(-it_prev->wavelength_grid[wl_value_hash].Delta_tau) + it->wavelength_grid[wl_value_hash].beta);
             }
             mu.push_back(it->mu);
         }

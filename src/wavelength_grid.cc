@@ -3,7 +3,7 @@
 
 
 void RayWavelengthPoint::set_to_LTE(const double temperature) {
-    source_fn = planck_function(*lambda, temperature);
+    source_fn = planck_function(lambda, temperature);
 }
 
 void RayWavelengthPoint::calc_chi(const double rho, const double lambda) {

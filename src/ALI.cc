@@ -23,7 +23,7 @@ void do_ALI() {
 
 #pragma omp parallel
     {
-    for (std::vector<double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+    for (std::map<std::size_t, double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
 #pragma omp single nowait
         {
         // use thread-specific buffers to store output, then dump them to the
@@ -31,22 +31,15 @@ void do_ALI() {
         std::stringstream thread_buf;
         thread_buf << std::scientific;
 
-        thread_buf << "Starting ALI on wavelength point " << *wlv * 1.0e+8 << " A ... ";
+        thread_buf << "Starting ALI on wavelength point " << wlv->second * 1.0e+8 << " A ... ";
         unsigned int iter = 0;
-        Eigen::MatrixXd Lambda_star = calc_ALO(*wlv);
+        Eigen::MatrixXd Lambda_star = calc_ALO(wlv->first);
 
         Eigen::VectorXd J_old(n_depth_pts);
         Eigen::VectorXd J_new(n_depth_pts);
         Eigen::VectorXd J_fs(n_depth_pts);
         for (unsigned int i = 0; i < n_depth_pts; ++i) {
-            // Find the requested wavelength point on the grid voxel.
-            // TODO: make this faster than a crude linear search.
-            std::vector<GridWavelengthPoint>::iterator grid_wlp;
-            for (grid_wlp = grid.at(i).wavelength_grid.begin(); grid_wlp != grid.at(i).wavelength_grid.end(); ++grid_wlp) {
-                if (std::abs(*(grid_wlp->lambda) - *wlv) < std::numeric_limits<double>::epsilon())
-                    break;
-            }
-            J_old(i) = grid_wlp->J;
+            J_old(i) = grid.at(i).wavelength_grid[wlv->first].J;
         }
         Eigen::VectorXd rhs;
         Eigen::VectorXd epsilon(n_depth_pts);
@@ -54,25 +47,18 @@ void do_ALI() {
         do {
             for (Ray& r: rays) {
                 for (RayData &rd: r.raydata) {
-                    rd.calc_source_fn(*wlv);
+                    rd.calc_source_fn(wlv->first);
                 }
-                r.formal_soln(*wlv);
+                r.formal_soln(wlv->first);
             }
             for (GridVoxel& gv: grid) {
-                gv.calc_J(*wlv);
-                gv.calc_H(*wlv);
-                gv.calc_K(*wlv);
+                gv.calc_J(wlv->first);
+                gv.calc_H(wlv->first);
+                gv.calc_K(wlv->first);
             }
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
-                // Find the requested wavelength point on the grid voxel.
-                // TODO: make this faster than a crude linear search.
-                std::vector<GridWavelengthPoint>::iterator grid_wlp;
-                for (grid_wlp = grid.at(j).wavelength_grid.begin(); grid_wlp != grid.at(j).wavelength_grid.end(); ++grid_wlp) {
-                    if (std::abs(*(grid_wlp->lambda) - *wlv) < std::numeric_limits<double>::epsilon())
-                        break;
-                }
-                J_fs(j) = grid_wlp->J;
-                epsilon(j) = grid_wlp->epsilon;
+                J_fs(j) = grid.at(j).wavelength_grid[wlv->first].J;
+                epsilon(j) = grid.at(j).wavelength_grid[wlv->first].epsilon;
             }
             rhs = Lambda_star*J_old;
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
@@ -107,22 +93,15 @@ void do_ALI() {
             rmsd = calc_rmsd(J_old, J_new);
             J_old = J_new;
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
-                // Find the requested wavelength point on the grid voxel.
-                // TODO: make this faster than a crude linear search.
-                std::vector<GridWavelengthPoint>::iterator grid_wlp;
-                for (grid_wlp = grid.at(j).wavelength_grid.begin(); grid_wlp != grid.at(j).wavelength_grid.end(); ++grid_wlp) {
-                    if (std::abs(*(grid_wlp->lambda) - *wlv) < std::numeric_limits<double>::epsilon())
-                        break;
-                }
-                grid_wlp->J = J_old(j);
+                grid.at(j).wavelength_grid[wlv->first].J = J_old(j);
             }
             if (rmsd < max_tol)
                 break;
 
             if (config["print_every_iter"].as<bool>()) {
                 for (GridVoxel& gv: grid) {
-                    for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-                        moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::setw(15) << planck_function(*(wlp.lambda), gv.temperature) << std::endl;
+                    for (auto &wlp: gv.wavelength_grid) {
+                        moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.second.lambda << std::setw(15) << wlp.second.J << std::setw(15) << wlp.second.H << std::setw(15) << wlp.second.K << std::setw(15) << planck_function(wlp.second.lambda, gv.temperature) << std::endl;
                     }
                 }
                 moments_file << std::endl;

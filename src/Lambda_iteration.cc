@@ -17,44 +17,30 @@ void Lambda_iteration() {
     Eigen::VectorXd J_old(n_depth_pts);
     Eigen::VectorXd J_new(n_depth_pts);
 
-    for (double lambda: wavelength_values) {
-        log_file << "Starting Lambda iteration on wavelength point " << lambda*1.0e+8 << " A ... ";
+    for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+        log_file << "Starting Lambda iteration on wavelength point " << wlv->second*1.0e+8 << " A ... ";
         unsigned int iter = 0;
 
         for (unsigned int i = 0; i < n_depth_pts; ++i) {
-            // Find the requested wavelength point on the grid voxel.
-            // TODO: make this faster than a crude linear search.
-            std::vector<GridWavelengthPoint>::iterator grid_wlp;
-            for (grid_wlp = grid.at(i).wavelength_grid.begin(); grid_wlp != grid.at(i).wavelength_grid.end(); ++grid_wlp) {
-                if (std::abs(*(grid_wlp->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                    break;
-            }
-            J_old(i) = grid_wlp->J;
+            J_old(i) = grid.at(i).wavelength_grid[wlv->first].J;
         }
 
         do {
             for (Ray& r: rays) {
               for (RayData& rd: r.raydata) {
-                rd.calc_source_fn(lambda);
+                rd.calc_source_fn(wlv->first);
               }
-              r.formal_soln(lambda);
+              r.formal_soln(wlv->first);
             }
 
             for (auto gv: grid) {
-              for (auto wlp: gv.wavelength_grid) {
-                  gv.calc_J(*(wlp.lambda));
+              for (auto wlp = wavelength_values.begin(); wlp != wavelength_values.end(); ++wlp) {
+                  gv.calc_J(wlp->first);
               }
             }
 
             for (unsigned int i = 0; i < n_depth_pts; ++i) {
-                // Find the requested wavelength point on the grid voxel.
-                // TODO: make this faster than a crude linear search.
-                std::vector<GridWavelengthPoint>::iterator grid_wlp;
-                for (grid_wlp = grid.at(i).wavelength_grid.begin(); grid_wlp != grid.at(i).wavelength_grid.end(); ++grid_wlp) {
-                    if (std::abs(*(grid_wlp->lambda) - lambda) < std::numeric_limits<double>::epsilon())
-                        break;
-                }
-                J_new(i) = grid_wlp->J;
+                J_new(i) = grid.at(i).wavelength_grid[wlv->first].J;
             }
             rmsd = calc_rmsd(J_old, J_new);
             J_old = J_new;

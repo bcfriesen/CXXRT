@@ -5,6 +5,7 @@
 #include <fstream>
 
 #include <yaml-cpp/yaml.h>
+#include <boost/functional/hash.hpp>
 
 #include "ALI.hh"
 #include "EOS/atoms.hh"
@@ -21,7 +22,7 @@
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
 YAML::Node config;
-std::vector<double> wavelength_values;
+std::map<std::size_t, double> wavelength_values;
 std::ofstream log_file;
 std::ofstream moments_file;
 
@@ -60,15 +61,19 @@ int main(int argc, char *argv[]) {
         std::cerr << "ERROR: wl_min > wl_max!" << std::endl;
         exit(1);
     }
+    // Assign a unique integer hash to each wavelength point.
     for (unsigned int i = 0; i < n_wavelength_pts; ++i) {
-        wavelength_values.push_back(wl_min + double(i) * (wl_max - wl_min) / double(n_wavelength_pts-1));
+        const double wl_value = wl_min + double(i) * (wl_max - wl_min) / double(n_wavelength_pts-1);
+        boost::hash<double> double_hash;
+        const std::size_t wl_value_hash = double_hash(wl_value);
+        wavelength_values[wl_value_hash] = wl_value;
     }
 
-    for (GridVoxel& gv: grid) {
-        for (double &wlv: wavelength_values) {
+    for (auto &gv: grid) {
+        for (auto wlv: wavelength_values) {
             GridWavelengthPoint gwlp_tmp;
-            gwlp_tmp.lambda = &wlv;
-            gv.wavelength_grid.push_back(gwlp_tmp);
+            gwlp_tmp.lambda = wlv.second;
+            gv.wavelength_grid[wlv.first] = gwlp_tmp;
         }
     }
 
@@ -125,8 +130,8 @@ int main(int argc, char *argv[]) {
 
     if (config["print_every_iter"].as<bool>()) {
         for (GridVoxel& gv: grid) {
-            for (GridWavelengthPoint& wlp: gv.wavelength_grid) {
-                moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << *(wlp.lambda) << std::setw(15) << wlp.J << std::setw(15) << wlp.H << std::setw(15) << wlp.K << std::setw(15) << planck_function(*(wlp.lambda), gv.temperature) << std::endl;
+            for (auto &wlp: gv.wavelength_grid) {
+                moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.second.lambda << std::setw(15) << wlp.second.J << std::setw(15) << wlp.second.H << std::setw(15) << wlp.second.K << std::setw(15) << planck_function(wlp.second.lambda, gv.temperature) << std::endl;
             }
         }
         moments_file << std::endl;
@@ -165,14 +170,14 @@ int main(int argc, char *argv[]) {
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         gv->calc_LTE_populations();
         for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
-            gv->calculate_emissivity_and_opacity(*(wlp->lambda));
+            gv->calculate_emissivity_and_opacity(wlp->first);
         }
     }
 
     for (auto r = rays.begin(); r != rays.end(); ++r) {
         for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
-            r->calc_tau(*wlv);
-            r->calc_SC_coeffs(*wlv);
+            r->calc_tau(wlv->first);
+            r->calc_SC_coeffs(wlv->first);
         }
     }
 
@@ -190,7 +195,7 @@ int main(int argc, char *argv[]) {
         if (next_gv->z > surface_gv->z) surface_gv = next_gv;
     }
     for (auto gwlp = surface_gv->wavelength_grid.begin(); gwlp != surface_gv->wavelength_grid.end(); ++gwlp) {
-        spectrum_file << *(gwlp->lambda) * 1.0e+8 << " " << 4.0 * pi * gwlp->H << std::endl;
+        spectrum_file << gwlp->second.lambda * 1.0e+8 << " " << 4.0 * pi * gwlp->second.H << std::endl;
     }
 
 

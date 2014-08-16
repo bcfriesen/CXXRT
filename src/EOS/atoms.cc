@@ -321,7 +321,7 @@ double AtomicLine::radiative_rate_absorption(const std::vector<GridWavelengthPoi
     for (auto it = wavelength_grid.begin(); it != wavelength_grid.end()-1; ++it) {
         auto it_next = it;
         std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
-        result += 0.5 * (*(it_next->lambda) - *(it->lambda)) * (alpha(*(it->lambda)) * it->J + alpha(*(it_next->lambda)) * it_next->J);
+        result += 0.5 * (it_next->lambda - it->lambda) * (alpha(it->lambda) * it->J + alpha(it_next->lambda) * it_next->J);
     }
     result *= (4.0 * pi) / (h_planck * c_light);
     return result;
@@ -334,9 +334,9 @@ double AtomicLine::radiative_rate_emission(const std::vector<GridWavelengthPoint
         auto it_next = it;
         std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
         double f1, f2;
-        f1 = alpha(*(it->lambda)) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(*(it->lambda), 5)) + it->J) * std::exp(-(h_planck * c_light) / (k_boltzmann **(it->lambda) * temperature));
-        f2 = alpha(*(it_next->lambda)) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(*(it_next->lambda), 5)) + it_next->J) * std::exp(-(h_planck * c_light) / (k_boltzmann **(it_next->lambda) * temperature));
-        result += 0.5 * (*(it_next->lambda) - *(it->lambda)) * (f1 + f2);
+        f1 = alpha(it->lambda) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(it->lambda, 5)) + it->J) * std::exp(-(h_planck * c_light) / (k_boltzmann * it->lambda * temperature));
+        f2 = alpha(it_next->lambda) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(it_next->lambda, 5)) + it_next->J) * std::exp(-(h_planck * c_light) / (k_boltzmann * it_next->lambda * temperature));
+        result += 0.5 * (it_next->lambda - it->lambda) * (f1 + f2);
     }
     result *= (4.0 * pi) / (h_planck * c_light);
     return result;
