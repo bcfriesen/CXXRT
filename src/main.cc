@@ -45,10 +45,12 @@ int main(int argc, char *argv[]) {
 
     if (config["read_mesa_model"].as<bool>()) {
         log_file << "Reading MESA model file: " << config["TAMS_mesa_model_name"].as<std::string>() << " ... ";
+        std::flush(log_file);
         read_mesa_model(config["TAMS_mesa_model_name"].as<std::string>());
         log_file << "done." << std::endl;
     } else {
         log_file << "Building internal model ... ";
+        std::flush(log_file);
         build_internal_model();
         log_file << "done." << std::endl;
     }
@@ -145,21 +147,29 @@ int main(int argc, char *argv[]) {
     }
 
     log_file << std::endl;
-    log_file << "GRID VALUES:" << std::endl;
-    log_file << std::setw(15) << "rho" << std::setw(15) << "temperature" << std::setw(15) << "n_e" << std::endl;
+    log_file << "Setting matter to LTE ... ";
+    std::flush(log_file);
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         calc_n_e_LTE(*gv);
         gv->calc_LTE_populations();
-        log_file << std::setw(15) << gv->rho << std::setw(15) << gv->temperature << std::setw(15) << gv->n_e << std::endl;
     }
+    log_file << "done." << std::endl;
 
+    log_file << std::endl;
+    log_file << "Initializing rays ... ";
+    std::flush(log_file);
     initialize_rays();
+    log_file << "done." << std::endl;
 
+    log_file << std::endl;
+    log_file << "Calculating opacities ... ";
+    std::flush(log_file);
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
             gv->calculate_emissivity_and_opacity(wlp->first);
         }
     }
+    log_file << "done." << std::endl;
 
     for (auto r = rays.begin(); r != rays.end(); ++r) {
         for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
