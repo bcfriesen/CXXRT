@@ -26,7 +26,6 @@ class RayWavelengthPoint {
     double epsilon; // thermalization parameter in two-level-atom formalism
 
     void set_to_LTE(const double temperature);
-    void calc_chi(const double rho, const double lambda);
 };
 
 

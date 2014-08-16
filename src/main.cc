@@ -79,8 +79,6 @@ int main(int argc, char *argv[]) {
 
     std::cout << std::scientific;
 
-    initialize_rays();
-
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         // TODO: this works only for hydrogen! fix when adding more elements!!
         gv->n_g = gv->rho / H_mass;
@@ -128,19 +126,6 @@ int main(int argc, char *argv[]) {
     moments_file << std::scientific;
     moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::setw(15) << "B_lam" << std::endl;
 
-    if (config["print_every_iter"].as<bool>()) {
-        for (GridVoxel& gv: grid) {
-            for (auto &wlp: gv.wavelength_grid) {
-                moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.second.lambda << std::setw(15) << wlp.second.J << std::setw(15) << wlp.second.H << std::setw(15) << wlp.second.K << std::setw(15) << planck_function(wlp.second.lambda, gv.temperature) << std::endl;
-            }
-        }
-        moments_file << std::endl;
-    }
-
-
-
-    //---------------------END OF INITIALIZATION---------------------//
-
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
             for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
@@ -164,11 +149,13 @@ int main(int argc, char *argv[]) {
     log_file << std::setw(15) << "rho" << std::setw(15) << "temperature" << std::setw(15) << "n_e" << std::endl;
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         calc_n_e_LTE(*gv);
+        gv->calc_LTE_populations();
         log_file << std::setw(15) << gv->rho << std::setw(15) << gv->temperature << std::setw(15) << gv->n_e << std::endl;
     }
 
+    initialize_rays();
+
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        gv->calc_LTE_populations();
         for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
             gv->calculate_emissivity_and_opacity(wlp->first);
         }
@@ -182,6 +169,15 @@ int main(int argc, char *argv[]) {
     }
 
     do_ALI();
+
+    if (config["print_every_iter"].as<bool>()) {
+        for (GridVoxel& gv: grid) {
+            for (auto &wlp: gv.wavelength_grid) {
+                moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.second.lambda << std::setw(15) << wlp.second.J << std::setw(15) << wlp.second.H << std::setw(15) << wlp.second.K << std::setw(15) << planck_function(wlp.second.lambda, gv.temperature) << std::endl;
+            }
+        }
+        moments_file << std::endl;
+    }
 
     // Print the emergent spectrum.
     std::ofstream spectrum_file;
