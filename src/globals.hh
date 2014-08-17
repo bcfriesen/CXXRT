@@ -17,4 +17,6 @@ extern std::ofstream log_file;
 
 extern std::ofstream moments_file;
 
+extern std::map<std::string, unsigned int> atomic_symbols;
+
 #endif

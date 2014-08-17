@@ -18,6 +18,7 @@
 #include "initialize_rays.hh"
 #include "build_internal_model.hh"
 #include "read_mesa_model.hh"
+#include "misc/atomic_symbols.hh"
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
@@ -25,6 +26,7 @@ YAML::Node config;
 std::map<std::size_t, double> wavelength_values;
 std::ofstream log_file;
 std::ofstream moments_file;
+std::map<std::string, unsigned int> atomic_symbols;
 
 int main(int argc, char *argv[]) {
 
@@ -42,6 +44,7 @@ int main(int argc, char *argv[]) {
     log_file << "PARAMETERS USED:" << std::endl;
     log_file << config << std::endl << std::endl;
 
+    set_up_atomic_symbols();
 
     if (config["read_mesa_model"].as<bool>()) {
         log_file << "Reading MESA model file: " << config["TAMS_mesa_model_name"].as<std::string>() << " ... ";
