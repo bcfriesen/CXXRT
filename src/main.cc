@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         // TODO: this works only for hydrogen! fix when adding more elements!!
-        gv->n_g = gv->rho / H_mass;
+        gv->n_g = gv->rho * N_A / H_molar_mass;
     }
 
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
