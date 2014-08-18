@@ -82,10 +82,12 @@ void GridVoxel::calculate_emissivity_and_opacity(const std::size_t wl_value_hash
                 eta_tot += line->eta(wavelength_values[wl_value_hash]);
                 kappa_tot += line->kappa(wavelength_values[wl_value_hash]);
             }
-            // Add up contributions from continua.
-            for (auto level: ion->levels) {
-                eta_tot += ion->eta(wavelength_values[wl_value_hash], level, n_e, temperature);
-                kappa_tot += ion->kappa(wavelength_values[wl_value_hash], level, n_e, temperature);
+            if (ion->ionization_stage < ion->atomic_number) {
+                // Add up contributions from continua.
+                for (auto level: ion->levels) {
+                    eta_tot += ion->eta(wavelength_values[wl_value_hash], level, n_e, temperature);
+                    kappa_tot += ion->kappa(wavelength_values[wl_value_hash], level, n_e, temperature);
+                }
             }
         }
     }
