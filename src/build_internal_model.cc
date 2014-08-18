@@ -1,3 +1,4 @@
+#include "constants.hh"
 #include "globals.hh"
 #include "grid.hh"
 
@@ -49,4 +50,21 @@ void build_internal_model() {
         i++;
     }
 
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        Atom H(1);
+        gv->atoms.push_back(H);
+    }
+
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+            // TODO: make this variable when we add more than 1 element
+            atom->number_fraction = 1.0;
+        }
+    }
+
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        // TODO: this works only for hydrogen! fix when adding more elements!!
+        // The factor of 2 at the end accounts for the fact that each hydrogen atom contributes two particles: 1 nucleus and 1 electron.
+        gv->n_g = (gv->rho * N_A / H_molar_mass) * 2.0;
+    }
 }

@@ -85,34 +85,6 @@ int main(int argc, char *argv[]) {
     std::cout << std::scientific;
 
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        // TODO: this works only for hydrogen! fix when adding more elements!!
-        gv->n_g = gv->rho * N_A / H_molar_mass;
-    }
-
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        Atom H(1);
-        gv->atoms.push_back(H);
-    }
-
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-            // TODO: make this variable when we add more than 1 element
-            atom->number_fraction = 1.0;
-        }
-    }
-
-    // Normalize number fractions. They must add up to 1.
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        double tmp = 0.0;
-        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-            tmp += atom->number_fraction;
-        }
-        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-            atom->number_fraction /= tmp;
-        }
-    }
-
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
             for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
                 ion->read_atomic_data();
