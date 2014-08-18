@@ -1,5 +1,5 @@
 include_directories ($ENV{EIGEN})
-include_directories ($ENV{YAML}/include)
+include_directories ($ENV{YAML_INCLUDE_DIR})
 include_directories ($ENV{BOOST_DIR}/include)
 include_directories ($ENV{GSL_INCLUDE_DIR})
 
@@ -24,4 +24,4 @@ set (CXXRT_SOURCES
 
 ADD_EXECUTABLE(CXXRT ${CXXRT_SOURCES})
 
-target_link_libraries(CXXRT $ENV{YAML}/build/libyaml-cpp.a EOS lines $ENV{GSL_LIB_DIR}/libgsl.a $ENV{GSL_LIB_DIR}/libgslcblas.a misc)
+target_link_libraries(CXXRT $ENV{YAML_LIB_DIR}/libyaml-cpp.a EOS lines $ENV{GSL_LIB_DIR}/libgsl.a $ENV{GSL_LIB_DIR}/libgslcblas.a misc)
