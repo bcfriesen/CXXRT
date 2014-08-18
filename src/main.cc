@@ -19,6 +19,7 @@
 #include "build_internal_model.hh"
 #include "read_mesa_model.hh"
 #include "misc/atomic_symbols.hh"
+#include "misc/calc_Delta_T.hh"
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
@@ -103,65 +104,76 @@ int main(int argc, char *argv[]) {
     moments_file << std::scientific;
     moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::setw(15) << "B_lam" << std::endl;
 
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-            for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
-                for (auto line = ion->lines.begin(); line != ion->lines.end(); ++line) {
-                    line->set_line_width(gv->temperature);
+    for (unsigned int i = 0; i < config["num_temp_correction_iterations"].as<unsigned int>(); ++i) {
+        log_file << std::endl;
+        log_file << "Doing temperature correction iteration " << i+1 << " ..." << std::endl;
+
+        for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+            for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+                for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+                    for (auto line = ion->lines.begin(); line != ion->lines.end(); ++line) {
+                        line->set_line_width(gv->temperature);
+                    }
                 }
             }
         }
-    }
 
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-            for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
-                ion->calc_partition_function(gv->temperature);
+        for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+            for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+                for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+                    ion->calc_partition_function(gv->temperature);
+                }
             }
         }
-    }
 
-    log_file << std::endl;
-    log_file << "Setting matter to LTE ... ";
-    std::flush(log_file);
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        calc_n_e_LTE(*gv);
-        gv->calc_LTE_populations();
-    }
-    log_file << "done." << std::endl;
-
-    log_file << std::endl;
-    log_file << "Initializing rays ... ";
-    std::flush(log_file);
-    initialize_rays();
-    log_file << "done." << std::endl;
-
-    log_file << std::endl;
-    log_file << "Calculating opacities ... ";
-    std::flush(log_file);
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
-            gv->calculate_emissivity_and_opacity(wlp->first);
+        log_file << std::endl;
+        log_file << "Setting matter to LTE ... ";
+        std::flush(log_file);
+        for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+            calc_n_e_LTE(*gv);
+            gv->calc_LTE_populations();
         }
-    }
-    log_file << "done." << std::endl;
+        log_file << "done." << std::endl;
 
-    for (auto r = rays.begin(); r != rays.end(); ++r) {
-        for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
-            r->calc_tau(wlv->first);
-            r->calc_SC_coeffs(wlv->first);
-        }
-    }
+        log_file << std::endl;
+        log_file << "Initializing rays ... ";
+        std::flush(log_file);
+        initialize_rays();
+        log_file << "done." << std::endl;
 
-    do_ALI();
-
-    if (config["print_every_iter"].as<bool>()) {
-        for (GridVoxel& gv: grid) {
-            for (auto &wlp: gv.wavelength_grid) {
-                moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.second.lambda << std::setw(15) << wlp.second.J << std::setw(15) << wlp.second.H << std::setw(15) << wlp.second.K << std::setw(15) << planck_function(wlp.second.lambda, gv.temperature) << std::endl;
+        log_file << std::endl;
+        log_file << "Calculating opacities ... ";
+        std::flush(log_file);
+        for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+            for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+                gv->calculate_emissivity_and_opacity(wlp->first);
             }
         }
-        moments_file << std::endl;
+        log_file << "done." << std::endl;
+
+        for (auto r = rays.begin(); r != rays.end(); ++r) {
+            for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+                r->calc_tau(wlv->first);
+                r->calc_SC_coeffs(wlv->first);
+            }
+        }
+
+        do_ALI();
+
+        if (config["print_every_iter"].as<bool>()) {
+            for (GridVoxel& gv: grid) {
+                for (auto &wlp: gv.wavelength_grid) {
+                    moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.second.lambda << std::setw(15) << wlp.second.J << std::setw(15) << wlp.second.H << std::setw(15) << wlp.second.K << std::setw(15) << planck_function(wlp.second.lambda, gv.temperature) << std::endl;
+                }
+            }
+            moments_file << std::endl;
+        }
+
+        std::cout << std::endl;
+        for (auto &gv: grid) {
+            std::cout << "z: "<< gv.z << " current T: " << gv.temperature << " new T: " << gv.temperature + calc_Delta_T(gv) << " Delta T: " << calc_Delta_T(gv) <<  std::endl;
+            gv.temperature += calc_Delta_T(gv);
+        }
     }
 
     // Print the emergent spectrum.

@@ -24,3 +24,5 @@ atomic_data_root_folder: /home/brian/CXXRT_atomic_data
 
 read_mesa_model: true
 TAMS_mesa_model_name: /home/brian/1M_at_TAMS_cutoff.mod
+
+num_temp_correction_iterations: 10
