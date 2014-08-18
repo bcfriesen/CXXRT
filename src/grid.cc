@@ -7,6 +7,7 @@
 #include "constants.hh"
 #include "EOS/Phi.hh"
 #include "EOS/LTE_EOS.hh"
+#include "planck_function.hh"
 
 void GridVoxel::calc_J(const std::size_t wl_value_hash) {
     double result = 0.0;
@@ -108,4 +109,147 @@ void GridVoxel::calculate_emissivity_and_opacity(const std::size_t wl_value_hash
         // set the grid scalar value to the ray value.
         wavelength_grid[wl_value_hash].epsilon = ray_it->wavelength_grid[wl_value_hash].kappa / (ray_it->wavelength_grid[wl_value_hash].kappa + ray_it->wavelength_grid[wl_value_hash].sigma);
     }
+}
+
+
+double GridVoxel::calc_J_wl_integral() const {
+    double result = 0.0;
+    bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
+    for (auto it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
+        if (!first_time) {
+            auto it_prev = it;
+            std::advance(it_prev, -1);
+            result += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.J - it_prev->second.J);
+        }
+        first_time = false;
+    }
+
+    return result;
+}
+
+
+double GridVoxel::calc_H_wl_integral() const {
+    double result = 0.0;
+    bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
+    for (auto it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
+        if (!first_time) {
+            auto it_prev = it;
+            std::advance(it_prev, -1);
+            result += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.H - it_prev->second.H);
+        }
+        first_time = false;
+    }
+
+    return result;
+}
+
+
+double GridVoxel::calc_K_wl_integral() const {
+    double result = 0.0;
+    bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
+    for (auto it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
+        if (!first_time) {
+            auto it_prev = it;
+            std::advance(it_prev, -1);
+            result += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.K - it_prev->second.K);
+        }
+        first_time = false;
+    }
+
+    return result;
+}
+
+
+double GridVoxel::calc_chi_H() {
+    double result = 0.0;
+
+    // chi is in principle a ray-dependent quantity, but all rays should have
+    // the same value of chi in a given voxel. So just grab it from the first
+    // ray we can find.
+    const auto first_ray = ray_intersection_data.begin();
+    const auto first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
+
+    bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
+    for (auto it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
+        if (!first_time) {
+            auto it_prev = it;
+            std::advance(it_prev, -1);
+            const double lambda = wavelength_grid[it->first].lambda;
+            const double lambda_prev = wavelength_grid[it_prev->first].lambda;
+            const double H = wavelength_grid[it->first].H;
+            const double H_prev = wavelength_grid[it_prev->first].H;
+            const double chi = first_ray_raydata->wavelength_grid[it->first].chi;
+            const double chi_prev = first_ray_raydata->wavelength_grid[it_prev->first].chi;
+            result += 0.5 * (lambda - lambda_prev) * (chi * H - chi_prev * H_prev);
+        }
+        first_time = false;
+    }
+    result /= calc_H_wl_integral();
+
+    return result;
+}
+
+
+double GridVoxel::calc_kappa_J() {
+    double result = 0.0;
+
+    // kappa is in principle a ray-dependent quantity, but all rays should have
+    // the same value of kappa in a given voxel. So just grab it from the first
+    // ray we can find.
+    const auto first_ray = ray_intersection_data.begin();
+    const auto first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
+
+    bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
+    for (auto it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
+        if (!first_time) {
+            auto it_prev = it;
+            std::advance(it_prev, -1);
+            const double lambda = wavelength_grid[it->first].lambda;
+            const double lambda_prev = wavelength_grid[it_prev->first].lambda;
+            const double J = wavelength_grid[it->first].J;
+            const double J_prev = wavelength_grid[it_prev->first].J;
+            const double kappa = first_ray_raydata->wavelength_grid[it->first].kappa;
+            const double kappa_prev = first_ray_raydata->wavelength_grid[it_prev->first].kappa;
+            result += 0.5 * (lambda - lambda_prev) * (kappa * J - kappa_prev * J_prev);
+        }
+        first_time = false;
+    }
+    result /= calc_J_wl_integral();
+
+    return result;
+}
+
+
+double GridVoxel::calc_kappa_B() {
+    double result = 0.0;
+
+    // kappa is in principle a ray-dependent quantity, but all rays should have
+    // the same value of kappa in a given voxel. So just grab it from the first
+    // ray we can find.
+    const auto first_ray = ray_intersection_data.begin();
+    const auto first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
+
+    bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
+    for (auto it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
+        if (!first_time) {
+            auto it_prev = it;
+            std::advance(it_prev, -1);
+            const double lambda = wavelength_grid[it->first].lambda;
+            const double lambda_prev = wavelength_grid[it_prev->first].lambda;
+            const double B = planck_function(wavelength_values[it->first], temperature);
+            const double B_prev = planck_function(wavelength_values[it_prev->first], temperature);
+            const double kappa = first_ray_raydata->wavelength_grid[it->first].kappa;
+            const double kappa_prev = first_ray_raydata->wavelength_grid[it_prev->first].kappa;
+            result += 0.5 * (lambda - lambda_prev) * (kappa * B - kappa_prev * B_prev);
+        }
+        first_time = false;
+    }
+    result /= (sigma_stefan * std::pow(temperature, 4) / pi);
+
+    return result;
+}
+
+
+double GridVoxel::calc_Eddington_factor_f() const {
+    return calc_K_wl_integral() / calc_J_wl_integral();
 }
