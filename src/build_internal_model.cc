@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "constants.hh"
 #include "globals.hh"
 #include "grid.hh"
@@ -54,6 +56,40 @@ void build_internal_model() {
         Atom H(1);
         gv->atoms.push_back(H);
     }
+
+    // Read solar abundance data.
+    const std::string solar_abundance_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + "solar_abundances.dat";
+    std::ifstream solar_abundance_data_file;
+    std::string one_line;
+    solar_abundance_data_file.open(solar_abundance_data_file_name.c_str()); // in C++11 the argument of open() can be a string
+    if (!solar_abundance_data_file.good()) {
+        std::cerr << "ERROR: could not open solar abundance data file for reading!: " << solar_abundance_data_file_name << std::endl;
+        exit(1);
+    }
+    // Skip first line, just has comments.
+    std::getline(solar_abundance_data_file, one_line);
+    while (std::getline(solar_abundance_data_file, one_line)) {
+        std::string element;
+        double number_fraction;
+        std::istringstream iss(one_line);
+        iss >> element >> number_fraction;
+        for (auto &gv: grid) {
+            for (auto &atom: gv.atoms) {
+                if (atom.atomic_number == atomic_symbols[element]) {
+                    atom.number_fraction = number_fraction; // These number fractions are relative to hydrogen so we have to re-normalize them after we read them all in.
+                }
+            }
+            // Re-normalize the number fractions.
+            double tmp = 0.0;
+            for (auto &atom: gv.atoms) {
+                tmp += atom.number_fraction;
+            }
+            for (auto &atom: gv.atoms) {
+                atom.number_fraction /= tmp;
+            }
+        }
+    }
+    solar_abundance_data_file.close();
 
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
