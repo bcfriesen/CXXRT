@@ -87,6 +87,10 @@ void Ion::read_atomic_data() {
         const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + convert.str() + ".dat";
         std::ifstream atomic_data_file;
         atomic_data_file.open(atomic_data_file_name.c_str()); // in C++11 the argument of open() can be a string
+        if (!atomic_data_file.good()) {
+            std::cerr << "ERROR: could not open atomic data file for reading!: " << atomic_data_file_name << std::endl;
+            exit(1);
+        }
         std::string one_line;
         double wavelength, log_gf, first_energy_level, J_first, second_energy_level, J_second;
         bool duplicate = false;
