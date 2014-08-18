@@ -29,6 +29,7 @@ class GridVoxel {
     double calc_kappa_J(); // can't mark this as const because we access map keys
     double calc_kappa_B(); // can't mark this as const because we access map keys
     double calc_Eddington_factor_f() const;
+    double calc_eta_minus_chi_J_wl_integral();
 };
 
 #endif

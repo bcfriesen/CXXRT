@@ -253,3 +253,33 @@ double GridVoxel::calc_kappa_B() {
 double GridVoxel::calc_Eddington_factor_f() const {
     return calc_K_wl_integral() / calc_J_wl_integral();
 }
+
+
+double GridVoxel::calc_eta_minus_chi_J_wl_integral() {
+    double result = 0.0;
+
+    // chi and eta are in principle ray-dependent quantities, but all rays
+    // should have the same values of ch and eta in a given voxel. So just grab
+    // them from the first ray we can find.
+    const auto first_ray = ray_intersection_data.begin();
+    const auto first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
+
+    bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
+    for (auto it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
+        if (!first_time) {
+            auto it_prev = it;
+            std::advance(it_prev, -1);
+            const double lambda = wavelength_grid[it->first].lambda;
+            const double lambda_prev = wavelength_grid[it_prev->first].lambda;
+            const double J = wavelength_grid[it->first].J;
+            const double J_prev = wavelength_grid[it_prev->first].J;
+            const double eta = first_ray_raydata->wavelength_grid[it->first].eta;
+            const double eta_prev = first_ray_raydata->wavelength_grid[it_prev->first].eta;
+            const double chi = first_ray_raydata->wavelength_grid[it->first].chi;
+            const double chi_prev = first_ray_raydata->wavelength_grid[it_prev->first].chi;
+            result += 0.5 * (lambda - lambda_prev) * ((eta - chi * J) - (eta_prev - chi_prev * J_prev));
+        }
+        first_time = false;
+    }
+    return result;
+}
