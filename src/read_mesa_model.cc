@@ -70,7 +70,9 @@ void read_mesa_model(const std::string model_name) {
 
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         Atom H(1);
+        Atom He(2);
         gv->atoms.push_back(H);
+        gv->atoms.push_back(He);
     }
 
     // skip next 4 lines
