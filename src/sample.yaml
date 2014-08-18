@@ -8,8 +8,8 @@ radius_max:  7.0e+10
 log10_rho_min: -7.0
 log10_rho_max:  0.0
 
-wl_min: 3.0e-5
-wl_max: 7.0e-5
+wl_min: 1.0e-6
+wl_max: 1.0e-4
 
 blackbody_temperature: 5778.0
 
@@ -23,4 +23,4 @@ spectrum_file: spectrum.dat
 atomic_data_root_folder: /home/brian/CXXRT_atomic_data
 
 read_mesa_model: true
-TAMS_mesa_model_name: 1M_at_TAMS.mod
+TAMS_mesa_model_name: /home/brian/1M_at_TAMS_cutoff.mod

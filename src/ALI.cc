@@ -74,22 +74,10 @@ void do_ALI() {
             }
             Eigen::SparseMatrix<double> mtx(n_depth_pts, n_depth_pts);
             mtx.setFromTriplets(tripletList.begin(), tripletList.end());
-            Eigen::ConjugateGradient< Eigen::SparseMatrix<double> > cg;
-            cg.compute(mtx);
+            Eigen::SimplicialLDLT< Eigen::SparseMatrix<double> > solver;
+            solver.compute(mtx);
             // Iterate the conjugate gradient method on the ALI linear system until it converges.
-            unsigned int n_cg_iter = 0;
-            const unsigned int max_cg_iter = 20;
-            const double max_err_tol = 1.0e-10;
-            while (true) {
-                J_new = cg.solve(rhs);
-                n_cg_iter++;
-                if (cg.error() <= max_err_tol) break;
-                if (n_cg_iter > max_cg_iter) {
-                    std::cerr << "ERROR: could not solve sparse ALI system! Error after " << n_cg_iter << " CG iterations: " << cg.error() << std::endl;
-                    exit(1);
-                }
-            }
-
+            J_new = solver.solve(rhs);
             rmsd = calc_rmsd(J_old, J_new);
             J_old = J_new;
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
