@@ -192,8 +192,6 @@ void Ion::read_atomic_data() {
             std::istringstream iss(one_line);
             iss >> wavelength >> log_gf >> first_energy_level >> J_first >> second_energy_level >> J_second;
 
-            //std::cout << "Trying to match line: " << wavelength*1.0e+1 << " A ..." << std::endl;
-
             double lower_energy_level;
             double upper_energy_level;
             if (first_energy_level > second_energy_level) {
@@ -203,9 +201,6 @@ void Ion::read_atomic_data() {
                 upper_energy_level = second_energy_level;
                 lower_energy_level = first_energy_level;
             }
-
-            //std::cout << "Line lower energy: " << lower_energy_level*h_planck*c_light << std::endl;
-            //std::cout << "Line upper energy: " << upper_energy_level*h_planck*c_light << std::endl;
 
             lines.at(i).wavelength = wavelength*1.0e-7; // Kurucz wavelengths are in nanometers
             const int g = int(2.0*J_first + 1.0);
@@ -218,13 +213,11 @@ void Ion::read_atomic_data() {
                 if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
                     if (std::abs(lower_energy_level*h_planck*c_light - level->energy) < tolerance) {
                         lines.at(i).lower_level = &(*level);
-                        //std::cout << "Matched lower level of line (ground state): " << level->energy << std::endl;
                         found_match = true;
                         break;
                     }
                 } else if ((std::abs(lower_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
                     lines.at(i).lower_level = &(*level);
-                    //std::cout << "Matched lower level of line: " << level->energy << std::endl;
                     found_match = true;
                     break;
                 } else {
@@ -240,13 +233,11 @@ void Ion::read_atomic_data() {
                 if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
                     if (std::abs(upper_energy_level*h_planck*c_light - level->energy) < tolerance) {
                         lines.at(i).upper_level = &(*level);
-                        //std::cout << "Matched upper level of line (ground state): " << level->energy << std::endl;
                         found_match = true;
                         break;
                     }
                 } else if ((std::abs(upper_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
                     lines.at(i).upper_level = &(*level);
-                    //std::cout << "Matched upper level of line: " << level->energy << std::endl;
                     found_match = true;
                     break;
                 } else {
