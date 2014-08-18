@@ -54,7 +54,9 @@ void build_internal_model() {
 
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
         Atom H(1);
+        Atom He(2);
         gv->atoms.push_back(H);
+        gv->atoms.push_back(He);
     }
 
     // Read solar abundance data.
@@ -92,15 +94,12 @@ void build_internal_model() {
     solar_abundance_data_file.close();
 
     for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-            // TODO: make this variable when we add more than 1 element
-            atom->number_fraction = 1.0;
-        }
-    }
-
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        // TODO: this works only for hydrogen! fix when adding more elements!!
-        // The factor of 2 at the end accounts for the fact that each hydrogen atom contributes two particles: 1 nucleus and 1 electron.
-        gv->n_g = (gv->rho * N_A / H_molar_mass) * 2.0;
+        // TODO: get rid of this hacky stuff and make it automagic
+        const double h1_mass_frac = gv->atoms.at(0).number_fraction * H_molar_mass / N_A;
+        const double he4_mass_frac = gv->atoms.at(1).number_fraction * He_molar_mass / N_A;
+        const double H_number_density  = gv->rho * h1_mass_frac   * N_A / H_molar_mass;
+        const double He_number_density = gv->rho * he4_mass_frac  * N_A / He_molar_mass;
+        grid.at(i).n_g = H_number_density     *  2.0
+                         + He_number_density  *  3.0;
     }
 }
