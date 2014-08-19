@@ -21,9 +21,12 @@ void do_ALI() {
     double rmsd;
     const double max_tol = 1.0e-8;
 
-#pragma omp parallel
+    std::map<std::size_t, double>::const_iterator wlv;
+#pragma omp parallel private (wlv)
     {
-    for (std::map<std::size_t, double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+    for (wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+#pragma omp single nowait
+        {
         // use thread-specific buffers to store output, then dump them to the
         // log file at the end. This way the text isn't garbled by racy output.
         std::stringstream thread_buf;
@@ -97,8 +100,9 @@ void do_ALI() {
         thread_buf << " Converged to relative error: " << rmsd << " after " << iter << " iterations." << std::endl;
 #pragma omp critical
         log_file << thread_buf.rdbuf();
-    }
+    } // #pragma omp single nowait
     } // #pragma omp parallel
+    }
 
 
 }
