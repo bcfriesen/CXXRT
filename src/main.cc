@@ -156,9 +156,15 @@ int main(int argc, char *argv[]) {
         log_file << std::endl;
         log_file << "Calculating opacities ... ";
         std::flush(log_file);
-        for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-            for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
-                gv->calculate_emissivity_and_opacity(wlp->first);
+        #pragma omp parallel private (gv)
+        {
+            for (gv = grid.begin(); gv != grid.end(); ++gv) {
+                #pragma omp single nowait
+                {
+                    for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+                        gv->calculate_emissivity_and_opacity(wlp->first);
+                    }
+                }
             }
         }
         log_file << "done." << std::endl;
