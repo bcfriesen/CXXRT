@@ -104,19 +104,26 @@ int main(int argc, char *argv[]) {
     moments_file << std::scientific;
     moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::setw(15) << "B_lam" << std::endl;
 
-    for (unsigned int i = 0; i < config["num_temp_correction_iterations"].as<unsigned int>(); ++i) {
-        log_file << std::endl;
-        log_file << "Doing temperature correction iteration " << i+1 << " ..." << std::endl;
-
-        for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-            for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-                for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
-                    for (auto line = ion->lines.begin(); line != ion->lines.end(); ++line) {
-                        line->set_line_width(gv->temperature);
-                    }
+    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+            for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+                for (auto line = ion->lines.begin(); line != ion->lines.end(); ++line) {
+                    line->set_line_width(gv->temperature);
                 }
             }
         }
+    }
+
+    log_file << std::endl;
+    log_file << "Initializing rays ... ";
+    std::flush(log_file);
+    initialize_rays();
+    log_file << "done." << std::endl;
+
+
+    for (unsigned int i = 0; i < config["num_temp_correction_iterations"].as<unsigned int>(); ++i) {
+        log_file << std::endl;
+        log_file << "Doing temperature correction iteration " << i+1 << " ..." << std::endl;
 
         for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
             for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
@@ -133,12 +140,6 @@ int main(int argc, char *argv[]) {
             calc_n_e_LTE(*gv);
             gv->calc_LTE_populations();
         }
-        log_file << "done." << std::endl;
-
-        log_file << std::endl;
-        log_file << "Initializing rays ... ";
-        std::flush(log_file);
-        initialize_rays();
         log_file << "done." << std::endl;
 
         log_file << std::endl;
@@ -171,8 +172,12 @@ int main(int argc, char *argv[]) {
 
         std::cout << std::endl;
         for (auto &gv: grid) {
-            std::cout << "z: "<< gv.z << " current T: " << gv.temperature << " new T: " << gv.temperature + calc_Delta_T(gv) << " Delta T: " << calc_Delta_T(gv) <<  std::endl;
-            gv.temperature += calc_Delta_T(gv);
+            double Delta_T = calc_Delta_T(gv);
+            if (std::abs(Delta_T / gv.temperature) > 0.1)
+                // If the requested temperature change is large, damp it to at most 20% of the current temperature.
+                Delta_T *= (0.2 * gv.temperature / std::abs(Delta_T));
+            std::cout << "z: "<< gv.z << " current T: " << gv.temperature << " new T: " << gv.temperature + Delta_T << " Delta T: " << Delta_T <<  std::endl;
+            gv.temperature += Delta_T;
         }
     }
 
