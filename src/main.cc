@@ -4,6 +4,10 @@
 #include <iomanip>
 #include <fstream>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include <yaml-cpp/yaml.h>
 #include <boost/functional/hash.hpp>
 
@@ -136,9 +140,16 @@ int main(int argc, char *argv[]) {
         log_file << std::endl;
         log_file << "Setting matter to LTE ... ";
         std::flush(log_file);
-        for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-            calc_n_e_LTE(*gv);
-            gv->calc_LTE_populations();
+        std::vector<GridVoxel>::iterator gv;
+        #pragma omp parallel private (gv)
+        {
+            for (gv = grid.begin(); gv != grid.end(); ++gv) {
+                #pragma omp single nowait
+                {
+                    calc_n_e_LTE(*gv);
+                    gv->calc_LTE_populations();
+                }
+            }
         }
         log_file << "done." << std::endl;
 
