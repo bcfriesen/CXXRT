@@ -170,6 +170,21 @@ int main(int argc, char *argv[]) {
             moments_file << std::endl;
         }
 
+        // A bunch of post-processing integrals we need to do temperature corrections.
+        log_file << std::endl << "Calculating post-processing integrals ... ";
+        std::flush(log_file);
+        for (auto &gv: grid) {
+            gv.calc_J_wl_integral();
+            gv.calc_H_wl_integral();
+            gv.calc_K_wl_integral();
+            gv.calc_chi_H();
+            gv.calc_kappa_J();
+            gv.calc_kappa_B();
+            gv.calc_Eddington_factor_f();
+            gv.calc_eta_minus_chi_J_wl_integral();
+        }
+        log_file << "done." << std::endl;
+
         std::cout << std::endl;
         for (auto &gv: grid) {
             double Delta_T = calc_Delta_T(gv);

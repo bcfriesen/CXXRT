@@ -112,56 +112,50 @@ void GridVoxel::calculate_emissivity_and_opacity(const std::size_t wl_value_hash
 }
 
 
-double GridVoxel::calc_J_wl_integral() const {
-    double result = 0.0;
+void GridVoxel::calc_J_wl_integral() {
+    J_wl_integral = 0.0;
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
     for (auto it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
         if (!first_time) {
             auto it_prev = it;
             std::advance(it_prev, -1);
-            result += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.J - it_prev->second.J);
+            J_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.J - it_prev->second.J);
         }
         first_time = false;
     }
-
-    return result;
 }
 
 
-double GridVoxel::calc_H_wl_integral() const {
-    double result = 0.0;
+void GridVoxel::calc_H_wl_integral() {
+    H_wl_integral = 0.0;
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
     for (auto it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
         if (!first_time) {
             auto it_prev = it;
             std::advance(it_prev, -1);
-            result += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.H - it_prev->second.H);
+            H_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.H - it_prev->second.H);
         }
         first_time = false;
     }
-
-    return result;
 }
 
 
-double GridVoxel::calc_K_wl_integral() const {
-    double result = 0.0;
+void GridVoxel::calc_K_wl_integral() {
+    K_wl_integral = 0.0;
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
     for (auto it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
         if (!first_time) {
             auto it_prev = it;
             std::advance(it_prev, -1);
-            result += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.K - it_prev->second.K);
+            K_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.K - it_prev->second.K);
         }
         first_time = false;
     }
-
-    return result;
 }
 
 
-double GridVoxel::calc_chi_H() {
-    double result = 0.0;
+void GridVoxel::calc_chi_H() {
+    chi_H = 0.0;
 
     // chi is in principle a ray-dependent quantity, but all rays should have
     // the same value of chi in a given voxel. So just grab it from the first
@@ -180,18 +174,17 @@ double GridVoxel::calc_chi_H() {
             const double H_prev = wavelength_grid[it_prev->first].H;
             const double chi = first_ray_raydata->wavelength_grid[it->first].chi;
             const double chi_prev = first_ray_raydata->wavelength_grid[it_prev->first].chi;
-            result += 0.5 * (lambda - lambda_prev) * (chi * H - chi_prev * H_prev);
+            chi_H += 0.5 * (lambda - lambda_prev) * (chi * H - chi_prev * H_prev);
         }
         first_time = false;
     }
-    result /= calc_H_wl_integral();
-
-    return result;
+    // Make sure we call calc_H_wl_integral before this!
+    chi_H /= H_wl_integral;
 }
 
 
-double GridVoxel::calc_kappa_J() {
-    double result = 0.0;
+void GridVoxel::calc_kappa_J() {
+    kappa_J = 0.0;
 
     // kappa is in principle a ray-dependent quantity, but all rays should have
     // the same value of kappa in a given voxel. So just grab it from the first
@@ -210,18 +203,17 @@ double GridVoxel::calc_kappa_J() {
             const double J_prev = wavelength_grid[it_prev->first].J;
             const double kappa = first_ray_raydata->wavelength_grid[it->first].kappa;
             const double kappa_prev = first_ray_raydata->wavelength_grid[it_prev->first].kappa;
-            result += 0.5 * (lambda - lambda_prev) * (kappa * J - kappa_prev * J_prev);
+            kappa_J += 0.5 * (lambda - lambda_prev) * (kappa * J - kappa_prev * J_prev);
         }
         first_time = false;
     }
-    result /= calc_J_wl_integral();
-
-    return result;
+    // Make sure we call calc_J_wl_integral before this!
+    kappa_J /= J_wl_integral;
 }
 
 
-double GridVoxel::calc_kappa_B() {
-    double result = 0.0;
+void GridVoxel::calc_kappa_B() {
+    kappa_B = 0.0;
 
     // kappa is in principle a ray-dependent quantity, but all rays should have
     // the same value of kappa in a given voxel. So just grab it from the first
@@ -240,23 +232,22 @@ double GridVoxel::calc_kappa_B() {
             const double B_prev = planck_function(wavelength_values[it_prev->first], temperature);
             const double kappa = first_ray_raydata->wavelength_grid[it->first].kappa;
             const double kappa_prev = first_ray_raydata->wavelength_grid[it_prev->first].kappa;
-            result += 0.5 * (lambda - lambda_prev) * (kappa * B - kappa_prev * B_prev);
+            kappa_B += 0.5 * (lambda - lambda_prev) * (kappa * B - kappa_prev * B_prev);
         }
         first_time = false;
     }
-    result /= (sigma_stefan * std::pow(temperature, 4) / pi);
-
-    return result;
+    kappa_B /= (sigma_stefan * std::pow(temperature, 4) / pi);
 }
 
 
-double GridVoxel::calc_Eddington_factor_f() const {
-    return calc_K_wl_integral() / calc_J_wl_integral();
+void GridVoxel::calc_Eddington_factor_f() {
+    // Make sure we call calc_K_wl_integral() and calc_J_wl_integral before this!
+    Eddington_factor_f = K_wl_integral / J_wl_integral;
 }
 
 
-double GridVoxel::calc_eta_minus_chi_J_wl_integral() {
-    double result = 0.0;
+void GridVoxel::calc_eta_minus_chi_J_wl_integral() {
+    eta_minus_chi_J_wl_integral = 0.0;
 
     // chi and eta are in principle ray-dependent quantities, but all rays
     // should have the same values of ch and eta in a given voxel. So just grab
@@ -277,9 +268,8 @@ double GridVoxel::calc_eta_minus_chi_J_wl_integral() {
             const double eta_prev = first_ray_raydata->wavelength_grid[it_prev->first].eta;
             const double chi = first_ray_raydata->wavelength_grid[it->first].chi;
             const double chi_prev = first_ray_raydata->wavelength_grid[it_prev->first].chi;
-            result += 0.5 * (lambda - lambda_prev) * ((eta - chi * J) - (eta_prev - chi_prev * J_prev));
+            eta_minus_chi_J_wl_integral += 0.5 * (lambda - lambda_prev) * ((eta - chi * J) - (eta_prev - chi_prev * J_prev));
         }
         first_time = false;
     }
-    return result;
 }
