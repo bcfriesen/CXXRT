@@ -68,7 +68,7 @@ void read_mesa_model(const std::string model_name) {
 
     grid.resize(n_shells);
 
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
         Atom H(1);
         Atom He(2);
         gv->atoms.push_back(H);
@@ -102,7 +102,7 @@ void read_mesa_model(const std::string model_name) {
             >> ne20_mass_frac_string
             >> mg24_mass_frac_string;
 
-        auto where_is_d(density_string.find_first_of("Dd"));
+        unsigned int where_is_d(density_string.find_first_of("Dd"));
         if (where_is_d != std::string::npos)
             density_string[where_is_d] = 'E';
         density = atof(density_string.c_str()); // use std::stod when more compilers are C++11-compliant
@@ -218,21 +218,21 @@ void read_mesa_model(const std::string model_name) {
                          + Mg_number_density  * 13.0;
 
         // TODO: make this less clunky; maybe put atoms in a map as well instead of a vector?
-        for (auto &atom: grid.at(i).atoms) {
-            if (atom.atomic_number == atomic_symbols["H"]) {
-                atom.number_fraction = H_number_density / N_N;
-            } else if (atom.atomic_number == atomic_symbols["He"]) {
-                atom.number_fraction = He_number_density / N_N;
-            } else if (atom.atomic_number == atomic_symbols["C"]) {
-                atom.number_fraction = C_number_density / N_N;
-            } else if (atom.atomic_number == atomic_symbols["N"]) {
-                atom.number_fraction = N_number_density / N_N;
-            } else if (atom.atomic_number == atomic_symbols["O"]) {
-                atom.number_fraction = O_number_density / N_N;
-            } else if (atom.atomic_number == atomic_symbols["Ne"]) {
-                atom.number_fraction = Ne_number_density / N_N;
-            } else if (atom.atomic_number == atomic_symbols["Mg"]) {
-                atom.number_fraction = Mg_number_density / N_N;
+        for (std::vector<Atom>::iterator atom = grid.at(i).atoms.begin(); atom != grid.at(i).atoms.end(); ++atom) {
+            if (atom->atomic_number == atomic_symbols["H"]) {
+                atom->number_fraction = H_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["He"]) {
+                atom->number_fraction = He_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["C"]) {
+                atom->number_fraction = C_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["N"]) {
+                atom->number_fraction = N_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["O"]) {
+                atom->number_fraction = O_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["Ne"]) {
+                atom->number_fraction = Ne_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["Mg"]) {
+                atom->number_fraction = Mg_number_density / N_N;
             }
         }
     }

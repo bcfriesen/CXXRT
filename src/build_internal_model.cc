@@ -29,9 +29,9 @@ void build_internal_model() {
 
     grid.resize(n_depth_pts);
 
-    for (GridVoxel& gv: grid) {
-        gv.rho = std::pow(10.0, log10_rho);
-        gv.temperature = config["blackbody_temperature"].as<double>();
+    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+        gv->rho = std::pow(10.0, log10_rho);
+        gv->temperature = config["blackbody_temperature"].as<double>();
         log10_rho += log10_delta_rho;
     }
 
@@ -47,12 +47,12 @@ void build_internal_model() {
         exit(1);
     }
     unsigned int i = 0;
-    for (auto it = grid.rbegin(); it != grid.rend(); ++it) {
+    for (std::vector<GridVoxel>::reverse_iterator it = grid.rbegin(); it != grid.rend(); ++it) {
         it->z = radius_min + double(i) * (radius_max - radius_min) / double(n_depth_pts-1);
         i++;
     }
 
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
         Atom H(1);
         Atom He(2);
         gv->atoms.push_back(H);
@@ -75,25 +75,25 @@ void build_internal_model() {
         double number_fraction;
         std::istringstream iss(one_line);
         iss >> element >> number_fraction;
-        for (auto &gv: grid) {
-            for (auto &atom: gv.atoms) {
-                if (atom.atomic_number == atomic_symbols[element]) {
-                    atom.number_fraction = number_fraction; // These number fractions are relative to hydrogen so we have to re-normalize them after we read them all in.
+        for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+            for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+                if (atom->atomic_number == atomic_symbols[element]) {
+                    atom->number_fraction = number_fraction; // These number fractions are relative to hydrogen so we have to re-normalize them after we read them all in.
                 }
             }
             // Re-normalize the number fractions.
             double tmp = 0.0;
-            for (auto &atom: gv.atoms) {
-                tmp += atom.number_fraction;
+            for (std::vector<Atom>::const_iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+                tmp += atom->number_fraction;
             }
-            for (auto &atom: gv.atoms) {
-                atom.number_fraction /= tmp;
+            for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+                atom->number_fraction /= tmp;
             }
         }
     }
     solar_abundance_data_file.close();
 
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
+    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
         // TODO: get rid of this hacky stuff and make it automagic
         const double h1_mass_frac = gv->atoms.at(0).number_fraction * H_molar_mass / N_A;
         const double he4_mass_frac = gv->atoms.at(1).number_fraction * He_molar_mass / N_A;

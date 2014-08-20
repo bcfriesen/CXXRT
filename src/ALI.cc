@@ -46,16 +46,16 @@ void do_ALI() {
         Eigen::VectorXd epsilon(n_depth_pts);
 
         do {
-            for (Ray& r: rays) {
-                for (RayData &rd: r.raydata) {
-                    rd.calc_source_fn(wlv->first);
+            for (std::vector<Ray>::iterator r = rays.begin(); r != rays.end(); ++r) {
+                for (std::vector<RayData>::iterator rd = r->raydata.begin(); rd != r->raydata.end(); ++rd) {
+                    rd->calc_source_fn(wlv->first);
                 }
-                r.formal_soln(wlv->first);
+                r->formal_soln(wlv->first);
             }
-            for (GridVoxel& gv: grid) {
-                gv.calc_J(wlv->first);
-                gv.calc_H(wlv->first);
-                gv.calc_K(wlv->first);
+            for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+                gv->calc_J(wlv->first);
+                gv->calc_H(wlv->first);
+                gv->calc_K(wlv->first);
             }
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
                 J_fs(j) = grid.at(j).wavelength_grid[wlv->first].J;
@@ -88,9 +88,9 @@ void do_ALI() {
                 break;
 
             if (config["print_every_iter"].as<bool>()) {
-                for (GridVoxel& gv: grid) {
-                    for (auto &wlp: gv.wavelength_grid) {
-                        moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.second.lambda << std::setw(15) << wlp.second.J << std::setw(15) << wlp.second.H << std::setw(15) << wlp.second.K << std::setw(15) << planck_function(wlp.second.lambda, gv.temperature) << std::endl;
+                for (std::vector<GridVoxel>::const_iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+                    for (std::map<std::size_t, GridWavelengthPoint>::const_iterator wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+                        moments_file << std::setw(16) << gv->z << std::setw(15) << gv->rho << std::setw(15) << wlp->second.lambda << std::setw(15) << wlp->second.J << std::setw(15) << wlp->second.H << std::setw(15) << wlp->second.K << std::setw(15) << planck_function(wlp->second.lambda, gv->temperature) << std::endl;
                     }
                 }
                 moments_file << std::endl;

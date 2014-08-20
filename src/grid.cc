@@ -12,12 +12,12 @@
 void GridVoxel::calc_J(const std::size_t wl_value_hash) {
     double result = 0.0;
 
-    for (auto it = ray_intersection_data.begin(); it != ray_intersection_data.end()-1; ++it) {
-        const auto real_it = it->ray->raydata.begin() + it->intersection_point;
+    for (std::vector<RayIntersectionData>::const_iterator it = ray_intersection_data.begin(); it != ray_intersection_data.end()-1; ++it) {
+        const std::vector<RayData>::iterator real_it = it->ray->raydata.begin() + it->intersection_point;
 
-        auto it_next = it;
+        std::vector<RayIntersectionData>::const_iterator it_next = it;
         std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
-        const auto real_it_next = it_next->ray->raydata.begin() + it_next->intersection_point;
+        const std::vector<RayData>::iterator real_it_next = it_next->ray->raydata.begin() + it_next->intersection_point;
 
         result += 0.5 * (real_it->wavelength_grid[wl_value_hash].I + real_it_next->wavelength_grid[wl_value_hash].I) * (real_it_next->mu - real_it->mu);
     }
@@ -28,12 +28,12 @@ void GridVoxel::calc_J(const std::size_t wl_value_hash) {
 void GridVoxel::calc_H(const std::size_t wl_value_hash) {
     double result = 0.0;
 
-    for (auto it = ray_intersection_data.begin(); it != ray_intersection_data.end()-1; ++it) {
-        const auto real_it = it->ray->raydata.begin() + it->intersection_point;
+    for (std::vector<RayIntersectionData>::const_iterator it = ray_intersection_data.begin(); it != ray_intersection_data.end()-1; ++it) {
+        const std::vector<RayData>::iterator real_it = it->ray->raydata.begin() + it->intersection_point;
 
-        auto it_next = it;
+        std::vector<RayIntersectionData>::const_iterator it_next = it;
         std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
-        const auto real_it_next = it_next->ray->raydata.begin() + it_next->intersection_point;
+        const std::vector<RayData>::iterator real_it_next = it_next->ray->raydata.begin() + it_next->intersection_point;
 
         result += 0.5 * (real_it->mu * real_it->wavelength_grid[wl_value_hash].I + real_it_next->mu * real_it_next->wavelength_grid[wl_value_hash].I) * (real_it_next->mu - real_it->mu);
     }
@@ -44,12 +44,12 @@ void GridVoxel::calc_H(const std::size_t wl_value_hash) {
 void GridVoxel::calc_K(const std::size_t wl_value_hash) {
     double result = 0.0;
 
-    for (auto it = ray_intersection_data.begin(); it != ray_intersection_data.end()-1; ++it) {
-        const auto real_it = it->ray->raydata.begin() + it->intersection_point;
+    for (std::vector<RayIntersectionData>::const_iterator it = ray_intersection_data.begin(); it != ray_intersection_data.end()-1; ++it) {
+        const std::vector<RayData>::iterator real_it = it->ray->raydata.begin() + it->intersection_point;
 
-        auto it_next = it;
+        std::vector<RayIntersectionData>::const_iterator it_next = it;
         std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
-        const auto real_it_next = it_next->ray->raydata.begin() + it_next->intersection_point;
+        const std::vector<RayData>::iterator real_it_next = it_next->ray->raydata.begin() + it_next->intersection_point;
 
         result += 0.5 * (std::pow(real_it->mu, 2) * real_it->wavelength_grid[wl_value_hash].I + std::pow(real_it_next->mu, 2) * real_it_next->wavelength_grid[wl_value_hash].I) * (real_it_next->mu - real_it->mu);
     }
@@ -58,9 +58,9 @@ void GridVoxel::calc_K(const std::size_t wl_value_hash) {
 
 
 void GridVoxel::calc_LTE_populations() {
-    for (auto atom = atoms.begin(); atom != atoms.end(); ++atom) {
-        for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
-            for (auto level = ion->levels.begin(); level != ion->levels.end(); ++level) {
+    for (std::vector<Atom>::iterator atom = atoms.begin(); atom != atoms.end(); ++atom) {
+        for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+            for (std::vector<AtomicLevel>::iterator level = ion->levels.begin(); level != ion->levels.end(); ++level) {
                 if (ion->ionization_stage < ion->atomic_number) {
                     level->number_density = atom->number_fraction * (n_g - n_e) * n_e * f_ij(*atom, *(ion->next_ion), n_e, temperature) * Phi_tilde(*level, *ion, *atom, temperature);
                 } else {
@@ -76,26 +76,26 @@ void GridVoxel::calc_LTE_populations() {
 void GridVoxel::calculate_emissivity_and_opacity(const std::size_t wl_value_hash) {
     double eta_tot = 0.0;
     double kappa_tot = 0.0;
-    for (auto atom = atoms.begin(); atom != atoms.end(); ++atom) {
-        for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+    for (std::vector<Atom>::const_iterator atom = atoms.begin(); atom != atoms.end(); ++atom) {
+        for (std::vector<Ion>::const_iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
             // Add up contributions from lines.
-            for (auto line = ion->lines.begin(); line != ion->lines.end(); ++line) {
+            for (std::vector<AtomicLine>::const_iterator line = ion->lines.begin(); line != ion->lines.end(); ++line) {
                 eta_tot += line->eta(wavelength_values[wl_value_hash]);
                 kappa_tot += line->kappa(wavelength_values[wl_value_hash]);
             }
             if (ion->ionization_stage < ion->atomic_number) {
                 // Add up contributions from continua.
-                for (auto level: ion->levels) {
-                    eta_tot += ion->eta(wavelength_values[wl_value_hash], level, n_e, temperature);
-                    kappa_tot += ion->kappa(wavelength_values[wl_value_hash], level, n_e, temperature);
+                for (std::vector<AtomicLevel>::const_iterator level = ion->levels.begin(); level != ion->levels.end(); ++level) {
+                    eta_tot += ion->eta(wavelength_values[wl_value_hash], *level, n_e, temperature);
+                    kappa_tot += ion->kappa(wavelength_values[wl_value_hash], *level, n_e, temperature);
                 }
             }
         }
     }
 
     // Since we don't treat anisotropic sources or sinks, all intersecting rays at this voxel get the same value for eta and kappa.
-    for (auto rid_it = ray_intersection_data.begin(); rid_it != ray_intersection_data.end(); ++rid_it) {
-        const auto ray_it = rid_it->ray->raydata.begin() + rid_it->intersection_point;
+    for (std::vector<RayIntersectionData>::const_iterator rid_it = ray_intersection_data.begin(); rid_it != ray_intersection_data.end(); ++rid_it) {
+        const std::vector<RayData>::iterator ray_it = rid_it->ray->raydata.begin() + rid_it->intersection_point;
 
         ray_it->wavelength_grid[wl_value_hash].eta = eta_tot;
         ray_it->wavelength_grid[wl_value_hash].kappa = kappa_tot;
@@ -115,9 +115,9 @@ void GridVoxel::calculate_emissivity_and_opacity(const std::size_t wl_value_hash
 void GridVoxel::calc_J_wl_integral() {
     J_wl_integral = 0.0;
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
-    for (auto it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
+    for (std::map<std::size_t, GridWavelengthPoint>::const_iterator it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
         if (!first_time) {
-            auto it_prev = it;
+            std::map<std::size_t, GridWavelengthPoint>::const_iterator it_prev = it;
             std::advance(it_prev, -1);
             J_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.J - it_prev->second.J);
         }
@@ -129,9 +129,9 @@ void GridVoxel::calc_J_wl_integral() {
 void GridVoxel::calc_H_wl_integral() {
     H_wl_integral = 0.0;
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
-    for (auto it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
+    for (std::map<std::size_t, GridWavelengthPoint>::const_iterator it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
         if (!first_time) {
-            auto it_prev = it;
+            std::map<std::size_t, GridWavelengthPoint>::const_iterator it_prev = it;
             std::advance(it_prev, -1);
             H_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.H - it_prev->second.H);
         }
@@ -143,9 +143,9 @@ void GridVoxel::calc_H_wl_integral() {
 void GridVoxel::calc_K_wl_integral() {
     K_wl_integral = 0.0;
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
-    for (auto it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
+    for (std::map<std::size_t, GridWavelengthPoint>::const_iterator it = wavelength_grid.begin(); it != wavelength_grid.end(); ++it) {
         if (!first_time) {
-            auto it_prev = it;
+            std::map<std::size_t, GridWavelengthPoint>::const_iterator it_prev = it;
             std::advance(it_prev, -1);
             K_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.K - it_prev->second.K);
         }
@@ -160,13 +160,13 @@ void GridVoxel::calc_chi_H() {
     // chi is in principle a ray-dependent quantity, but all rays should have
     // the same value of chi in a given voxel. So just grab it from the first
     // ray we can find.
-    const auto first_ray = ray_intersection_data.begin();
-    const auto first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
+    const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
+    const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
 
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
-    for (auto it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
+    for (std::map<std::size_t, double>::const_iterator it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
         if (!first_time) {
-            auto it_prev = it;
+            std::map<std::size_t, double>::const_iterator it_prev = it;
             std::advance(it_prev, -1);
             const double lambda = wavelength_grid[it->first].lambda;
             const double lambda_prev = wavelength_grid[it_prev->first].lambda;
@@ -189,13 +189,13 @@ void GridVoxel::calc_kappa_J() {
     // kappa is in principle a ray-dependent quantity, but all rays should have
     // the same value of kappa in a given voxel. So just grab it from the first
     // ray we can find.
-    const auto first_ray = ray_intersection_data.begin();
-    const auto first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
+    const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
+    const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
 
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
-    for (auto it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
+    for (std::map<std::size_t, double>::const_iterator it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
         if (!first_time) {
-            auto it_prev = it;
+            std::map<std::size_t, double>::const_iterator it_prev = it;
             std::advance(it_prev, -1);
             const double lambda = wavelength_grid[it->first].lambda;
             const double lambda_prev = wavelength_grid[it_prev->first].lambda;
@@ -218,13 +218,13 @@ void GridVoxel::calc_kappa_B() {
     // kappa is in principle a ray-dependent quantity, but all rays should have
     // the same value of kappa in a given voxel. So just grab it from the first
     // ray we can find.
-    const auto first_ray = ray_intersection_data.begin();
-    const auto first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
+    const std::vector<RayIntersectionData>::const_iterator auto first_ray = ray_intersection_data.begin();
+    const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
 
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
-    for (auto it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
+    for (std::map<std::size_t, double>::const_iterator it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
         if (!first_time) {
-            auto it_prev = it;
+            std::map<std::size_t, double>::const_iterator it_prev = it;
             std::advance(it_prev, -1);
             const double lambda = wavelength_grid[it->first].lambda;
             const double lambda_prev = wavelength_grid[it_prev->first].lambda;
@@ -252,13 +252,13 @@ void GridVoxel::calc_eta_minus_chi_J_wl_integral() {
     // chi and eta are in principle ray-dependent quantities, but all rays
     // should have the same values of ch and eta in a given voxel. So just grab
     // them from the first ray we can find.
-    const auto first_ray = ray_intersection_data.begin();
-    const auto first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
+    const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
+    const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
 
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
-    for (auto it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
+    for (std::map<std::size_t, double>::const_iterator it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
         if (!first_time) {
-            auto it_prev = it;
+            std::map<std::size_t, double>::const_iterator it_prev = it;
             std::advance(it_prev, -1);
             const double lambda = wavelength_grid[it->first].lambda;
             const double lambda_prev = wavelength_grid[it_prev->first].lambda;

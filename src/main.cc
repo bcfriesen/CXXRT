@@ -79,26 +79,26 @@ int main(int argc, char *argv[]) {
         wavelength_values[wl_value_hash] = wl_value;
     }
 
-    for (auto &gv: grid) {
-        for (auto wlv: wavelength_values) {
+    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (std::map<std::size_t, double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
             GridWavelengthPoint gwlp_tmp;
-            gwlp_tmp.lambda = wlv.second;
-            gv.wavelength_grid[wlv.first] = gwlp_tmp;
+            gwlp_tmp.lambda = wlv->second;
+            gv->wavelength_grid[wlv->first] = gwlp_tmp;
         }
     }
 
     std::cout << std::scientific;
 
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-            for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+            for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
                 ion->read_atomic_data();
             }
         }
     }
 
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
             atom->set_continuum_pointers();
         }
     }
@@ -108,10 +108,10 @@ int main(int argc, char *argv[]) {
     moments_file << std::scientific;
     moments_file << "#" << std::setw(15) << "z" << std::setw(15) << "rho" << std::setw(15) << "lambda" << std::setw(15) << "J_lam" << std::setw(15) << "H_lam" << std::setw(15) << "K_lam" << std::setw(15) << "B_lam" << std::endl;
 
-    for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-            for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
-                for (auto line = ion->lines.begin(); line != ion->lines.end(); ++line) {
+    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+            for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+                for (std::vector<AtomicLine>::iterator line = ion->lines.begin(); line != ion->lines.end(); ++line) {
                     line->set_line_width(gv->temperature);
                 }
             }
@@ -129,9 +129,9 @@ int main(int argc, char *argv[]) {
         log_file << std::endl;
         log_file << "Doing temperature correction iteration " << i+1 << " ..." << std::endl;
 
-        for (auto gv = grid.begin(); gv != grid.end(); ++gv) {
-            for (auto atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-                for (auto ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+        for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+            for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+                for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
                     ion->calc_partition_function(gv->temperature);
                 }
             }
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
             for (gv = grid.begin(); gv != grid.end(); ++gv) {
                 #pragma omp single nowait
                 {
-                    for (auto wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+                    for (std::map<std::size_t, GridWavelengthPoint>::const_iterator wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
                         gv->calculate_emissivity_and_opacity(wlp->first);
                     }
                 }
@@ -169,8 +169,8 @@ int main(int argc, char *argv[]) {
         }
         log_file << "done." << std::endl;
 
-        for (auto r = rays.begin(); r != rays.end(); ++r) {
-            for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+        for (std::vector<Ray>::iterator r = rays.begin(); r != rays.end(); ++r) {
+            for (std::map<std::size_t, double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
                 r->calc_tau(wlv->first);
                 r->calc_SC_coeffs(wlv->first);
             }
@@ -179,9 +179,9 @@ int main(int argc, char *argv[]) {
         do_ALI();
 
         if (config["print_every_iter"].as<bool>()) {
-            for (GridVoxel& gv: grid) {
-                for (auto &wlp: gv.wavelength_grid) {
-                    moments_file << std::setw(16) << gv.z << std::setw(15) << gv.rho << std::setw(15) << wlp.second.lambda << std::setw(15) << wlp.second.J << std::setw(15) << wlp.second.H << std::setw(15) << wlp.second.K << std::setw(15) << planck_function(wlp.second.lambda, gv.temperature) << std::endl;
+            for (std::vector<GridVoxel>::const_iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+                for (std::map<std::size_t, GridWavelengthPoint>::const_iterator wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+                    moments_file << std::setw(16) << gv->z << std::setw(15) << gv->rho << std::setw(15) << wlp->second.lambda << std::setw(15) << wlp->second.J << std::setw(15) << wlp->second.H << std::setw(15) << wlp->second.K << std::setw(15) << planck_function(wlp->second.lambda, gv->temperature) << std::endl;
                 }
             }
             moments_file << std::endl;
@@ -190,26 +190,26 @@ int main(int argc, char *argv[]) {
         // A bunch of post-processing integrals we need to do temperature corrections.
         log_file << std::endl << "Calculating post-processing integrals ... ";
         std::flush(log_file);
-        for (auto &gv: grid) {
-            gv.calc_J_wl_integral();
-            gv.calc_H_wl_integral();
-            gv.calc_K_wl_integral();
-            gv.calc_chi_H();
-            gv.calc_kappa_J();
-            gv.calc_kappa_B();
-            gv.calc_Eddington_factor_f();
-            gv.calc_eta_minus_chi_J_wl_integral();
+        for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+            gv->calc_J_wl_integral();
+            gv->calc_H_wl_integral();
+            gv->calc_K_wl_integral();
+            gv->calc_chi_H();
+            gv->calc_kappa_J();
+            gv->calc_kappa_B();
+            gv->calc_Eddington_factor_f();
+            gv->calc_eta_minus_chi_J_wl_integral();
         }
         log_file << "done." << std::endl;
 
         std::cout << std::endl;
-        for (auto &gv: grid) {
-            double Delta_T = calc_Delta_T(gv);
-            if (std::abs(Delta_T / gv.temperature) > 0.1)
+        for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+            double Delta_T = calc_Delta_T(*gv);
+            if (std::abs(Delta_T / gv->temperature) > 0.1)
                 // If the requested temperature change is large, damp it to at most 20% of the current temperature.
-                Delta_T *= (0.2 * gv.temperature / std::abs(Delta_T));
-            std::cout << "z: "<< gv.z << " current T: " << gv.temperature << " new T: " << gv.temperature + Delta_T << " Delta T: " << Delta_T <<  std::endl;
-            gv.temperature += Delta_T;
+                Delta_T *= (0.2 * gv->temperature / std::abs(Delta_T));
+            std::cout << "z: "<< gv->z << " current T: " << gv->temperature << " new T: " << gv->temperature + Delta_T << " Delta T: " << Delta_T <<  std::endl;
+            gv->temperature += Delta_T;
         }
     }
 

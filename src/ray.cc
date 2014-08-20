@@ -12,11 +12,11 @@
 void Ray::bind_to_grid(const double mu) {
     const unsigned int n_depth_pts = grid.size();
     raydata.resize(grid.size());
-    for (RayData& rd: raydata) {
-        rd.mu = mu;
+    for (std::vector<RayData>::iterator rd = raydata.begin(); rd != raydata.end(); ++rd) {
+        rd->mu = mu;
     }
     int i = 0;
-    for (auto it = raydata.begin(); it != raydata.end(); ++it) {
+    for (std::vector<RayData>::iterator it = raydata.begin(); it != raydata.end(); ++it) {
         struct RayIntersectionData ray_intersection_data;
         if (raydata.front().mu < 0.0) {
             it->gridvoxel = &grid[i];
@@ -50,21 +50,21 @@ void Ray::print_ray_data(const std::size_t wl_value_hash) {
     log_file << std::setw(15) << "gamma";
     log_file << std::endl;
 
-    for (auto rd: raydata) {
-        log_file << std::setw(30) << std::scientific << rd.gridvoxel->z;
-        log_file << std::setw(15) << std::scientific << rd.mu;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].lambda * 1.0e+8;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].I;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].sigma;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].kappa;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].eta;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].tau;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].chi;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].source_fn;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].Delta_tau;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].alpha;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].beta;
-        log_file << std::setw(15) << std::scientific << rd.wavelength_grid[wl_value_hash].gamma;
+    for (std::vector<RayData>::iterator rd = raydata.begin(); rd != raydata.end(); ++rd) {
+        log_file << std::setw(30) << std::scientific << rd->gridvoxel->z;
+        log_file << std::setw(15) << std::scientific << rd->mu;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].lambda * 1.0e+8;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].I;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].sigma;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].kappa;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].eta;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].tau;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].chi;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].source_fn;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].Delta_tau;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].alpha;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].beta;
+        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].gamma;
         log_file << std::endl;
     }
     log_file << std::endl;
@@ -72,28 +72,28 @@ void Ray::print_ray_data(const std::size_t wl_value_hash) {
 
 
 RayData::RayData() {
-    gridvoxel = nullptr;
+    gridvoxel = NULL;
 
-    for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+    for (std::map<std::size_t, double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
         RayWavelengthPoint wlp_tmp;
         wlp_tmp.lambda = wlv->second;
         wavelength_grid[wlv->first] = wlp_tmp;
     }
 
-    for (auto &wlp: wavelength_grid) {
-        wlp.second.I = 0.0;
-        wlp.second.tau = 0.0;
-        wlp.second.chi = 0.0;
-        wlp.second.source_fn = 0.0;
+    for (std::map<std::size_t, RayWavelengthPoint>::iterator wlp = wavelength_grid.begin(); wlp != wavelength_grid.end(); ++wlp) {
+        wlp->second.I = 0.0;
+        wlp->second.tau = 0.0;
+        wlp->second.chi = 0.0;
+        wlp->second.source_fn = 0.0;
     }
 }
 
 void Ray::calc_tau(const std::size_t wl_value_hash) {
-    for (auto it = raydata.begin(); it != raydata.end(); ++it) {
+    for (std::vector<RayData>::iterator it = raydata.begin(); it != raydata.end(); ++it) {
         if (it == raydata.begin()) {
             it->wavelength_grid[wl_value_hash].tau = 0.0;
         } else {
-            auto it_prev = it;
+            std::vector<RayData>::iterator it_prev = it;
             std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
             it->wavelength_grid[wl_value_hash].tau = it_prev->wavelength_grid[wl_value_hash].tau + (0.5 * (it_prev->wavelength_grid[wl_value_hash].chi + it->wavelength_grid[wl_value_hash].chi) * std::abs(it->gridvoxel->z - it_prev->gridvoxel->z) / std::abs(it->mu));
         }
@@ -101,7 +101,7 @@ void Ray::calc_tau(const std::size_t wl_value_hash) {
 }
 
 void Ray::calc_SC_coeffs(const std::size_t wl_value_hash) {
-    for (auto it = raydata.begin(); it != raydata.end(); ++it) {
+    for (std::vector<RayData>::iterator it = raydata.begin(); it != raydata.end(); ++it) {
 
         if (it == raydata.begin()) {
             it->wavelength_grid[wl_value_hash].alpha = 0.0;
@@ -109,7 +109,7 @@ void Ray::calc_SC_coeffs(const std::size_t wl_value_hash) {
             it->wavelength_grid[wl_value_hash].gamma = 0.0;
             it->wavelength_grid[wl_value_hash].Delta_tau = 0.0;
         } else {
-            auto it_prev = it;
+            std::vector<RayData>::iterator it_prev = it;
             std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
             it->wavelength_grid[wl_value_hash].Delta_tau = it->wavelength_grid[wl_value_hash].tau - it_prev->wavelength_grid[wl_value_hash].tau;
             // Sometimes optical depths get so large that the difference
@@ -135,7 +135,7 @@ void Ray::calc_SC_coeffs(const std::size_t wl_value_hash) {
 }
 
 void Ray::formal_soln(const std::size_t wl_value_hash) {
-    for (auto it = raydata.begin(); it != raydata.end(); ++it) {
+    for (std::vector<RayData>::iterator it = raydata.begin(); it != raydata.end(); ++it) {
 
         if (it == raydata.begin()) {
             if (it->mu > 0.0) {
@@ -144,7 +144,7 @@ void Ray::formal_soln(const std::size_t wl_value_hash) {
                 it->wavelength_grid[wl_value_hash].I = 0.0;
             }
         } else {
-            auto it_prev = it;
+            std::vector<RayData>::iterator it_prev = it;
             std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
             const double Delta_I = (it->wavelength_grid[wl_value_hash].alpha * it_prev->wavelength_grid[wl_value_hash].source_fn) + (it->wavelength_grid[wl_value_hash].beta * it->wavelength_grid[wl_value_hash].source_fn);
             it->wavelength_grid[wl_value_hash].I = it_prev->wavelength_grid[wl_value_hash].I * std::exp(-it->wavelength_grid[wl_value_hash].Delta_tau) + Delta_I;

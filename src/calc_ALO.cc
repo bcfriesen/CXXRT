@@ -16,13 +16,13 @@ Eigen::SparseMatrix<double> calc_ALO (const std::size_t wl_value_hash) {
     for (unsigned int i = 0; i < n_depth_pts; ++i) {
         std::vector<double> I_hat;
         std::vector<double> mu;
-        for (struct RayIntersectionData& rid: grid.at(i).ray_intersection_data) {
-            auto it = rid.ray->raydata.begin() + rid.intersection_point;
+        for (std::vector<RayIntersectionData>::const_iterator rid = grid.at(i).ray_intersection_data.begin(); rid != grid.at(i).ray_intersection_data.end(); ++rid) {
+            std::vector<RayData>::iterator it = rid->ray->raydata.begin() + rid->intersection_point;
 
-            if (it == rid.ray->raydata.begin()) {
+            if (it == rid->ray->raydata.begin()) {
                 I_hat.push_back(it->wavelength_grid[wl_value_hash].beta);
             } else {
-                auto it_prev = it;
+                std::vector<RayData>::iterator it_prev = it;
                 std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
                 I_hat.push_back(it_prev->wavelength_grid[wl_value_hash].gamma * std::exp(-it_prev->wavelength_grid[wl_value_hash].Delta_tau) + it->wavelength_grid[wl_value_hash].beta);
             }

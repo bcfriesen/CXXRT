@@ -17,7 +17,7 @@ void Lambda_iteration() {
     Eigen::VectorXd J_old(n_depth_pts);
     Eigen::VectorXd J_new(n_depth_pts);
 
-    for (auto wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+    for (std::map<std::size_t, double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
         log_file << "Starting Lambda iteration on wavelength point " << wlv->second*1.0e+8 << " A ... ";
         unsigned int iter = 0;
 
@@ -26,16 +26,16 @@ void Lambda_iteration() {
         }
 
         do {
-            for (Ray& r: rays) {
-              for (RayData& rd: r.raydata) {
-                rd.calc_source_fn(wlv->first);
+            for (std::vector<Ray>::iterator r = rays.begin(); r != rays.end(); ++r) {
+              for (std::vector<RayData>::iterator rd = r->raydata.begin(); rd != r->raydata.end(); ++rd) {
+                rd->calc_source_fn(wlv->first);
               }
-              r.formal_soln(wlv->first);
+              r->formal_soln(wlv->first);
             }
 
-            for (auto gv: grid) {
-              for (auto wlp = wavelength_values.begin(); wlp != wavelength_values.end(); ++wlp) {
-                  gv.calc_J(wlp->first);
+            for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+              for (std::map<std::size_t, double>::const_iterator wlp = wavelength_values.begin(); wlp != wavelength_values.end(); ++wlp) {
+                  gv->calc_J(wlp->first);
               }
             }
 
