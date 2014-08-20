@@ -218,7 +218,7 @@ void GridVoxel::calc_kappa_B() {
     // kappa is in principle a ray-dependent quantity, but all rays should have
     // the same value of kappa in a given voxel. So just grab it from the first
     // ray we can find.
-    const std::vector<RayIntersectionData>::const_iterator auto first_ray = ray_intersection_data.begin();
+    const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
     const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
 
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
