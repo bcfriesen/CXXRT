@@ -116,7 +116,7 @@ void Ion::read_atomic_data() {
 
 	    // Sometimes Kurucz lines have energies larger than the ionization
 	    // potential. Skip them until I know what to do with them.
-            if (first_energy_level > ionization_potential || second_energy_level > ionization_potential)
+            if (first_energy_level * h_planck * c_light > ionization_potential || second_energy_level * h_planck * c_light > ionization_potential)
                 continue;
 
             double lower_energy_level;
@@ -211,7 +211,7 @@ void Ion::read_atomic_data() {
 
 	    // Sometimes Kurucz lines have energies larger than the ionization
 	    // potential. Skip them until I know what to do with them.
-            if (first_energy_level > ionization_potential || second_energy_level > ionization_potential)
+            if (first_energy_level * h_planck * c_light > ionization_potential || second_energy_level * h_planck * c_light > ionization_potential)
                 continue;
 
             double lower_energy_level;
