@@ -114,6 +114,11 @@ void Ion::read_atomic_data() {
             if (first_energy_level < -std::numeric_limits<double>::epsilon() || second_energy_level < -std::numeric_limits<double>::epsilon())
                 continue;
 
+	    // Sometimes Kurucz lines have energies larger than the ionization
+	    // potential. Skip them until I know what to do with them.
+            if (first_energy_level > ionization_potential || second_energy_level > ionization_potential)
+                continue;
+
             double lower_energy_level;
             double upper_energy_level;
             double J_lower;
@@ -202,6 +207,11 @@ void Ion::read_atomic_data() {
 	    // I don't know what these are so skip them until I figure out how
 	    // to deal with them.
             if (first_energy_level < -std::numeric_limits<double>::epsilon() || second_energy_level < -std::numeric_limits<double>::epsilon())
+                continue;
+
+	    // Sometimes Kurucz lines have energies larger than the ionization
+	    // potential. Skip them until I know what to do with them.
+            if (first_energy_level > ionization_potential || second_energy_level > ionization_potential)
                 continue;
 
             double lower_energy_level;
