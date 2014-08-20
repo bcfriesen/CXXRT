@@ -342,7 +342,7 @@ double AtomicLine::radiative_rate_emission(const std::vector<GridWavelengthPoint
 double AtomicLine::collisional_rate_absorption(const double n_e, const double temperature) const {
     double result = 0.0;
     const double y = (upper_level->energy - lower_level->energy) / (k_boltzmann * temperature); // defined in van Regemorter (1962)
-    const double P_y = (3.0 * std::sqrt(3)) / (2.0 * pi) * (1.0 - y * std::exp(y) * gsl_sf_expint_E1(y));; // the integral in Eq 18 of van Regemorter (1962)
+    const double P_y = (3.0 * std::sqrt(3.0)) / (2.0 * pi) * (1.0 - y * std::exp(y) * gsl_sf_expint_E1(y));; // the integral in Eq 18 of van Regemorter (1962)
 
     // TODO: implement van Regemorter's more sophisticated values of P(y)
     result = 20.6 * std::pow(wavelength, 3) * n_e * std::pow(temperature, -0.5) * Einstein_A() * P_y;
