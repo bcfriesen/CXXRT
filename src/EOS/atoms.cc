@@ -108,6 +108,12 @@ void Ion::read_atomic_data() {
             num_lines++;
             iss >> wavelength >> log_gf >> first_energy_level >> J_first >> second_energy_level >> J_second;
 
+	    // Kurucz line lists include a lot of lines with negative energies.
+	    // I don't know what these are so skip them until I figure out how
+	    // to deal with them.
+            if (first_energy_level < -std::numeric_limits<double>::epsilon() || second_energy_level < -std::numeric_limits<double>::epsilon())
+                continue;
+
             double lower_energy_level;
             double upper_energy_level;
             double J_lower;
@@ -191,6 +197,12 @@ void Ion::read_atomic_data() {
         while (std::getline(atomic_data_file, one_line)) {
             std::istringstream iss(one_line);
             iss >> wavelength >> log_gf >> first_energy_level >> J_first >> second_energy_level >> J_second;
+
+	    // Kurucz line lists include a lot of lines with negative energies.
+	    // I don't know what these are so skip them until I figure out how
+	    // to deal with them.
+            if (first_energy_level < -std::numeric_limits<double>::epsilon() || second_energy_level < -std::numeric_limits<double>::epsilon())
+                continue;
 
             double lower_energy_level;
             double upper_energy_level;
