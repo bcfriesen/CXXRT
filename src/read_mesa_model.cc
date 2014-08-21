@@ -26,14 +26,11 @@ void read_mesa_model(const std::string model_name) {
     double radius;
     std::string radius_string;
     unsigned int shell_index;
-    double luminosity;
-    std::string luminosity_string;
-    double mass_coordinate;
-    std::string mass_coordinate_string;
+    std::string luminosity_string; // We currently don't use MESA's calculation of luminosity.
+    std::string mass_coordinate_string; // We currently don't use MESA's calculation of mass coordinate.
     double h1_mass_frac;
     std::string h1_mass_frac_string;
-    double he3_mass_frac;
-    std::string he3_mass_frac_string;
+    std::string he3_mass_frac_string; // We currently don't use MESA's calculation of He3 mass.
     double he4_mass_frac;
     std::string he4_mass_frac_string;
     double c12_mass_frac;
@@ -117,25 +114,10 @@ void read_mesa_model(const std::string model_name) {
             radius_string[where_is_d] = 'E';
         radius = atof(radius_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = luminosity_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            luminosity_string[where_is_d] = 'E';
-        luminosity = atof(luminosity_string.c_str()); // use std::stod when more compilers are C++11-compliant
-
-        where_is_d = mass_coordinate_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            mass_coordinate_string[where_is_d] = 'E';
-        mass_coordinate = atof(mass_coordinate_string.c_str()); // use std::stod when more compilers are C++11-compliant
-
         where_is_d = h1_mass_frac_string.find_first_of("Dd");
         if (where_is_d != std::string::npos)
             h1_mass_frac_string[where_is_d] = 'E';
         h1_mass_frac = atof(h1_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
-
-        where_is_d = he3_mass_frac_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            he3_mass_frac_string[where_is_d] = 'E';
-        he3_mass_frac = atof(he3_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
         where_is_d = he4_mass_frac_string.find_first_of("Dd");
         if (where_is_d != std::string::npos)
