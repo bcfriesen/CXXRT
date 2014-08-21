@@ -33,8 +33,8 @@ Atom::Atom(const unsigned int atomic_number_in)
     }
     atomic_data_file.close();
 
-    for (unsigned int i = 0; i <= atomic_number_in; ++i) {
-        Ion ion(atomic_number, i);
+    for (unsigned int ionization_stage = 0; ionization_stage <= atomic_number_in; ++ionization_stage) {
+        Ion ion(atomic_number, ionization_stage);
         ions.push_back(ion);
     }
 }
