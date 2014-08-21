@@ -5,7 +5,7 @@
 
 double f_ij (const Atom atom, const Ion ion, const double n_e, const double temperature);
 
-double RHS(GridVoxel &gv);
+double RHS(const GridVoxel gv);
 
 void calc_n_e_LTE(GridVoxel &gv);
 

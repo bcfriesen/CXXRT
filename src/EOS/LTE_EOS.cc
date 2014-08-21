@@ -37,7 +37,7 @@ double f_ij (const Atom atom, const Ion ion, const double n_e, const double temp
 }
 
 
-double RHS(GridVoxel &gv) {
+double RHS(const GridVoxel gv) {
     double result = 0.0;
     for (std::vector<Atom>::const_iterator atom = gv.atoms.begin(); atom != gv.atoms.end(); ++atom) {
         double tmp = 0.0;
