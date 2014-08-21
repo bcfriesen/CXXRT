@@ -129,6 +129,9 @@ int main(int argc, char *argv[]) {
         log_file << std::endl;
         log_file << "Doing temperature correction iteration " << i+1 << " ..." << std::endl;
 
+        std::ostringstream convert_loop_index_to_string;
+        convert_loop_index_to_string << i;
+
         for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
             for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
                 for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
@@ -211,25 +214,26 @@ int main(int argc, char *argv[]) {
             std::cout << "z: "<< gv->z << " current T: " << gv->temperature << " new T: " << gv->temperature + Delta_T << " Delta T: " << Delta_T <<  std::endl;
             gv->temperature += Delta_T;
         }
+
+
+        // Print the emergent spectrum.
+        std::ofstream spectrum_file;
+        const std::string spectrum_file_name = config["spectrum_file"].as<std::string>() + "_" + convert_loop_index_to_string.str();
+        spectrum_file.open(spectrum_file_name.c_str());
+        spectrum_file << std::scientific;
+
+        std::vector<GridVoxel>::const_iterator surface_gv = grid.begin();
+        for (surface_gv = grid.begin(); surface_gv != grid.end()-1; ++surface_gv) {
+            std::vector<GridVoxel>::const_iterator next_gv = surface_gv;
+            if (next_gv->z > surface_gv->z) surface_gv = next_gv;
+        }
+        for (std::map<std::size_t, GridWavelengthPoint>::const_iterator gwlp = surface_gv->wavelength_grid.begin(); gwlp != surface_gv->wavelength_grid.end(); ++gwlp) {
+            spectrum_file << gwlp->second.lambda * 1.0e+8 << " " << 4.0 * pi * gwlp->second.H << std::endl;
+        }
+        spectrum_file.close();
+
     }
 
-    // Print the emergent spectrum.
-    std::ofstream spectrum_file;
-    const std::string spectrum_file_name = config["spectrum_file"].as<std::string>();
-    spectrum_file.open(spectrum_file_name.c_str());
-    spectrum_file << std::scientific;
-
-    std::vector<GridVoxel>::const_iterator surface_gv = grid.begin();
-    for (surface_gv = grid.begin(); surface_gv != grid.end()-1; ++surface_gv) {
-        std::vector<GridVoxel>::const_iterator next_gv = surface_gv;
-        if (next_gv->z > surface_gv->z) surface_gv = next_gv;
-    }
-    for (std::map<std::size_t, GridWavelengthPoint>::const_iterator gwlp = surface_gv->wavelength_grid.begin(); gwlp != surface_gv->wavelength_grid.end(); ++gwlp) {
-        spectrum_file << gwlp->second.lambda * 1.0e+8 << " " << 4.0 * pi * gwlp->second.H << std::endl;
-    }
-
-
-    spectrum_file.close();
     moments_file.close();
     log_file.close();
 
