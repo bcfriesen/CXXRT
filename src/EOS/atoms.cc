@@ -14,8 +14,9 @@
 #include "../lines/Doppler_width.hh"
 #include "../wavelength_grid.hh"
 
-Atom::Atom(const unsigned int atomic_number_in)
-    : atomic_number(atomic_number_in) {
+Atom::Atom(const unsigned int atomic_number_in, const unsigned int max_ionization_stage_in)
+    : atomic_number(atomic_number_in),
+      max_ionization_stage(max_ionization_stage_in) {
     const std::string atomic_data_file_name = config["atomic_data_root_folder"].as<std::string>() + "/" + "atoms.dat";
     std::ifstream atomic_data_file;
     std::string one_line;
@@ -33,7 +34,8 @@ Atom::Atom(const unsigned int atomic_number_in)
     }
     atomic_data_file.close();
 
-    for (unsigned int ionization_stage = 0; ionization_stage <= atomic_number_in; ++ionization_stage) {
+    // We make room for one ion past the max requested; this last ion will be the continuum ion only (only a ground state; no levels);
+    for (unsigned int ionization_stage = 0; ionization_stage <= max_ionization_stage+1; ++ionization_stage) {
         Ion ion(atomic_number, ionization_stage);
         ions.push_back(ion);
     }
@@ -71,15 +73,15 @@ Ion::Ion(const unsigned int atomic_number_in, const unsigned int ionization_stag
 }
 
 
-void Ion::read_atomic_data() {
+void Ion::read_atomic_data(const bool continuum_ion_only) {
     if (ionization_stage > atomic_number) {
         std::cerr << "ERROR! in atom " << atomic_number << " you tried to add an ion with ionization stage " << ionization_stage << std::endl;
         exit(1);
-    } else if (ionization_stage == atomic_number) { // A fully ionized atom is just a nucleus which has no bound states, only a ground state;
+    } else if (continuum_ion_only) {
         class AtomicLevel ground_state;
         ground_state.energy = 0.0;
-        ground_state.J = 0.0;
-        ground_state.g = 1;
+        ground_state.J = 0.0;// FIXME: The statistical weight here may not always be 1, so the partition function for this ion will not always be correct.
+        ground_state.g = 1; // FIXME: The statistical weight here may not always be 1, so the partition function for this ion will not always be correct.
         levels.push_back(ground_state);
     } else {
         std::ostringstream convert; // for compilers without std::to_string (a C++11 feature)

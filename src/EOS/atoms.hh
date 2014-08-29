@@ -21,7 +21,7 @@ class Ion {
     AtomicLevel* ground_state;
     AtomicLevel* continuum_state;
     Ion* next_ion;
-    void read_atomic_data();
+    void read_atomic_data(const bool continuum_ion_only);
     double alpha(const double lambda, const AtomicLevel level) const; // bound-free radiative cross-section
     double eta(const double lambda, const AtomicLevel level, const double n_e, const double temperature) const; // bound-free emissivity (recombination)
     double kappa(const double lambda, const AtomicLevel level, const double n_e, const double temperature) const; // bound-free opacity (photoionization)
@@ -30,13 +30,14 @@ class Ion {
 
 class Atom {
   public:
-    Atom(const unsigned int atomic_number_in);
+    Atom(const unsigned int atomic_number_in, const unsigned int max_ionization_stage_in);
     unsigned int atomic_number;
     double atomic_weight;
     std::string atomic_symbol;
     std::vector<Ion> ions;
     double number_fraction;
     void set_continuum_pointers();
+    unsigned int max_ionization_stage; // Not the maximum possible, but rather the maximum that we have atomic data for.
 };
 
 class AtomicLine {

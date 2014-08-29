@@ -7,6 +7,7 @@
 #include "globals.hh"
 #include "grid.hh"
 #include "constants.hh"
+#include "EOS/insert_ions.hh"
 
 void read_mesa_model(const std::string model_name) {
 
@@ -66,10 +67,7 @@ void read_mesa_model(const std::string model_name) {
     grid.resize(n_shells);
 
     for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-        Atom H(1);
-        Atom He(2);
-        gv->atoms.push_back(H);
-        gv->atoms.push_back(He);
+        insert_ions(&(*gv));
     }
 
     // skip next 4 lines
