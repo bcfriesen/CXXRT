@@ -26,3 +26,5 @@ read_mesa_model: true
 TAMS_mesa_model_name: /home/brian/1M_at_TAMS_cutoff.mod
 
 num_temp_correction_iterations: 10
+
+atoms_with_max_ion: { 'H':0, 'He':1, 'C':3 }
