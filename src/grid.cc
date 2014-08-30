@@ -61,7 +61,7 @@ void GridVoxel::calc_LTE_populations() {
     for (std::vector<Atom>::iterator atom = atoms.begin(); atom != atoms.end(); ++atom) {
         for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
             for (std::vector<AtomicLevel>::iterator level = ion->levels.begin(); level != ion->levels.end(); ++level) {
-                if (ion->ionization_stage < ion->atomic_number) {
+                if (ion->ionization_stage <= atom->max_ionization_stage) {
                     level->number_density = atom->number_fraction * (n_g - n_e) * n_e * f_ij(*atom, *(ion->next_ion), n_e, temperature) * Phi_tilde(*level, *ion, *atom, temperature);
                 } else {
                     // Treat fully ionized atom specially.
@@ -77,13 +77,15 @@ void GridVoxel::calculate_emissivity_and_opacity(const std::size_t wl_value_hash
     double eta_tot = 0.0;
     double kappa_tot = 0.0;
     for (std::vector<Atom>::const_iterator atom = atoms.begin(); atom != atoms.end(); ++atom) {
-        for (std::vector<Ion>::const_iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+        for (std::vector<Ion>::const_iterator ion = atom->ions.begin(); ion != atom->ions.end()-1; ++ion) {
             // Add up contributions from lines.
+            std::cout << "adding up line opacity for Z = " << atom->atomic_number << " " << " I = " << ion->ionization_stage << " ( " << ion->lines.size() << " lines)" << std::endl;
             for (std::vector<AtomicLine>::const_iterator line = ion->lines.begin(); line != ion->lines.end(); ++line) {
+                std::cout << atom->atomic_number << " " << ion->ionization_stage << " " << line->wavelength << " " << line->lower_level->energy << " " << line->upper_level->energy << std::endl;
                 eta_tot += line->eta(wavelength_values[wl_value_hash]);
                 kappa_tot += line->kappa(wavelength_values[wl_value_hash]);
             }
-            if (ion->ionization_stage < ion->atomic_number) {
+            if (ion->ionization_stage <= atom->max_ionization_stage) {
                 // Add up contributions from continua.
                 for (std::vector<AtomicLevel>::const_iterator level = ion->levels.begin(); level != ion->levels.end(); ++level) {
                     eta_tot += ion->eta(wavelength_values[wl_value_hash], *level, n_e, temperature);

@@ -92,7 +92,14 @@ int main(int argc, char *argv[]) {
     for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
         for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
             for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
-                ion->read_atomic_data();
+                const bool continuum_ion_only = ((ion->ionization_stage == atom->max_ionization_stage+1) ? true : false);
+                std::cout << "Reading atomic data for Z = " << atom->atomic_number << " I = " << ion->ionization_stage << " ";
+                if (continuum_ion_only) {
+                    std::cout << "Setting only continuum ion." << std::endl;
+                } else {
+                    std::cout << "Reading atomic data." << std::endl;
+                }
+                ion->read_atomic_data(continuum_ion_only);
             }
         }
     }

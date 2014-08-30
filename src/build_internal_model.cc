@@ -53,8 +53,8 @@ void build_internal_model() {
     }
 
     for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-        Atom H(1);
-        Atom He(2);
+        Atom H(1, 1);
+        Atom He(2, 2);
         gv->atoms.push_back(H);
         gv->atoms.push_back(He);
     }
