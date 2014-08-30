@@ -105,19 +105,18 @@ void Ion::read_atomic_data() {
         unsigned int num_lines = 0; // count the number of lines; we'll need this later
         while (std::getline(atomic_data_file, one_line)) {
             std::istringstream iss(one_line);
-            num_lines++;
             iss >> wavelength >> log_gf >> first_energy_level >> J_first >> second_energy_level >> J_second;
 
-	    // Kurucz line lists include a lot of lines with negative energies.
-	    // I don't know what these are so skip them until I figure out how
-	    // to deal with them.
-            if (first_energy_level < -std::numeric_limits<double>::epsilon() || second_energy_level < -std::numeric_limits<double>::epsilon())
+            // Kurucz line lists include a lot of lines with negative energies. I
+            // don't know what these are so skip them until I figure out how to
+            // deal with them. Sometimes Kurucz lines have energies larger than the
+            // ionization potential. Skip them too until I know what to do with
+            // them.
+            if (first_energy_level < -std::numeric_limits<double>::epsilon() || second_energy_level < -std::numeric_limits<double>::epsilon() || first_energy_level * h_planck * c_light > ionization_potential || second_energy_level * h_planck * c_light > ionization_potential) {
                 continue;
-
-	    // Sometimes Kurucz lines have energies larger than the ionization
-	    // potential. Skip them until I know what to do with them.
-            if (first_energy_level * h_planck * c_light > ionization_potential || second_energy_level * h_planck * c_light > ionization_potential)
-                continue;
+            } else {
+                num_lines++;
+            }
 
             double lower_energy_level;
             double upper_energy_level;
