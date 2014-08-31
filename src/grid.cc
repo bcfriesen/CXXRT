@@ -79,9 +79,7 @@ void GridVoxel::calculate_emissivity_and_opacity(const std::size_t wl_value_hash
     for (std::vector<Atom>::const_iterator atom = atoms.begin(); atom != atoms.end(); ++atom) {
         for (std::vector<Ion>::const_iterator ion = atom->ions.begin(); ion != atom->ions.end()-1; ++ion) {
             // Add up contributions from lines.
-            std::cout << "adding up line opacity for Z = " << atom->atomic_number << " " << " I = " << ion->ionization_stage << " ( " << ion->lines.size() << " lines)" << std::endl;
             for (std::vector<AtomicLine>::const_iterator line = ion->lines.begin(); line != ion->lines.end(); ++line) {
-                std::cout << atom->atomic_number << " " << ion->ionization_stage << " " << line->wavelength << " " << line->lower_level->energy << " " << line->upper_level->energy << std::endl;
                 eta_tot += line->eta(wavelength_values[wl_value_hash]);
                 kappa_tot += line->kappa(wavelength_values[wl_value_hash]);
             }
