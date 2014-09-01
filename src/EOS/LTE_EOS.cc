@@ -7,10 +7,10 @@
 #include "../grid.hh"
 #include "Phi.hh"
 
-// The fraction of species k in ionization stage j relative to the total number
-// of atoms of that species. (See Mihalas p 114). This is Mihalas Eq (5-17).
-double f_ij (const Atom atom, const Ion ion, const double n_e, const double temperature) {
-    double numerator = 1.0;
+
+// The numerator of Mihalas's f_ij (defined in Eq. (5-17)).
+double P_jk (const Atom atom, const Ion ion, const double n_e, const double temperature) {
+    double result = 1.0;
     for (std::vector<Ion>::const_iterator ion_it = atom.ions.begin(); ion_it != atom.ions.end()-1; ++ion_it) {
         // If the requested j+1'th ionization stage is more than fully ionized,
         // then skip it. This case should happen only once: when trying to
@@ -19,11 +19,16 @@ double f_ij (const Atom atom, const Ion ion, const double n_e, const double temp
         if (ion_it->ionization_stage+1 > atom.atomic_number) {
             continue;
         } else if (ion_it->ionization_stage >= ion.ionization_stage) {
-            numerator *= (n_e * Phi_tilde(*ion_it, atom, temperature));
+            result *= (n_e * Phi_tilde(*ion_it, atom, temperature));
         }
     }
+    return result;
+}
 
-    double denominator = 0.0;
+
+// The denominator of Mihalas's f_ij (defined in Eq. (5-17)).
+double S_k (const Atom atom, const Ion ion, const double n_e, const double temperature) {
+    double result = 0.0;
     for (std::vector<Ion>::const_iterator ion_it = atom.ions.begin(); ion_it != atom.ions.end()-1; ++ion_it) {
         double tmp = 1.0;
         for (std::vector<Ion>::const_iterator ion_it2 = atom.ions.begin(); ion_it2 != atom.ions.end()-1; ++ion_it2) {
@@ -31,9 +36,16 @@ double f_ij (const Atom atom, const Ion ion, const double n_e, const double temp
                 tmp *= (n_e * Phi_tilde(*ion_it2, atom, temperature));
             }
         }
-        denominator += tmp;
+        result += tmp;
     }
-    return (numerator/denominator);
+    return result;
+}
+
+
+// The fraction of species k in ionization stage j relative to the total number
+// of atoms of that species. (See Mihalas p 114). This is Mihalas Eq (5-17).
+double f_ij (const Atom atom, const Ion ion, const double n_e, const double temperature) {
+    return P_jk(atom, ion, n_e, temperature) / S_k(atom, ion, n_e, temperature);
 }
 
 
