@@ -27,12 +27,12 @@ double P_jk (const Atom atom, const Ion ion, const double n_e, const double temp
 
 
 // The denominator of Mihalas's f_ij (defined in Eq. (5-17)).
-double S_k (const Atom atom, const Ion ion, const double n_e, const double temperature) {
+double S_k (const Atom atom, const double n_e, const double temperature) {
     double result = 0.0;
     for (std::vector<Ion>::const_iterator ion_it = atom.ions.begin(); ion_it != atom.ions.end()-1; ++ion_it) {
         double tmp = 1.0;
         for (std::vector<Ion>::const_iterator ion_it2 = atom.ions.begin(); ion_it2 != atom.ions.end()-1; ++ion_it2) {
-            if (ion_it2->ionization_stage >= ion_it->ionization_stage && ion_it2->ionization_stage < ion.atomic_number) {
+            if (ion_it2->ionization_stage >= ion_it->ionization_stage && ion_it2->ionization_stage < ion_it->atomic_number) {
                 tmp *= (n_e * Phi_tilde(*ion_it2, atom, temperature));
             }
         }
@@ -45,7 +45,7 @@ double S_k (const Atom atom, const Ion ion, const double n_e, const double tempe
 // The fraction of species k in ionization stage j relative to the total number
 // of atoms of that species. (See Mihalas p 114). This is Mihalas Eq (5-17).
 double f_ij (const Atom atom, const Ion ion, const double n_e, const double temperature) {
-    return P_jk(atom, ion, n_e, temperature) / S_k(atom, ion, n_e, temperature);
+    return P_jk(atom, ion, n_e, temperature) / S_k(atom, n_e, temperature);
 }
 
 
