@@ -29,22 +29,48 @@ void read_mesa_model(const std::string model_name) {
     unsigned int shell_index;
     std::string luminosity_string; // We currently don't use MESA's calculation of luminosity.
     std::string mass_coordinate_string; // We currently don't use MESA's calculation of mass coordinate.
-    double h1_mass_frac;
+    double neutron_mass_frac = 0.0;
+    std::string neutron_mass_frac_string;
+    double h1_mass_frac = 0.0;
     std::string h1_mass_frac_string;
-    double he3_mass_frac;
+    double proton_mass_frac = 0.0;
+    std::string proton_mass_frac_string;
+    double he3_mass_frac = 0.0;
     std::string he3_mass_frac_string; // We currently don't use MESA's calculation of He3 mass.
-    double he4_mass_frac;
+    double he4_mass_frac = 0.0;
     std::string he4_mass_frac_string;
-    double c12_mass_frac;
+    double c12_mass_frac = 0.0;
     std::string c12_mass_frac_string;
-    double n14_mass_frac;
+    double n14_mass_frac = 0.0;
     std::string n14_mass_frac_string;
-    double o16_mass_frac;
+    double o16_mass_frac = 0.0;
     std::string o16_mass_frac_string;
-    double ne20_mass_frac;
+    double ne20_mass_frac = 0.0;
     std::string ne20_mass_frac_string;
-    double mg24_mass_frac;
+    double mg24_mass_frac = 0.0;
     std::string mg24_mass_frac_string;
+    double si28_mass_frac = 0.0;
+    std::string si28_mass_frac_string;
+    double s32_mass_frac = 0.0;
+    std::string s32_mass_frac_string;
+    double ar36_mass_frac = 0.0;
+    std::string ar36_mass_frac_string;
+    double ca40_mass_frac = 0.0;
+    std::string ca40_mass_frac_string;
+    double ti44_mass_frac = 0.0;
+    std::string ti44_mass_frac_string;
+    double cr48_mass_frac = 0.0;
+    std::string cr48_mass_frac_string;
+    double cr56_mass_frac = 0.0;
+    std::string cr56_mass_frac_string;
+    double fe52_mass_frac = 0.0;
+    std::string fe52_mass_frac_string;
+    double fe54_mass_frac = 0.0;
+    std::string fe54_mass_frac_string;
+    double fe56_mass_frac = 0.0;
+    std::string fe56_mass_frac_string;
+    double ni56_mass_frac = 0.0;
+    std::string ni56_mass_frac_string;
 
     std::string tmp;
 
@@ -81,77 +107,250 @@ void read_mesa_model(const std::string model_name) {
         std::getline(model_file, one_line);
         std::istringstream iss(one_line);
 
-        /* Read to strings first because we have to replace stupid "D" with "E"
-         * in Fortran's stupid scientific notation. C++ can't read "D". */
-        iss >> shell_index
-            >> density_string
-            >> temperature_string
-            >> radius_string
-            >> luminosity_string
-            >> mass_coordinate_string
-            >> h1_mass_frac_string
-            >> he3_mass_frac_string
-            >> he4_mass_frac_string
-            >> c12_mass_frac_string
-            >> n14_mass_frac_string
-            >> o16_mass_frac_string
-            >> ne20_mass_frac_string
-            >> mg24_mass_frac_string;
+        // TODO: This is getting really clunky. In the future I should probably
+        // parse the MESA scripts into my own format so this doesn't have to be
+        // so long.
+        if (config["mesa_network"].as<std::string>() == "basic") {
+            /* Read to strings first because we have to replace stupid "D" with "E"
+             * in Fortran's stupid scientific notation. C++ can't read "D". */
+            iss >> shell_index
+                >> density_string
+                >> temperature_string
+                >> radius_string
+                >> luminosity_string
+                >> mass_coordinate_string
+                >> h1_mass_frac_string
+                >> he3_mass_frac_string
+                >> he4_mass_frac_string
+                >> c12_mass_frac_string
+                >> n14_mass_frac_string
+                >> o16_mass_frac_string
+                >> ne20_mass_frac_string
+                >> mg24_mass_frac_string;
 
-        unsigned int where_is_d(density_string.find_first_of("Dd"));
-        if (where_is_d != std::string::npos)
-            density_string[where_is_d] = 'E';
-        density = atof(density_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            unsigned int where_is_d(density_string.find_first_of("Dd"));
+            if (where_is_d != std::string::npos)
+                density_string[where_is_d] = 'E';
+            density = atof(density_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = temperature_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            temperature_string[where_is_d] = 'E';
-        temperature = atof(temperature_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            where_is_d = temperature_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                temperature_string[where_is_d] = 'E';
+            temperature = atof(temperature_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = radius_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            radius_string[where_is_d] = 'E';
-        radius = atof(radius_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            where_is_d = radius_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                radius_string[where_is_d] = 'E';
+            radius = atof(radius_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = h1_mass_frac_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            h1_mass_frac_string[where_is_d] = 'E';
-        h1_mass_frac = atof(h1_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            where_is_d = h1_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                h1_mass_frac_string[where_is_d] = 'E';
+            h1_mass_frac = atof(h1_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = he3_mass_frac_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            he3_mass_frac_string[where_is_d] = 'E';
-        he3_mass_frac = atof(he3_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            where_is_d = he3_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                he3_mass_frac_string[where_is_d] = 'E';
+            he3_mass_frac = atof(he3_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = he4_mass_frac_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            he4_mass_frac_string[where_is_d] = 'E';
-        he4_mass_frac = atof(he4_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            where_is_d = he4_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                he4_mass_frac_string[where_is_d] = 'E';
+            he4_mass_frac = atof(he4_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = c12_mass_frac_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            c12_mass_frac_string[where_is_d] = 'E';
-        c12_mass_frac = atof(c12_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            where_is_d = c12_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                c12_mass_frac_string[where_is_d] = 'E';
+            c12_mass_frac = atof(c12_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = n14_mass_frac_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            n14_mass_frac_string[where_is_d] = 'E';
-        n14_mass_frac = atof(n14_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            where_is_d = n14_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                n14_mass_frac_string[where_is_d] = 'E';
+            n14_mass_frac = atof(n14_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = o16_mass_frac_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            o16_mass_frac_string[where_is_d] = 'E';
-        o16_mass_frac = atof(o16_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            where_is_d = o16_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                o16_mass_frac_string[where_is_d] = 'E';
+            o16_mass_frac = atof(o16_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = ne20_mass_frac_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            ne20_mass_frac_string[where_is_d] = 'E';
-        ne20_mass_frac = atof(ne20_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            where_is_d = ne20_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                ne20_mass_frac_string[where_is_d] = 'E';
+            ne20_mass_frac = atof(ne20_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
-        where_is_d = mg24_mass_frac_string.find_first_of("Dd");
-        if (where_is_d != std::string::npos)
-            mg24_mass_frac_string[where_is_d] = 'E';
-        mg24_mass_frac = atof(mg24_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+            where_is_d = mg24_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                mg24_mass_frac_string[where_is_d] = 'E';
+            mg24_mass_frac = atof(mg24_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            // Add 3He to 4He mass fraction. Isotopic shifts in lines are small.
+            he4_mass_frac += he3_mass_frac;
+
+        } else if (config["mesa_network"].as<std::string>() == "approx21") {
+            iss >> shell_index
+                >> density_string
+                >> temperature_string
+                >> radius_string
+                >> luminosity_string
+                >> mass_coordinate_string
+                >> neutron_mass_frac_string
+                >> h1_mass_frac_string
+                >> proton_mass_frac_string
+                >> he3_mass_frac_string
+                >> he4_mass_frac_string
+                >> c12_mass_frac_string
+                >> n14_mass_frac_string
+                >> o16_mass_frac_string
+                >> ne20_mass_frac_string
+                >> mg24_mass_frac_string
+                >> si28_mass_frac_string
+                >> s32_mass_frac_string
+                >> ar36_mass_frac_string
+                >> ca40_mass_frac_string
+                >> ti44_mass_frac_string
+                >> cr48_mass_frac_string
+                >> cr56_mass_frac_string
+                >> fe52_mass_frac_string
+                >> fe54_mass_frac_string
+                >> fe56_mass_frac_string
+                >> ni56_mass_frac_string;
+
+            unsigned int where_is_d(density_string.find_first_of("Dd"));
+            if (where_is_d != std::string::npos)
+                density_string[where_is_d] = 'E';
+            density = atof(density_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = temperature_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                temperature_string[where_is_d] = 'E';
+            temperature = atof(temperature_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = radius_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                radius_string[where_is_d] = 'E';
+            radius = atof(radius_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = neutron_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                neutron_mass_frac_string[where_is_d] = 'E';
+            neutron_mass_frac = atof(neutron_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = h1_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                h1_mass_frac_string[where_is_d] = 'E';
+            h1_mass_frac = atof(h1_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = proton_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                proton_mass_frac_string[where_is_d] = 'E';
+            proton_mass_frac = atof(proton_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = he3_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                he3_mass_frac_string[where_is_d] = 'E';
+            he3_mass_frac = atof(he3_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = he4_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                he4_mass_frac_string[where_is_d] = 'E';
+            he4_mass_frac = atof(he4_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = c12_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                c12_mass_frac_string[where_is_d] = 'E';
+            c12_mass_frac = atof(c12_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = n14_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                n14_mass_frac_string[where_is_d] = 'E';
+            n14_mass_frac = atof(n14_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = o16_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                o16_mass_frac_string[where_is_d] = 'E';
+            o16_mass_frac = atof(o16_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = ne20_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                ne20_mass_frac_string[where_is_d] = 'E';
+            ne20_mass_frac = atof(ne20_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = mg24_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                mg24_mass_frac_string[where_is_d] = 'E';
+            mg24_mass_frac = atof(mg24_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = si28_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                si28_mass_frac_string[where_is_d] = 'E';
+            si28_mass_frac = atof(si28_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = s32_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                s32_mass_frac_string[where_is_d] = 'E';
+            s32_mass_frac = atof(s32_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = ar36_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                ar36_mass_frac_string[where_is_d] = 'E';
+            ar36_mass_frac = atof(ar36_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = ca40_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                ca40_mass_frac_string[where_is_d] = 'E';
+            ca40_mass_frac = atof(ca40_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = ti44_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                ti44_mass_frac_string[where_is_d] = 'E';
+            ti44_mass_frac = atof(ti44_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = cr48_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                cr48_mass_frac_string[where_is_d] = 'E';
+            cr48_mass_frac = atof(cr48_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = cr56_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                cr56_mass_frac_string[where_is_d] = 'E';
+            cr56_mass_frac = atof(cr56_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = fe52_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                fe52_mass_frac_string[where_is_d] = 'E';
+            fe52_mass_frac = atof(fe52_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = fe54_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                fe54_mass_frac_string[where_is_d] = 'E';
+            fe54_mass_frac = atof(fe54_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = fe56_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                fe56_mass_frac_string[where_is_d] = 'E';
+            fe56_mass_frac = atof(fe56_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            where_is_d = ni56_mass_frac_string.find_first_of("Dd");
+            if (where_is_d != std::string::npos)
+                ni56_mass_frac_string[where_is_d] = 'E';
+            ni56_mass_frac = atof(ni56_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
+            // Add 3He to 4He mass fraction. Isotopic shifts in lines are small.
+            he4_mass_frac += he3_mass_frac;
+
+            // Add protons to 1H mass. A proton is just ionized hydrogen and we
+            // will calculate the ionization balance much better than MESA did.
+            h1_mass_frac += proton_mass_frac;
+
+            // Add 56Cr to 48Cr mass fraction.
+            cr48_mass_frac += cr56_mass_frac;
+
+            // Add all iron isotopes to 56Fe.
+            fe56_mass_frac += fe52_mass_frac + fe54_mass_frac;
+        } else {
+            std::cerr << "ERROR: unknown MESA nuclear network: " << config["mesa_network"].as<std::string>() << std::endl;
+            exit(1);
+        }
 
         density = std::exp(density);
         temperature = std::exp(temperature);
@@ -161,17 +360,24 @@ void read_mesa_model(const std::string model_name) {
         grid.at(i).temperature = temperature;
         grid.at(i).z = radius;
 
-        // Add He3 to He4 mass fraction. Isotopic shifts in lines are small.
-        he4_mass_frac += he3_mass_frac;
-
         // Make sure the mass fractions are normalized.
-        const double total_mass_fraction = h1_mass_frac
+        const double total_mass_fraction = neutron_mass_frac
+                                         + h1_mass_frac
                                          + he4_mass_frac
                                          + c12_mass_frac
                                          + n14_mass_frac
                                          + o16_mass_frac
                                          + ne20_mass_frac
-                                         + mg24_mass_frac;
+                                         + mg24_mass_frac
+                                         + si28_mass_frac
+                                         + s32_mass_frac
+                                         + ar36_mass_frac
+                                         + ca40_mass_frac
+                                         + ti44_mass_frac
+                                         + cr48_mass_frac
+                                         + fe56_mass_frac
+                                         + ni56_mass_frac;
+        neutron_mass_frac /= total_mass_fraction;
         h1_mass_frac /= total_mass_fraction;
         he4_mass_frac /= total_mass_fraction;
         c12_mass_frac /= total_mass_fraction;
@@ -179,6 +385,14 @@ void read_mesa_model(const std::string model_name) {
         o16_mass_frac /= total_mass_fraction;
         ne20_mass_frac /= total_mass_fraction;
         mg24_mass_frac /= total_mass_fraction;
+        si28_mass_frac /= total_mass_fraction;
+        s32_mass_frac /= total_mass_fraction;
+        ar36_mass_frac /= total_mass_fraction;
+        ca40_mass_frac /= total_mass_fraction;
+        ti44_mass_frac /= total_mass_fraction;
+        cr48_mass_frac /= total_mass_fraction;
+        fe56_mass_frac /= total_mass_fraction;
+        ni56_mass_frac /= total_mass_fraction;
 
         const double H_number_density  = grid.at(i).rho * h1_mass_frac   * N_A / H_molar_mass;
         const double He_number_density = grid.at(i).rho * he4_mass_frac  * N_A / He_molar_mass;
@@ -187,6 +401,14 @@ void read_mesa_model(const std::string model_name) {
         const double O_number_density  = grid.at(i).rho * o16_mass_frac  * N_A / O_molar_mass;
         const double Ne_number_density = grid.at(i).rho * ne20_mass_frac * N_A / Ne_molar_mass;
         const double Mg_number_density = grid.at(i).rho * mg24_mass_frac * N_A / Mg_molar_mass;
+        const double Si_number_density = grid.at(i).rho * si28_mass_frac * N_A / Si_molar_mass;
+        const double S_number_density  = grid.at(i).rho * s32_mass_frac  * N_A / S_molar_mass;
+        const double Ar_number_density = grid.at(i).rho * ar36_mass_frac * N_A / Ar_molar_mass;
+        const double Ca_number_density = grid.at(i).rho * ca40_mass_frac * N_A / Ca_molar_mass;
+        const double Ti_number_density = grid.at(i).rho * ti44_mass_frac * N_A / Ti_molar_mass;
+        const double Cr_number_density = grid.at(i).rho * cr48_mass_frac * N_A / Cr_molar_mass;
+        const double Fe_number_density = grid.at(i).rho * fe56_mass_frac * N_A / Fe_molar_mass;
+        const double Ni_number_density = grid.at(i).rho * ni56_mass_frac * N_A / Ni_molar_mass;
 
         // Number density of nuclei (WITHOUT electrons).
         const double N_N = H_number_density
@@ -195,7 +417,15 @@ void read_mesa_model(const std::string model_name) {
                          + N_number_density
                          + O_number_density
                          + Ne_number_density
-                         + Mg_number_density;
+                         + Mg_number_density
+                         + Si_number_density
+                         + S_number_density
+                         + Ar_number_density
+                         + Ca_number_density
+                         + Ti_number_density
+                         + Cr_number_density
+                         + Fe_number_density
+                         + Ni_number_density;
 
         // Total particle density: nuclei plus electrons.
         grid.at(i).n_g = H_number_density     *  2.0
@@ -204,7 +434,15 @@ void read_mesa_model(const std::string model_name) {
                          + N_number_density   *  8.0
                          + O_number_density   *  9.0
                          + Ne_number_density  * 11.0
-                         + Mg_number_density  * 13.0;
+                         + Mg_number_density  * 13.0
+                         + Si_number_density  * 15.0
+                         + S_number_density   * 17.0
+                         + Ar_number_density  * 19.0
+                         + Ca_number_density  * 21.0
+                         + Ti_number_density  * 23.0
+                         + Cr_number_density  * 25.0
+                         + Fe_number_density  * 27.0
+                         + Ni_number_density  * 29.0;
 
         // TODO: make this less clunky; maybe put atoms in a map as well instead of a vector?
         for (std::vector<Atom>::iterator atom = grid.at(i).atoms.begin(); atom != grid.at(i).atoms.end(); ++atom) {
@@ -222,6 +460,22 @@ void read_mesa_model(const std::string model_name) {
                 atom->number_fraction = Ne_number_density / N_N;
             } else if (atom->atomic_number == atomic_symbols["Mg"]) {
                 atom->number_fraction = Mg_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["Si"]) {
+                atom->number_fraction = Si_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["S"]) {
+                atom->number_fraction = S_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["Ar"]) {
+                atom->number_fraction = Ar_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["Ca"]) {
+                atom->number_fraction = Ca_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["Ti"]) {
+                atom->number_fraction = Ti_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["Cr"]) {
+                atom->number_fraction = Cr_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["Fe"]) {
+                atom->number_fraction = Fe_number_density / N_N;
+            } else if (atom->atomic_number == atomic_symbols["Ni"]) {
+                atom->number_fraction = Ni_number_density / N_N;
             }
         }
     }
