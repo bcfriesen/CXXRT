@@ -275,17 +275,6 @@ void Ion::read_atomic_data(const bool continuum_ion_only) {
             lines.at(i).lower_level->g = g;
             lines.at(i).oscillator_strength = oscillator_strength;
 
-            duplicate = false;
-            // We assume the line lists don't have duplicate lines, but it can't hurt to check anyway.
-            for (std::vector<AtomicLine>::const_iterator line = lines.begin(); line != lines.end(); ++line) {
-                if ((std::abs(lines.at(i).wavelength - line->wavelength) / line->wavelength) > tolerance) {
-                    duplicate = false;
-                } else {
-                    duplicate = true;
-                    break;
-                }
-            }
-
             // TODO: allow user to choose which line profile to use. For now the default is Gaussian.
             lines.at(i).line_profile = gauss_profile;
 
