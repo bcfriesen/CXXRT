@@ -31,6 +31,7 @@ void read_mesa_model(const std::string model_name) {
     std::string mass_coordinate_string; // We currently don't use MESA's calculation of mass coordinate.
     double h1_mass_frac;
     std::string h1_mass_frac_string;
+    double he3_mass_frac;
     std::string he3_mass_frac_string; // We currently don't use MESA's calculation of He3 mass.
     double he4_mass_frac;
     std::string he4_mass_frac_string;
@@ -117,6 +118,11 @@ void read_mesa_model(const std::string model_name) {
             h1_mass_frac_string[where_is_d] = 'E';
         h1_mass_frac = atof(h1_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
 
+        where_is_d = he3_mass_frac_string.find_first_of("Dd");
+        if (where_is_d != std::string::npos)
+            he3_mass_frac_string[where_is_d] = 'E';
+        he3_mass_frac = atof(he3_mass_frac_string.c_str()); // use std::stod when more compilers are C++11-compliant
+
         where_is_d = he4_mass_frac_string.find_first_of("Dd");
         if (where_is_d != std::string::npos)
             he4_mass_frac_string[where_is_d] = 'E';
@@ -154,6 +160,9 @@ void read_mesa_model(const std::string model_name) {
         grid.at(i).rho = density;
         grid.at(i).temperature = temperature;
         grid.at(i).z = radius;
+
+        // Add He3 to He4 mass fraction. Isotopic shifts in lines are small.
+        he4_mass_frac += he3_mass_frac;
 
         // Make sure the mass fractions are normalized.
         const double total_mass_fraction = h1_mass_frac
