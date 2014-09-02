@@ -7,7 +7,7 @@
 #include "wavelength_grid.hh"
 
 Eigen::SparseMatrix<double> calc_ALO (const std::size_t wl_value_hash) {
-    const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
+    const unsigned int n_depth_pts = grid.size();
     Eigen::SparseMatrix<double> Lambda_star(n_depth_pts, n_depth_pts);
 
     std::vector< Eigen::Triplet<double> > tripletList;

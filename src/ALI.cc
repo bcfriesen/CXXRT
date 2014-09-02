@@ -16,7 +16,7 @@
 
 void do_ALI() {
 
-    const unsigned int n_depth_pts = config["n_depth_pts"].as<int>();
+    const unsigned int n_depth_pts = grid.size();
 
     double rmsd;
     const double max_tol = 1.0e-8;
