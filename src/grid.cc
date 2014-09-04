@@ -100,7 +100,7 @@ void GridVoxel::calculate_emissivity_and_opacity(const std::size_t wl_value_hash
         ray_it->wavelength_grid[wl_value_hash].eta = eta_tot;
         ray_it->wavelength_grid[wl_value_hash].kappa = kappa_tot;
         ray_it->wavelength_grid[wl_value_hash].sigma = n_e * sigma_T;
-        ray_it->wavelength_grid[wl_value_hash].chi = ray_it->wavelength_grid[wl_value_hash].kappa + ray_it->wavelength_grid[wl_value_hash].sigma;
+        ray_it->wavelength_grid[wl_value_hash].chi = ray_it->wavelength_grid[wl_value_hash].kappa * (1.0 - std::exp((-h_planck * c_light) / (wavelength_values[wl_value_hash] * k_boltzmann * ray_it->gridvoxel->temperature))) + ray_it->wavelength_grid[wl_value_hash].sigma;
         ray_it->wavelength_grid[wl_value_hash].epsilon = ray_it->wavelength_grid[wl_value_hash].kappa / (ray_it->wavelength_grid[wl_value_hash].kappa + ray_it->wavelength_grid[wl_value_hash].sigma);
 
         // In general the thermalization parameter is a ray-dependent quantity
