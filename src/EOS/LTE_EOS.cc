@@ -9,7 +9,7 @@
 
 
 // The numerator of Mihalas's f_ij (defined in Eq. (5-17)).
-double P_jk (const Atom atom, const Ion ion, const double n_e, const double temperature) {
+double P_jk (const Atom &atom, const Ion &ion, const double &n_e, const double &temperature) {
     double result = 1.0;
     for (std::vector<Ion>::const_iterator ion_it = atom.ions.begin(); ion_it != atom.ions.end()-1; ++ion_it) {
         // If the requested j+1'th ionization stage is more than fully ionized,
@@ -27,7 +27,7 @@ double P_jk (const Atom atom, const Ion ion, const double n_e, const double temp
 
 
 // The denominator of Mihalas's f_ij (defined in Eq. (5-17)).
-double S_k (const Atom atom, const double n_e, const double temperature) {
+double S_k (const Atom &atom, const double &n_e, const double &temperature) {
     double result = 0.0;
     for (std::vector<Ion>::const_iterator ion_it = atom.ions.begin(); ion_it != atom.ions.end()-1; ++ion_it) {
         double tmp = 1.0;
@@ -44,12 +44,12 @@ double S_k (const Atom atom, const double n_e, const double temperature) {
 
 // The fraction of species k in ionization stage j relative to the total number
 // of atoms of that species. (See Mihalas p 114). This is Mihalas Eq (5-17).
-double f_ij (const Atom atom, const Ion ion, const double n_e, const double temperature) {
+double f_ij (const Atom &atom, const Ion &ion, const double &n_e, const double &temperature) {
     return P_jk(atom, ion, n_e, temperature) / S_k(atom, n_e, temperature);
 }
 
 
-double RHS(const GridVoxel gv) {
+double RHS(const GridVoxel &gv) {
     double result = 0.0;
     for (std::vector<Atom>::const_iterator atom = gv.atoms.begin(); atom != gv.atoms.end(); ++atom) {
         double tmp = 0.0;
