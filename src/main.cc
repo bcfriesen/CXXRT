@@ -160,12 +160,13 @@ int main(int argc, char *argv[]) {
         log_file << std::endl;
         log_file << "Calculating opacities ... ";
         std::flush(log_file);
-        #pragma omp parallel private (gv)
-        {
-            for (gv = grid.begin(); gv != grid.end(); ++gv) {
-                #pragma omp single nowait
-                {
-                    for (std::map<std::size_t, GridWavelengthPoint>::const_iterator wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+        for (gv = grid.begin(); gv != grid.end(); ++gv) {
+            std::map<std::size_t, GridWavelengthPoint>::const_iterator wlp;
+            #pragma omp parallel private (wlp)
+            {
+                for (wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+                    #pragma omp single nowait
+                    {
                         gv->calculate_emissivity_and_opacity(wlp->first);
                     }
                 }
