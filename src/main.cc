@@ -64,6 +64,8 @@ int main(int argc, char *argv[]) {
     }
 
     // set up the wavelength grid
+    log_file << "Building wavelength grid ... ";
+    std::flush(log_file);
     const unsigned int n_wavelength_pts = config["n_wavelength_pts"].as<int>();
     const double wl_min = config["wl_min"].as<double>();
     const double wl_max = config["wl_max"].as<double>();
@@ -86,6 +88,7 @@ int main(int argc, char *argv[]) {
             gv->wavelength_grid[wlv->first] = gwlp_tmp;
         }
     }
+    log_file << "done." << std::endl << std::endl;
 
     std::cout << std::scientific;
 
