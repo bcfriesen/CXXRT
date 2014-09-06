@@ -55,12 +55,12 @@ int main(int argc, char *argv[]) {
         log_file << "Reading MESA model file: " << config["TAMS_mesa_model_name"].as<std::string>() << " ... ";
         std::flush(log_file);
         read_mesa_model(config["TAMS_mesa_model_name"].as<std::string>());
-        log_file << "done." << std::endl;
+        log_file << "done." << std::endl << std::endl;
     } else {
         log_file << "Building internal model ... ";
         std::flush(log_file);
         build_internal_model();
-        log_file << "done." << std::endl;
+        log_file << "done." << std::endl << std::endl;;
     }
 
     // set up the wavelength grid
