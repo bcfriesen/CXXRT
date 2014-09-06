@@ -32,6 +32,7 @@ std::map<std::size_t, double> wavelength_values;
 std::ofstream log_file;
 std::ofstream moments_file;
 std::map<std::string, unsigned int> atomic_symbols;
+std::vector<Atom> tmp_atoms;
 
 int main(int argc, char *argv[]) {
 
