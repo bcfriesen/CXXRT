@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
         for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
             for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
                 for (std::vector<AtomicLine>::iterator line = ion->lines.begin(); line != ion->lines.end(); ++line) {
-                    line->set_line_width(gv->temperature);
+                    line->set_line_width(gv->temperature, *atom);
                 }
             }
         }

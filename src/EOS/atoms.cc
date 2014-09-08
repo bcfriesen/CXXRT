@@ -319,9 +319,9 @@ double AtomicLine::alpha(const double lambda) const {
 }
 
 
-void AtomicLine::set_line_width(const double temperature) {
+void AtomicLine::set_line_width(const double temperature, const Atom &atom) {
     // TODO: let user choose among Doppler broadening and ... other types of broadening.
-    Delta_lambda = Doppler_width(wavelength, temperature);
+    Delta_lambda = Doppler_width(wavelength, temperature, atom);
 }
 
 
