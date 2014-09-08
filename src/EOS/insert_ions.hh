@@ -3,6 +3,6 @@
 
 #include "../grid.hh"
 
-void insert_ions(GridVoxel* gv);
+void insert_ions(std::vector<Atom> &atoms);
 
 #endif
