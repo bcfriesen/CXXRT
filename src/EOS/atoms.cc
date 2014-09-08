@@ -29,8 +29,10 @@ Atom::Atom(const unsigned int atomic_number_in, const unsigned int max_ionizatio
     while (std::getline(atomic_data_file, one_line)) {
         std::istringstream iss(one_line);
         iss >> atomic_number_from_file;
-        if (atomic_number_from_file == atomic_number)
+        if (atomic_number_from_file == atomic_number) {
             iss >> atomic_weight >> atomic_symbol;
+            atomic_weight /= N_A; // convert g/mol to g/atom
+        }
     }
     atomic_data_file.close();
 
