@@ -11,6 +11,7 @@ const double ev2erg = 1.602177e-12;
 const double sigma_T = 6.6524e-25; // Thomson cross section
 const double N_A = 6.022e+23; // Avogadro's number
 const double sigma_stefan = 5.6704e-5; // Stefan's constant
+const double a_rad = 7.57e-15; // Radiation-density constant
 
 // molar masses (grams per mole) taken from NIST's periodic table
 const double H_molar_mass  = 1.008;
