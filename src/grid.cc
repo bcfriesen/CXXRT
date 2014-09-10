@@ -119,7 +119,7 @@ void GridVoxel::calc_J_wl_integral() {
         if (!first_time) {
             std::map<std::size_t, GridWavelengthPoint>::const_iterator it_prev = it;
             std::advance(it_prev, -1);
-            J_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.J - it_prev->second.J);
+            J_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.J + it_prev->second.J);
         }
         first_time = false;
     }
@@ -133,7 +133,7 @@ void GridVoxel::calc_H_wl_integral() {
         if (!first_time) {
             std::map<std::size_t, GridWavelengthPoint>::const_iterator it_prev = it;
             std::advance(it_prev, -1);
-            H_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.H - it_prev->second.H);
+            H_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.H + it_prev->second.H);
         }
         first_time = false;
     }
@@ -147,7 +147,7 @@ void GridVoxel::calc_K_wl_integral() {
         if (!first_time) {
             std::map<std::size_t, GridWavelengthPoint>::const_iterator it_prev = it;
             std::advance(it_prev, -1);
-            K_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.K - it_prev->second.K);
+            K_wl_integral += 0.5 * (it->second.lambda - it_prev->second.lambda) * (it->second.K + it_prev->second.K);
         }
         first_time = false;
     }
@@ -174,7 +174,7 @@ void GridVoxel::calc_chi_H() {
             const double H_prev = wavelength_grid[it_prev->first].H;
             const double chi = first_ray_raydata->wavelength_grid[it->first].chi;
             const double chi_prev = first_ray_raydata->wavelength_grid[it_prev->first].chi;
-            chi_H += 0.5 * (lambda - lambda_prev) * (chi * H - chi_prev * H_prev);
+            chi_H += 0.5 * (lambda - lambda_prev) * (chi * H + chi_prev * H_prev);
         }
         first_time = false;
     }
@@ -203,7 +203,7 @@ void GridVoxel::calc_kappa_J() {
             const double J_prev = wavelength_grid[it_prev->first].J;
             const double kappa = first_ray_raydata->wavelength_grid[it->first].kappa;
             const double kappa_prev = first_ray_raydata->wavelength_grid[it_prev->first].kappa;
-            kappa_J += 0.5 * (lambda - lambda_prev) * (kappa * J - kappa_prev * J_prev);
+            kappa_J += 0.5 * (lambda - lambda_prev) * (kappa * J + kappa_prev * J_prev);
         }
         first_time = false;
     }
@@ -232,7 +232,7 @@ void GridVoxel::calc_kappa_B() {
             const double B_prev = planck_function(wavelength_values[it_prev->first], temperature);
             const double kappa = first_ray_raydata->wavelength_grid[it->first].kappa;
             const double kappa_prev = first_ray_raydata->wavelength_grid[it_prev->first].kappa;
-            kappa_B += 0.5 * (lambda - lambda_prev) * (kappa * B - kappa_prev * B_prev);
+            kappa_B += 0.5 * (lambda - lambda_prev) * (kappa * B + kappa_prev * B_prev);
         }
         first_time = false;
     }
@@ -268,7 +268,7 @@ void GridVoxel::calc_eta_minus_chi_J_wl_integral() {
             const double eta_prev = first_ray_raydata->wavelength_grid[it_prev->first].eta;
             const double chi = first_ray_raydata->wavelength_grid[it->first].chi;
             const double chi_prev = first_ray_raydata->wavelength_grid[it_prev->first].chi;
-            eta_minus_chi_J_wl_integral += 0.5 * (lambda - lambda_prev) * ((eta - chi * J) - (eta_prev - chi_prev * J_prev));
+            eta_minus_chi_J_wl_integral += 0.5 * (lambda - lambda_prev) * ((eta - chi * J) + (eta_prev - chi_prev * J_prev));
         }
         first_time = false;
     }
