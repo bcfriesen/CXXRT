@@ -8,6 +8,7 @@
 #include "EOS/Phi.hh"
 #include "EOS/LTE_EOS.hh"
 #include "misc/planck_function.hh"
+#include "misc/planck_function_temperature_derivative.hh"
 
 void GridVoxel::calc_J(const std::size_t wl_value_hash) {
     double result = 0.0;

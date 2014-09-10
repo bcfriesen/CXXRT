@@ -174,6 +174,7 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
+            gv->calc_Rosseland_mean_opacity();
         }
         log_file << "done." << std::endl;
 
