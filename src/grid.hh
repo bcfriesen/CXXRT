@@ -20,6 +20,7 @@ class GridVoxel {
     double chi_H;
     double kappa_J;
     double kappa_B;
+    double Rosseland_mean_opacity;
     double Eddington_factor_f;
     double eta_minus_chi_J_wl_integral;
     double H_target;
@@ -39,6 +40,7 @@ class GridVoxel {
     void calc_kappa_B();
     void calc_Eddington_factor_f();
     void calc_eta_minus_chi_J_wl_integral();
+    void calc_Rosseland_mean_opacity();
 };
 
 #endif

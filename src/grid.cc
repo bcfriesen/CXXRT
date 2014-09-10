@@ -273,3 +273,34 @@ void GridVoxel::calc_eta_minus_chi_J_wl_integral() {
         first_time = false;
     }
 }
+
+
+void GridVoxel::calc_Rosseland_mean_opacity() {
+    Rosseland_mean_opacity = 0.0;
+
+    bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
+    for (std::map<std::size_t, double>::const_iterator wlv_it = wavelength_values.begin(); wlv_it != wavelength_values.end(); ++wlv_it) {
+        if (!first_time) {
+            std::map<std::size_t, double>::const_iterator wlv_it_prev = wlv_it;
+            std::advance(wlv_it_prev, -1);
+
+            // Just so it's easier to see what we're doing.
+            const double lambda = wlv_it->second;
+            const double lambda_prev = wlv_it_prev->second;
+
+            // kappa is in principle a ray-dependent quantity, but all rays should
+            // have the same value of chi in a given voxel. So just grab it from
+            // the first ray we can find.
+            const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
+            const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
+
+            const double kappa = first_ray_raydata->wavelength_grid[wlv_it->first].kappa;
+            const double kappa_prev = first_ray_raydata->wavelength_grid[wlv_it_prev->first].kappa;
+
+            Rosseland_mean_opacity += 0.5 * ((1.0 / kappa) * planck_function_temperature_derivative(lambda, temperature) + (1.0 / kappa_prev) * planck_function_temperature_derivative(lambda_prev, temperature)) * (lambda - lambda_prev);
+        }
+        first_time = false;
+    }
+    Rosseland_mean_opacity *= pi / (a_rad * c_light * std::pow(temperature, 3));
+    Rosseland_mean_opacity = 1.0 / Rosseland_mean_opacity;
+}
