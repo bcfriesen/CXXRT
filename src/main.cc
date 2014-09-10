@@ -18,7 +18,7 @@
 #include "ray.hh"
 #include "globals.hh"
 #include "constants.hh"
-#include "planck_function.hh"
+#include "misc/planck_function.hh"
 #include "initialize_rays.hh"
 #include "build_internal_model.hh"
 #include "read_mesa_model.hh"

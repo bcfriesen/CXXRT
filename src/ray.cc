@@ -4,7 +4,7 @@
 #include <cmath>
 #include <fstream>
 
-#include "planck_function.hh"
+#include "misc/planck_function.hh"
 #include "ray.hh"
 #include "globals.hh"
 #include "grid.hh"

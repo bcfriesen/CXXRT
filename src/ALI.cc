@@ -10,7 +10,7 @@
 #include "calc_ALO.hh"
 #include "globals.hh"
 #include "grid.hh"
-#include "planck_function.hh"
+#include "misc/planck_function.hh"
 #include "rmsd.hh"
 #include "wavelength_grid.hh"
 

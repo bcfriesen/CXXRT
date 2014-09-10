@@ -15,7 +15,6 @@ set (CXXRT_SOURCES
      grid.cc
      initialize_rays.cc
      main.cc
-     planck_function.cc
      ray.cc
      read_mesa_model.cc
      rmsd.cc
