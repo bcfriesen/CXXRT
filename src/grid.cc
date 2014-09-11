@@ -289,16 +289,16 @@ void GridVoxel::calc_Rosseland_mean_opacity() {
             const double lambda = wlv_it->second;
             const double lambda_prev = wlv_it_prev->second;
 
-            // kappa is in principle a ray-dependent quantity, but all rays should
+            // chi is in principle a ray-dependent quantity, but all rays should
             // have the same value of chi in a given voxel. So just grab it from
             // the first ray we can find.
             const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
             const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
 
-            const double kappa = first_ray_raydata->wavelength_grid[wlv_it->first].kappa;
-            const double kappa_prev = first_ray_raydata->wavelength_grid[wlv_it_prev->first].kappa;
+            const double chi = first_ray_raydata->wavelength_grid[wlv_it->first].chi;
+            const double chi_prev = first_ray_raydata->wavelength_grid[wlv_it_prev->first].chi;
 
-            Rosseland_mean_opacity += 0.5 * ((1.0 / kappa) * planck_function_temperature_derivative(lambda, temperature) + (1.0 / kappa_prev) * planck_function_temperature_derivative(lambda_prev, temperature)) * (lambda - lambda_prev);
+            Rosseland_mean_opacity += 0.5 * ((1.0 / chi) * planck_function_temperature_derivative(lambda, temperature) + (1.0 / chi_prev) * planck_function_temperature_derivative(lambda_prev, temperature)) * (lambda - lambda_prev);
         }
         first_time = false;
     }
