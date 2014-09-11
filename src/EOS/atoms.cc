@@ -44,28 +44,67 @@ Atom::Atom(const unsigned int atomic_number_in, const unsigned int max_ionizatio
 }
 
 
-// We assume all continuum processes promote a bound state to the ground state
-// of the next ionization stage (as opposed to promotion from the bound state
-// to an excited state of the next ionization stage).
-void Atom::set_continuum_pointers() {
+void Atom::set_pointers() {
     for (std::vector<Ion>::iterator ion = ions.begin(); ion != ions.end(); ++ion) {
 
-        // A fully ionized atom has no higher continuum state.
-        if (ion->ionization_stage == atomic_number)
-            ion->continuum_state = NULL;
+        // We assume all continuum processes promote a bound state to the ground state
+        // of the next ionization stage (as opposed to promotion from the bound state
+        // to an excited state of the next ionization stage).
 
-        for (std::vector<Ion>::iterator next_ion = ions.begin(); next_ion != ions.end(); ++next_ion) {
-            if (next_ion->ionization_stage == ion->ionization_stage+1) {
-                ion->next_ion = &(*next_ion);
-                for (std::vector<AtomicLevel>::iterator level = next_ion->levels.begin(); level != next_ion->levels.end(); ++level) {
-                    if (level->energy < std::numeric_limits<double>::epsilon()) {
-                        ion->continuum_state = &(*level);
-                        break;
+        // A fully ionized atom has no higher continuum state.
+        if (ion->ionization_stage == atomic_number) {
+            ion->continuum_state = NULL;
+        } else {
+            for (std::vector<Ion>::iterator next_ion = ions.begin(); next_ion != ions.end(); ++next_ion) {
+                if (next_ion->ionization_stage == ion->ionization_stage+1) {
+                    ion->next_ion = &(*next_ion);
+                    for (std::vector<AtomicLevel>::iterator level = next_ion->levels.begin(); level != next_ion->levels.end(); ++level) {
+                        if (level->energy < std::numeric_limits<double>::epsilon()) {
+                            ion->continuum_state = &(*level);
+                            break;
+                        }
                     }
                 }
             }
         }
+
+        // Set up the pointer for the ground state. By definition the energy of
+        // the ground state is zero.
+        for (std::vector<AtomicLevel>::iterator level = ion->levels.begin(); level != ion->levels.end(); ++level) {
+            if (level->energy < std::numeric_limits<double>::epsilon())
+                ion->ground_state = &(*level);
+        }
+
+
+        // Now search through the model atom energy levels to find the lower and upper levels for this line.
+        for (std::vector<AtomicLine>::iterator line = ion->lines.begin(); line != ion->lines.end(); ++line) {
+            const double tolerance = 1.0e-12;
+            bool found_match = false;
+            for (std::vector<AtomicLevel>::iterator level1 = ion->levels.begin(); level1 != ion->levels.end(); ++level1) {
+                for (std::vector<AtomicLevel>::iterator level2 = level1+1; level2 != ion->levels.end(); ++level2) {
+                    if ((std::abs(std::abs(level1->energy - level2->energy) - h_planck*c_light/line->wavelength) / (h_planck*c_light/line->wavelength)) < tolerance) {
+                        if (level1->energy > level2->energy) {
+                            line->lower_level = &(*level2);
+                            line->upper_level = &(*level1);
+                        } else {
+                            line->lower_level = &(*level1);
+                            line->upper_level = &(*level2);
+                        }
+                        found_match = true;
+                        break;
+                    } else {
+                        found_match = false;
+                    }
+                }
+                if (found_match) break;
+            }
+            if (!found_match) {
+                std::cerr << "ERROR: could not find match to line: " << line->wavelength*1.0e+8 << " A" << std::endl;
+                exit(1);
+            }
+        }
     }
+
 }
 
 
@@ -183,13 +222,6 @@ void Ion::read_atomic_data(const bool continuum_ion_only) {
             }
         }
 
-        // Set up the pointer for the ground state. By definition the energy of
-        // the ground state is zero.
-        for (std::vector<AtomicLevel>::iterator level = levels.begin(); level != levels.end(); ++level) {
-            if (level->energy < std::numeric_limits<double>::epsilon())
-                ground_state = &(*level);
-        }
-
         atomic_data_file.close();
 
         lines.resize(num_lines);
@@ -227,54 +259,10 @@ void Ion::read_atomic_data(const bool continuum_ion_only) {
                 lower_energy_level = first_energy_level;
             }
 
-            lines.at(i).wavelength = wavelength*1.0e-7; // Kurucz wavelengths are in nanometers
+            lines.at(i).wavelength = 1.0 / (upper_energy_level - lower_energy_level);
             const int g = int(2.0*J_first + 1.0);
             const double oscillator_strength = std::pow(10.0, log_gf) / double(g);
 
-            bool found_match = false;
-
-            // Now search through the model atom energy levels to find the lower and upper levels for this line.
-            for (std::vector<AtomicLevel>::iterator level = levels.begin(); level != levels.end(); ++level) {
-                if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
-                    if (std::abs(lower_energy_level*h_planck*c_light - level->energy) < tolerance) {
-                        lines.at(i).lower_level = &(*level);
-                        found_match = true;
-                        break;
-                    }
-                } else if ((std::abs(lower_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
-                    lines.at(i).lower_level = &(*level);
-                    found_match = true;
-                    break;
-                } else {
-                    found_match = false;
-                }
-            }
-            if (!found_match) {
-                std::cerr << "ERROR: could not find match to lower level of line: " << wavelength*1.0e+1 << std::endl;
-                exit(1);
-            }
-
-            for (std::vector<AtomicLevel>::iterator level = levels.begin(); level != levels.end(); ++level) {
-                if (level->energy < std::numeric_limits<double>::epsilon()) {  // if we're comparing to the ground state (which has energy 0), don't divide by it
-                    if (std::abs(upper_energy_level*h_planck*c_light - level->energy) < tolerance) {
-                        lines.at(i).upper_level = &(*level);
-                        found_match = true;
-                        break;
-                    }
-                } else if ((std::abs(upper_energy_level*h_planck*c_light - level->energy) / level->energy) < tolerance) {
-                    lines.at(i).upper_level = &(*level);
-                    found_match = true;
-                    break;
-                } else {
-                    found_match = false;
-                }
-            }
-            if (!found_match) {
-                std::cerr << "ERROR: could not find match to upper level of line: " << wavelength*1.0e+1 << std::endl;
-                exit(1);
-            }
-
-            lines.at(i).lower_level->g = g;
             lines.at(i).oscillator_strength = oscillator_strength;
 
             // TODO: allow user to choose which line profile to use. For now the default is Gaussian.

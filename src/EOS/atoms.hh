@@ -36,7 +36,7 @@ class Atom {
     std::string atomic_symbol;
     std::vector<Ion> ions;
     double number_fraction;
-    void set_continuum_pointers();
+    void set_pointers();
     unsigned int max_ionization_stage; // Not the maximum possible, but rather the maximum that we have atomic data for.
 };
 

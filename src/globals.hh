@@ -4,6 +4,8 @@
 #include <vector>
 #include <map>
 
+#include "EOS/atoms.hh"
+
 #include <yaml-cpp/yaml.h>
 
 extern std::vector<class GridVoxel> grid;
@@ -18,5 +20,7 @@ extern std::ofstream log_file;
 extern std::ofstream moments_file;
 
 extern std::map<std::string, unsigned int> atomic_symbols;
+
+extern std::vector<Atom> tmp_atoms;
 
 #endif

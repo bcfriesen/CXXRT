@@ -94,7 +94,9 @@ void read_mesa_model(const std::string model_name) {
     grid.resize(n_shells);
 
     for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-        insert_ions(&(*gv));
+        for (unsigned int i = 0; i < tmp_atoms.size(); ++i) {
+            gv->atoms.push_back(tmp_atoms.at(i));
+        }
     }
 
     // skip next 4 lines

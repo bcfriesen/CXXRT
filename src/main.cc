@@ -24,6 +24,7 @@
 #include "read_mesa_model.hh"
 #include "misc/atomic_symbols.hh"
 #include "misc/calc_Delta_T.hh"
+#include "EOS/insert_ions.hh"
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
@@ -32,6 +33,7 @@ std::map<std::size_t, double> wavelength_values;
 std::ofstream log_file;
 std::ofstream moments_file;
 std::map<std::string, unsigned int> atomic_symbols;
+std::vector<Atom> tmp_atoms;
 
 int main(int argc, char *argv[]) {
 
@@ -50,6 +52,8 @@ int main(int argc, char *argv[]) {
     log_file << config << std::endl << std::endl;
 
     set_up_atomic_symbols();
+
+    insert_ions(tmp_atoms);
 
     if (config["read_mesa_model"].as<bool>()) {
         log_file << "Reading MESA model file: " << config["TAMS_mesa_model_name"].as<std::string>() << " ... ";
@@ -92,20 +96,21 @@ int main(int argc, char *argv[]) {
 
     std::cout << std::scientific;
 
-    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-            for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
-                const bool continuum_ion_only = ((ion->ionization_stage == atom->max_ionization_stage+1) ? true : false);
-                ion->read_atomic_data(continuum_ion_only);
+    log_file << "Setting model atom pointers ...";
+    std::flush(log_file);
+    std::vector<GridVoxel>::iterator gv;
+    #pragma omp parallel private (gv)
+    {
+        for (gv = grid.begin(); gv != grid.end(); ++gv) {
+            #pragma omp single nowait
+            {
+                for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
+                    atom->set_pointers();
+                }
             }
         }
     }
-
-    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
-            atom->set_continuum_pointers();
-        }
-    }
+    log_file << "done." << std::endl << std::endl;
 
     const std::string moments_file_name = config["moments_file"].as<std::string>();
     moments_file.open(moments_file_name.c_str());
@@ -136,7 +141,7 @@ int main(int argc, char *argv[]) {
         std::ostringstream convert_loop_index_to_string;
         convert_loop_index_to_string << i;
 
-        for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (gv = grid.begin(); gv != grid.end(); ++gv) {
             for (std::vector<Atom>::iterator atom = gv->atoms.begin(); atom != gv->atoms.end(); ++atom) {
                 for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
                     ion->calc_partition_function(gv->temperature);
@@ -147,7 +152,6 @@ int main(int argc, char *argv[]) {
         log_file << std::endl;
         log_file << "Setting matter to LTE ... ";
         std::flush(log_file);
-        std::vector<GridVoxel>::iterator gv;
         #pragma omp parallel private (gv)
         {
             for (gv = grid.begin(); gv != grid.end(); ++gv) {
