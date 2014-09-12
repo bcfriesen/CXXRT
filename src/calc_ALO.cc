@@ -6,7 +6,7 @@
 #include "ray.hh"
 #include "wavelength_grid.hh"
 
-Eigen::SparseMatrix<double> calc_ALO (const std::size_t wl_value_hash) {
+Eigen::SparseMatrix<double> calc_ALO (const unsigned int wl_index) {
     const unsigned int n_depth_pts = grid.size();
     Eigen::SparseMatrix<double> Lambda_star(n_depth_pts, n_depth_pts);
 
@@ -20,11 +20,11 @@ Eigen::SparseMatrix<double> calc_ALO (const std::size_t wl_value_hash) {
             std::vector<RayData>::iterator it = rid->ray->raydata.begin() + rid->intersection_point;
 
             if (it == rid->ray->raydata.begin()) {
-                I_hat.push_back(it->wavelength_grid[wl_value_hash].beta);
+                I_hat.push_back(it->wavelength_grid.at(wl_index).beta);
             } else {
                 std::vector<RayData>::iterator it_prev = it;
                 std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
-                I_hat.push_back(it_prev->wavelength_grid[wl_value_hash].gamma * std::exp(-it_prev->wavelength_grid[wl_value_hash].Delta_tau) + it->wavelength_grid[wl_value_hash].beta);
+                I_hat.push_back(it_prev->wavelength_grid.at(wl_index).gamma * std::exp(-it_prev->wavelength_grid.at(wl_index).Delta_tau) + it->wavelength_grid.at(wl_index).beta);
             }
             mu.push_back(it->mu);
         }

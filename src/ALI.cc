@@ -21,10 +21,10 @@ void do_ALI() {
     double rmsd;
     const double max_tol = 1.0e-8;
 
-    std::map<std::size_t, double>::const_iterator wlv;
-#pragma omp parallel private (wlv)
+    unsigned int i;
+#pragma omp parallel private (i)
     {
-    for (wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+    for (i = 0; i < wavelength_values.size(); ++i) {
 #pragma omp single nowait
         {
         // use thread-specific buffers to store output, then dump them to the
@@ -32,15 +32,15 @@ void do_ALI() {
         std::stringstream thread_buf;
         thread_buf << std::scientific;
 
-        thread_buf << "Starting ALI on wavelength point " << wlv->second * 1.0e+8 << " A ... ";
+        thread_buf << "Starting ALI on wavelength point " << wavelength_values.at(i) * 1.0e+8 << " A ... ";
         unsigned int iter = 0;
-        Eigen::MatrixXd Lambda_star = calc_ALO(wlv->first);
+        Eigen::MatrixXd Lambda_star = calc_ALO(i);
 
         Eigen::VectorXd J_old(n_depth_pts);
         Eigen::VectorXd J_new(n_depth_pts);
         Eigen::VectorXd J_fs(n_depth_pts);
-        for (unsigned int i = 0; i < n_depth_pts; ++i) {
-            J_old(i) = grid.at(i).wavelength_grid[wlv->first].J;
+        for (unsigned int j = 0; j < n_depth_pts; ++j) {
+            J_old(j) = grid.at(j).wavelength_grid.at(i).J;
         }
         Eigen::VectorXd rhs;
         Eigen::VectorXd epsilon(n_depth_pts);
@@ -48,18 +48,18 @@ void do_ALI() {
         do {
             for (std::vector<Ray>::iterator r = rays.begin(); r != rays.end(); ++r) {
                 for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-                    gv->calc_source_fn(wlv->first);
+                    gv->calc_source_fn(i);
                 }
-                r->formal_soln(wlv->first);
+                r->formal_soln(i);
             }
             for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-                gv->calc_J(wlv->first);
-                gv->calc_H(wlv->first);
-                gv->calc_K(wlv->first);
+                gv->calc_J(i);
+                gv->calc_H(i);
+                gv->calc_K(i);
             }
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
-                J_fs(j) = grid.at(j).wavelength_grid[wlv->first].J;
-                epsilon(j) = grid.at(j).wavelength_grid[wlv->first].epsilon;
+                J_fs(j) = grid.at(j).wavelength_grid.at(i).J;
+                epsilon(j) = grid.at(j).wavelength_grid.at(i).epsilon;
             }
             rhs = Lambda_star*J_old;
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
@@ -82,15 +82,15 @@ void do_ALI() {
             rmsd = calc_rmsd(J_old, J_new);
             J_old = J_new;
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
-                grid.at(j).wavelength_grid[wlv->first].J = J_old(j);
+                grid.at(j).wavelength_grid.at(i).J = J_old(j);
             }
             if (rmsd < max_tol)
                 break;
 
             if (config["print_every_iter"].as<bool>()) {
                 for (std::vector<GridVoxel>::const_iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-                    for (std::map<std::size_t, GridWavelengthPoint>::const_iterator wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
-                        moments_file << std::setw(16) << gv->z << std::setw(15) << gv->rho << std::setw(15) << wlp->second.lambda << std::setw(15) << wlp->second.J << std::setw(15) << wlp->second.H << std::setw(15) << wlp->second.K << std::setw(15) << planck_function(wlp->second.lambda, gv->temperature) << std::endl;
+                    for (std::vector<GridWavelengthPoint>::const_iterator wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+                        moments_file << std::setw(16) << gv->z << std::setw(15) << gv->rho << std::setw(15) << wlp->lambda << std::setw(15) << wlp->J << std::setw(15) << wlp->H << std::setw(15) << wlp->K << std::setw(15) << planck_function(wlp->lambda, gv->temperature) << std::endl;
                     }
                 }
                 moments_file << std::endl;

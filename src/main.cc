@@ -9,7 +9,6 @@
 #endif
 
 #include <yaml-cpp/yaml.h>
-#include <boost/functional/hash.hpp>
 
 #include "ALI.hh"
 #include "EOS/atoms.hh"
@@ -29,7 +28,7 @@
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
 YAML::Node config;
-std::map<std::size_t, double> wavelength_values;
+std::vector<double> wavelength_values;
 std::ofstream log_file;
 std::ofstream moments_file;
 std::map<std::string, unsigned int> atomic_symbols;
@@ -77,19 +76,16 @@ int main(int argc, char *argv[]) {
         std::cerr << "ERROR: wl_min > wl_max!" << std::endl;
         exit(1);
     }
-    // Assign a unique integer hash to each wavelength point.
     for (unsigned int i = 0; i < n_wavelength_pts; ++i) {
-        const double wl_value = wl_min + double(i) * (wl_max - wl_min) / double(n_wavelength_pts-1);
-        boost::hash<double> double_hash;
-        const std::size_t wl_value_hash = double_hash(wl_value);
-        wavelength_values[wl_value_hash] = wl_value;
+        wavelength_values.push_back(wl_min + double(i) * (wl_max - wl_min) / double(n_wavelength_pts-1));
     }
 
     for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (std::map<std::size_t, double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
+        gv->wavelength_grid.resize(wavelength_values.size());
+        for (unsigned int i = 0; i < wavelength_values.size(); ++i) {
             GridWavelengthPoint gwlp_tmp;
-            gwlp_tmp.lambda = wlv->second;
-            gv->wavelength_grid[wlv->first] = gwlp_tmp;
+            gwlp_tmp.lambda = wavelength_values.at(i);
+            gv->wavelength_grid.at(i) = gwlp_tmp;
         }
     }
     log_file << "done." << std::endl << std::endl;
@@ -168,13 +164,13 @@ int main(int argc, char *argv[]) {
         log_file << "Calculating opacities ... ";
         std::flush(log_file);
         for (gv = grid.begin(); gv != grid.end(); ++gv) {
-            std::map<std::size_t, GridWavelengthPoint>::const_iterator wlp;
-            #pragma omp parallel private (wlp)
+            unsigned int i;
+            #pragma omp parallel private (i)
             {
-                for (wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+                for (i = 0; i < gv->wavelength_grid.size(); ++i) {
                     #pragma omp single nowait
                     {
-                        gv->calculate_emissivity_and_opacity(wlp->first);
+                        gv->calculate_emissivity_and_opacity(i);
                     }
                 }
             }
@@ -183,9 +179,9 @@ int main(int argc, char *argv[]) {
         log_file << "done." << std::endl;
 
         for (std::vector<Ray>::iterator r = rays.begin(); r != rays.end(); ++r) {
-            for (std::map<std::size_t, double>::const_iterator wlv = wavelength_values.begin(); wlv != wavelength_values.end(); ++wlv) {
-                r->calc_tau(wlv->first);
-                r->calc_SC_coeffs(wlv->first);
+            for (unsigned int i = 0; i < wavelength_values.size(); ++i) {
+                r->calc_tau(i);
+                r->calc_SC_coeffs(i);
             }
         }
 
@@ -193,8 +189,8 @@ int main(int argc, char *argv[]) {
 
         if (config["print_every_iter"].as<bool>()) {
             for (std::vector<GridVoxel>::const_iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-                for (std::map<std::size_t, GridWavelengthPoint>::const_iterator wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
-                    moments_file << std::setw(16) << gv->z << std::setw(15) << gv->rho << std::setw(15) << wlp->second.lambda << std::setw(15) << wlp->second.J << std::setw(15) << wlp->second.H << std::setw(15) << wlp->second.K << std::setw(15) << planck_function(wlp->second.lambda, gv->temperature) << std::endl;
+                for (std::vector<GridWavelengthPoint>::const_iterator wlp = gv->wavelength_grid.begin(); wlp != gv->wavelength_grid.end(); ++wlp) {
+                    moments_file << std::setw(16) << gv->z << std::setw(15) << gv->rho << std::setw(15) << wlp->lambda << std::setw(15) << wlp->J << std::setw(15) << wlp->H << std::setw(15) << wlp->K << std::setw(15) << planck_function(wlp->lambda, gv->temperature) << std::endl;
                 }
             }
             moments_file << std::endl;
@@ -237,8 +233,8 @@ int main(int argc, char *argv[]) {
             std::vector<GridVoxel>::const_iterator next_gv = surface_gv;
             if (next_gv->z > surface_gv->z) surface_gv = next_gv;
         }
-        for (std::map<std::size_t, GridWavelengthPoint>::const_iterator gwlp = surface_gv->wavelength_grid.begin(); gwlp != surface_gv->wavelength_grid.end(); ++gwlp) {
-            spectrum_file << gwlp->second.lambda * 1.0e+8 << " " << 4.0 * pi * gwlp->second.H << std::endl;
+        for (std::vector<GridWavelengthPoint>::const_iterator gwlp = surface_gv->wavelength_grid.begin(); gwlp != surface_gv->wavelength_grid.end(); ++gwlp) {
+            spectrum_file << gwlp->lambda * 1.0e+8 << " " << 4.0 * pi * gwlp->H << std::endl;
         }
         spectrum_file.close();
 

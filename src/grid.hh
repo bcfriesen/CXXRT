@@ -1,8 +1,6 @@
 #ifndef GRID_HH
 #define GRID_HH
 
-#include <map>
-
 #include "ray.hh"
 #include "wavelength_grid.hh"
 #include "EOS/atoms.hh"
@@ -27,13 +25,13 @@ class GridVoxel {
     double sigma; // scattering opacity (independent of wavelength if we use only Thomson scattering)
     std::vector<struct RayIntersectionData> ray_intersection_data;
     std::vector<Atom> atoms;
-    std::map<std::size_t, GridWavelengthPoint> wavelength_grid;
-    void calc_J(const std::size_t wl_value_hash);
-    void calc_H(const std::size_t wl_value_hash);
-    void calc_K(const std::size_t wl_value_hash);
-    void calc_source_fn(const std::size_t wl_value_hash);
+    std::vector<GridWavelengthPoint> wavelength_grid;
+    void calc_J(const unsigned int wl_index);
+    void calc_H(const unsigned int wl_index);
+    void calc_K(const unsigned int wl_index);
+    void calc_source_fn(const unsigned int wl_index);
     void calc_LTE_populations();
-    void calculate_emissivity_and_opacity(const std::size_t wl_value_hash);
+    void calculate_emissivity_and_opacity(const unsigned int wl_index);
     void calc_J_wl_integral();
     void calc_H_wl_integral();
     void calc_K_wl_integral();

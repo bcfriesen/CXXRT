@@ -13,17 +13,17 @@ class RayData {
     RayData();
     class GridVoxel *gridvoxel;
     double mu;
-    std::map<std::size_t, RayWavelengthPoint> wavelength_grid;
+    std::vector<RayWavelengthPoint> wavelength_grid;
 };
 
 class Ray {
   public:
     std::vector<class RayData> raydata;
     void bind_to_grid(const double mu);
-    void calc_tau(const std::size_t wl_value_hash);
-    void formal_soln(const std::size_t wl_value_hash);
-    void calc_SC_coeffs(const std::size_t wl_value_hash);
-    void print_ray_data(const std::size_t wl_value_hash);
+    void calc_tau(const unsigned int wl_index);
+    void formal_soln(const unsigned int wl_index);
+    void calc_SC_coeffs(const unsigned int wl_index);
+    void print_ray_data(const unsigned int wl_index);
 };
 
 struct RayIntersectionData {
