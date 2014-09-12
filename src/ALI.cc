@@ -47,8 +47,8 @@ void do_ALI() {
 
         do {
             for (std::vector<Ray>::iterator r = rays.begin(); r != rays.end(); ++r) {
-                for (std::vector<RayData>::iterator rd = r->raydata.begin(); rd != r->raydata.end(); ++rd) {
-                    rd->calc_source_fn(wlv->first);
+                for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+                    gv->calc_source_fn(wlv->first);
                 }
                 r->formal_soln(wlv->first);
             }

@@ -55,12 +55,12 @@ void Ray::print_ray_data(const std::size_t wl_value_hash) {
         log_file << std::setw(15) << std::scientific << rd->mu;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].lambda * 1.0e+8;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].I;
-        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].sigma;
-        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].kappa;
-        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].eta;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->sigma;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid[wl_value_hash].kappa;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid[wl_value_hash].eta;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].tau;
-        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].chi;
-        log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].source_fn;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid[wl_value_hash].chi;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid[wl_value_hash].source_fn;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].Delta_tau;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].alpha;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid[wl_value_hash].beta;
@@ -83,8 +83,6 @@ RayData::RayData() {
     for (std::map<std::size_t, RayWavelengthPoint>::iterator wlp = wavelength_grid.begin(); wlp != wavelength_grid.end(); ++wlp) {
         wlp->second.I = 0.0;
         wlp->second.tau = 0.0;
-        wlp->second.chi = 0.0;
-        wlp->second.source_fn = 0.0;
     }
 }
 
@@ -95,7 +93,7 @@ void Ray::calc_tau(const std::size_t wl_value_hash) {
         } else {
             std::vector<RayData>::iterator it_prev = it;
             std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
-            it->wavelength_grid[wl_value_hash].tau = it_prev->wavelength_grid[wl_value_hash].tau + (0.5 * (it_prev->wavelength_grid[wl_value_hash].chi + it->wavelength_grid[wl_value_hash].chi) * std::abs(it->gridvoxel->z - it_prev->gridvoxel->z) / std::abs(it->mu));
+            it->wavelength_grid[wl_value_hash].tau = it_prev->wavelength_grid[wl_value_hash].tau + (0.5 * (it_prev->gridvoxel->wavelength_grid[wl_value_hash].chi + it->gridvoxel->wavelength_grid[wl_value_hash].chi) * std::abs(it->gridvoxel->z - it_prev->gridvoxel->z) / std::abs(it->mu));
         }
     }
 }
@@ -146,12 +144,8 @@ void Ray::formal_soln(const std::size_t wl_value_hash) {
         } else {
             std::vector<RayData>::iterator it_prev = it;
             std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
-            const double Delta_I = (it->wavelength_grid[wl_value_hash].alpha * it_prev->wavelength_grid[wl_value_hash].source_fn) + (it->wavelength_grid[wl_value_hash].beta * it->wavelength_grid[wl_value_hash].source_fn);
+            const double Delta_I = (it->wavelength_grid[wl_value_hash].alpha * it_prev->gridvoxel->wavelength_grid[wl_value_hash].source_fn) + (it->wavelength_grid[wl_value_hash].beta * it->gridvoxel->wavelength_grid[wl_value_hash].source_fn);
             it->wavelength_grid[wl_value_hash].I = it_prev->wavelength_grid[wl_value_hash].I * std::exp(-it->wavelength_grid[wl_value_hash].Delta_tau) + Delta_I;
         }
     }
-}
-
-void RayData::calc_source_fn(const std::size_t wl_value_hash) {
-    wavelength_grid[wl_value_hash].source_fn = wavelength_grid[wl_value_hash].epsilon * planck_function(wavelength_grid[wl_value_hash].lambda, gridvoxel->temperature) + (1.0 - wavelength_grid[wl_value_hash].epsilon) * gridvoxel->wavelength_grid[wl_value_hash].J;
 }

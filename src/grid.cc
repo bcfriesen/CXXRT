@@ -94,22 +94,11 @@ void GridVoxel::calculate_emissivity_and_opacity(const std::size_t wl_value_hash
         }
     }
 
-    // Since we don't treat anisotropic sources or sinks, all intersecting rays at this voxel get the same value for eta and kappa.
-    for (std::vector<RayIntersectionData>::const_iterator rid_it = ray_intersection_data.begin(); rid_it != ray_intersection_data.end(); ++rid_it) {
-        const std::vector<RayData>::iterator ray_it = rid_it->ray->raydata.begin() + rid_it->intersection_point;
-
-        ray_it->wavelength_grid[wl_value_hash].eta = eta_tot;
-        ray_it->wavelength_grid[wl_value_hash].kappa = kappa_tot;
-        ray_it->wavelength_grid[wl_value_hash].sigma = n_e * sigma_T;
-        ray_it->wavelength_grid[wl_value_hash].chi = ray_it->wavelength_grid[wl_value_hash].kappa * (1.0 - std::exp((-h_planck * c_light) / (wavelength_values[wl_value_hash] * k_boltzmann * ray_it->gridvoxel->temperature))) + ray_it->wavelength_grid[wl_value_hash].sigma;
-        ray_it->wavelength_grid[wl_value_hash].epsilon = ray_it->wavelength_grid[wl_value_hash].kappa / (ray_it->wavelength_grid[wl_value_hash].kappa + ray_it->wavelength_grid[wl_value_hash].sigma);
-
-        // In general the thermalization parameter is a ray-dependent quantity
-        // since it depends on kappa (which is ray-dependent). However in the
-        // equivalent-two-level-atom formalism it is ray-independent, so just
-        // set the grid scalar value to the ray value.
-        wavelength_grid[wl_value_hash].epsilon = ray_it->wavelength_grid[wl_value_hash].kappa / (ray_it->wavelength_grid[wl_value_hash].kappa + ray_it->wavelength_grid[wl_value_hash].sigma);
-    }
+    wavelength_grid[wl_value_hash].eta = eta_tot;
+    wavelength_grid[wl_value_hash].kappa = kappa_tot;
+    sigma = n_e * sigma_T;
+    wavelength_grid[wl_value_hash].chi = wavelength_grid[wl_value_hash].kappa * (1.0 - std::exp((-h_planck * c_light) / (wavelength_values[wl_value_hash] * k_boltzmann * temperature))) + sigma;
+    wavelength_grid[wl_value_hash].epsilon = wavelength_grid[wl_value_hash].kappa / (wavelength_grid[wl_value_hash].kappa + sigma);
 }
 
 
@@ -158,12 +147,6 @@ void GridVoxel::calc_K_wl_integral() {
 void GridVoxel::calc_chi_H() {
     chi_H = 0.0;
 
-    // chi is in principle a ray-dependent quantity, but all rays should have
-    // the same value of chi in a given voxel. So just grab it from the first
-    // ray we can find.
-    const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
-    const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
-
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
     for (std::map<std::size_t, double>::const_iterator it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
         if (!first_time) {
@@ -173,8 +156,8 @@ void GridVoxel::calc_chi_H() {
             const double lambda_prev = wavelength_grid[it_prev->first].lambda;
             const double H = wavelength_grid[it->first].H;
             const double H_prev = wavelength_grid[it_prev->first].H;
-            const double chi = first_ray_raydata->wavelength_grid[it->first].chi;
-            const double chi_prev = first_ray_raydata->wavelength_grid[it_prev->first].chi;
+            const double chi = wavelength_grid[it->first].chi;
+            const double chi_prev = wavelength_grid[it_prev->first].chi;
             chi_H += 0.5 * (lambda - lambda_prev) * (chi * H + chi_prev * H_prev);
         }
         first_time = false;
@@ -187,12 +170,6 @@ void GridVoxel::calc_chi_H() {
 void GridVoxel::calc_kappa_J() {
     kappa_J = 0.0;
 
-    // kappa is in principle a ray-dependent quantity, but all rays should have
-    // the same value of kappa in a given voxel. So just grab it from the first
-    // ray we can find.
-    const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
-    const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
-
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
     for (std::map<std::size_t, double>::const_iterator it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
         if (!first_time) {
@@ -202,8 +179,8 @@ void GridVoxel::calc_kappa_J() {
             const double lambda_prev = wavelength_grid[it_prev->first].lambda;
             const double J = wavelength_grid[it->first].J;
             const double J_prev = wavelength_grid[it_prev->first].J;
-            const double kappa = first_ray_raydata->wavelength_grid[it->first].kappa;
-            const double kappa_prev = first_ray_raydata->wavelength_grid[it_prev->first].kappa;
+            const double kappa = wavelength_grid[it->first].kappa;
+            const double kappa_prev = wavelength_grid[it_prev->first].kappa;
             kappa_J += 0.5 * (lambda - lambda_prev) * (kappa * J + kappa_prev * J_prev);
         }
         first_time = false;
@@ -216,12 +193,6 @@ void GridVoxel::calc_kappa_J() {
 void GridVoxel::calc_kappa_B() {
     kappa_B = 0.0;
 
-    // kappa is in principle a ray-dependent quantity, but all rays should have
-    // the same value of kappa in a given voxel. So just grab it from the first
-    // ray we can find.
-    const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
-    const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
-
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
     for (std::map<std::size_t, double>::const_iterator it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
         if (!first_time) {
@@ -231,8 +202,8 @@ void GridVoxel::calc_kappa_B() {
             const double lambda_prev = wavelength_grid[it_prev->first].lambda;
             const double B = planck_function(wavelength_values[it->first], temperature);
             const double B_prev = planck_function(wavelength_values[it_prev->first], temperature);
-            const double kappa = first_ray_raydata->wavelength_grid[it->first].kappa;
-            const double kappa_prev = first_ray_raydata->wavelength_grid[it_prev->first].kappa;
+            const double kappa = wavelength_grid[it->first].kappa;
+            const double kappa_prev = wavelength_grid[it_prev->first].kappa;
             kappa_B += 0.5 * (lambda - lambda_prev) * (kappa * B + kappa_prev * B_prev);
         }
         first_time = false;
@@ -250,12 +221,6 @@ void GridVoxel::calc_Eddington_factor_f() {
 void GridVoxel::calc_eta_minus_chi_J_wl_integral() {
     eta_minus_chi_J_wl_integral = 0.0;
 
-    // chi and eta are in principle ray-dependent quantities, but all rays
-    // should have the same values of ch and eta in a given voxel. So just grab
-    // them from the first ray we can find.
-    const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
-    const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
-
     bool first_time = true; // I can't iterate over part of a map like I can a vector (i.e., "it != wavelength_grid.end()-1") so I have to use this bool hack.
     for (std::map<std::size_t, double>::const_iterator it = wavelength_values.begin(); it != wavelength_values.end(); ++it) {
         if (!first_time) {
@@ -265,10 +230,10 @@ void GridVoxel::calc_eta_minus_chi_J_wl_integral() {
             const double lambda_prev = wavelength_grid[it_prev->first].lambda;
             const double J = wavelength_grid[it->first].J;
             const double J_prev = wavelength_grid[it_prev->first].J;
-            const double eta = first_ray_raydata->wavelength_grid[it->first].eta;
-            const double eta_prev = first_ray_raydata->wavelength_grid[it_prev->first].eta;
-            const double chi = first_ray_raydata->wavelength_grid[it->first].chi;
-            const double chi_prev = first_ray_raydata->wavelength_grid[it_prev->first].chi;
+            const double eta = wavelength_grid[it->first].eta;
+            const double eta_prev = wavelength_grid[it_prev->first].eta;
+            const double chi = wavelength_grid[it->first].chi;
+            const double chi_prev = wavelength_grid[it_prev->first].chi;
             eta_minus_chi_J_wl_integral += 0.5 * (lambda - lambda_prev) * ((eta - chi * J) + (eta_prev - chi_prev * J_prev));
         }
         first_time = false;
@@ -289,14 +254,8 @@ void GridVoxel::calc_Rosseland_mean_opacity() {
             const double lambda = wlv_it->second;
             const double lambda_prev = wlv_it_prev->second;
 
-            // chi is in principle a ray-dependent quantity, but all rays should
-            // have the same value of chi in a given voxel. So just grab it from
-            // the first ray we can find.
-            const std::vector<RayIntersectionData>::const_iterator first_ray = ray_intersection_data.begin();
-            const std::vector<RayData>::iterator first_ray_raydata = first_ray->ray->raydata.begin() + first_ray->intersection_point;
-
-            const double chi = first_ray_raydata->wavelength_grid[wlv_it->first].chi;
-            const double chi_prev = first_ray_raydata->wavelength_grid[wlv_it_prev->first].chi;
+            const double chi = wavelength_grid[wlv_it->first].chi;
+            const double chi_prev = wavelength_grid[wlv_it_prev->first].chi;
 
             Rosseland_mean_opacity += 0.5 * ((1.0 / chi) * planck_function_temperature_derivative(lambda, temperature) + (1.0 / chi_prev) * planck_function_temperature_derivative(lambda_prev, temperature)) * (lambda - lambda_prev);
         }
@@ -304,4 +263,9 @@ void GridVoxel::calc_Rosseland_mean_opacity() {
     }
     Rosseland_mean_opacity *= pi / (a_rad * c_light * std::pow(temperature, 3));
     Rosseland_mean_opacity = 1.0 / Rosseland_mean_opacity;
+}
+
+
+void GridVoxel::calc_source_fn(const std::size_t wl_value_hash) {
+    wavelength_grid[wl_value_hash].source_fn = wavelength_grid[wl_value_hash].epsilon * planck_function(wavelength_grid[wl_value_hash].lambda, temperature) + (1.0 - wavelength_grid[wl_value_hash].epsilon) * wavelength_grid[wl_value_hash].J;
 }

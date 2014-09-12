@@ -14,7 +14,6 @@ class RayData {
     class GridVoxel *gridvoxel;
     double mu;
     std::map<std::size_t, RayWavelengthPoint> wavelength_grid;
-    void calc_source_fn(const std::size_t wl_value_hash);
 };
 
 class Ray {

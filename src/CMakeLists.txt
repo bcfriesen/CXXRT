@@ -18,7 +18,6 @@ set (CXXRT_SOURCES
      ray.cc
      read_mesa_model.cc
      rmsd.cc
-     wavelength_grid.cc
     )
 
 ADD_EXECUTABLE(CXXRT ${CXXRT_SOURCES})
