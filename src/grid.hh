@@ -41,6 +41,7 @@ class GridVoxel {
     void calc_Eddington_factor_f();
     void calc_eta_minus_chi_J_wl_integral();
     void calc_Rosseland_mean_opacity();
+    void find_nearby_lines(const unsigned int wl_index);
 };
 
 #endif

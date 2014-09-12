@@ -227,3 +227,19 @@ void GridVoxel::calc_Rosseland_mean_opacity() {
 void GridVoxel::calc_source_fn(const unsigned int wl_index) {
     wavelength_grid.at(wl_index).source_fn = wavelength_grid.at(wl_index).epsilon * planck_function(wavelength_grid.at(wl_index).lambda, temperature) + (1.0 - wavelength_grid.at(wl_index).epsilon) * wavelength_grid.at(wl_index).J;
 }
+
+
+void GridVoxel::find_nearby_lines(const unsigned int wl_index) {
+     // Any line whose rest wavelength is wthin this percent of the requested
+     // wavelength point gets included in the opacity calculation for this
+     // wavelength point.
+    const double wavelength_window = 0.05;
+    for (std::vector<Atom>::iterator atom = atoms.begin(); atom != atoms.end(); ++atom) {
+        for (std::vector<Ion>::iterator ion = atom->ions.begin(); ion != atom->ions.end(); ++ion) {
+            for (std::vector<AtomicLine>::iterator line = ion->lines.begin(); line != ion->lines.end(); ++line) {
+                if (std::abs(line->wavelength - wavelength_grid.at(wl_index).lambda) / wavelength_grid.at(wl_index).lambda < wavelength_window)
+                    wavelength_grid.at(wl_index).nearby_lines.push_back(&(*line));
+            }
+        }
+    }
+}
