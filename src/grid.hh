@@ -24,12 +24,14 @@ class GridVoxel {
     double Eddington_factor_f;
     double eta_minus_chi_J_wl_integral;
     double H_target;
+    double sigma; // scattering opacity (independent of wavelength if we use only Thomson scattering)
     std::vector<struct RayIntersectionData> ray_intersection_data;
     std::vector<Atom> atoms;
     std::map<std::size_t, GridWavelengthPoint> wavelength_grid;
     void calc_J(const std::size_t wl_value_hash);
     void calc_H(const std::size_t wl_value_hash);
     void calc_K(const std::size_t wl_value_hash);
+    void calc_source_fn(const std::size_t wl_value_hash);
     void calc_LTE_populations();
     void calculate_emissivity_and_opacity(const std::size_t wl_value_hash);
     void calc_J_wl_integral();
