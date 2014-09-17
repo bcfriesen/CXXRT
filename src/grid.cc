@@ -77,13 +77,14 @@ void GridVoxel::calc_LTE_populations() {
 void GridVoxel::calculate_emissivity_and_opacity(const unsigned int wl_index) {
     double eta_tot = 0.0;
     double kappa_tot = 0.0;
+
+    for (std::vector<AtomicLine*>::const_iterator nearby_line = wavelength_grid.at(wl_index).nearby_lines.begin(); nearby_line != wavelength_grid.at(wl_index).nearby_lines.end(); ++nearby_line) {
+        eta_tot += (*nearby_line)->eta(wavelength_values.at(wl_index));
+        kappa_tot += (*nearby_line)->kappa(wavelength_values.at(wl_index));
+    }
+
     for (std::vector<Atom>::const_iterator atom = atoms.begin(); atom != atoms.end(); ++atom) {
         for (std::vector<Ion>::const_iterator ion = atom->ions.begin(); ion != atom->ions.end()-1; ++ion) {
-            // Add up contributions from lines.
-            for (std::vector<AtomicLine>::const_iterator line = ion->lines.begin(); line != ion->lines.end(); ++line) {
-                eta_tot += line->eta(wavelength_values.at(wl_index));
-                kappa_tot += line->kappa(wavelength_values.at(wl_index));
-            }
             if (ion->ionization_stage <= atom->max_ionization_stage) {
                 // Add up contributions from continua.
                 for (std::vector<AtomicLevel>::const_iterator level = ion->levels.begin(); level != ion->levels.end(); ++level) {
