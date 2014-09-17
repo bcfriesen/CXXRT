@@ -130,9 +130,15 @@ int main(int argc, char *argv[]) {
 
     log_file << "Finding nearby lines each wavelength point ... ";
     std::flush(log_file);
-    for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
-        for (unsigned int i = 0; i < wavelength_values.size(); ++i) {
-            gv->find_nearby_lines(i);
+    #pragma omp parallel private (gv)
+    {
+        for (gv = grid.begin(); gv != grid.end(); ++gv) {
+            #pragma omp single nowait
+            {
+                for (unsigned int i = 0; i < wavelength_values.size(); ++i) {
+                    gv->find_nearby_lines(i);
+                }
+            }
         }
     }
     log_file << "done." << std::endl;
