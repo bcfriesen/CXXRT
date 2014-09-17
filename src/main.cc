@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
     log_file << "Initializing rays ... ";
     std::flush(log_file);
     initialize_rays();
-    log_file << "done." << std::endl;
+    log_file << "done." << std::endl << std::endl;
 
     log_file << "Finding nearby lines each wavelength point ... ";
     std::flush(log_file);
