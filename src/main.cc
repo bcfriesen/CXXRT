@@ -123,7 +123,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    log_file << std::endl;
     log_file << "Initializing rays ... ";
     std::flush(log_file);
     initialize_rays();
