@@ -27,12 +27,6 @@ void do_ALI() {
     for (i = 0; i < wavelength_values.size(); ++i) {
 #pragma omp single nowait
         {
-        // use thread-specific buffers to store output, then dump them to the
-        // log file at the end. This way the text isn't garbled by racy output.
-        std::stringstream thread_buf;
-        thread_buf << std::scientific;
-
-        thread_buf << "Starting ALI on wavelength point " << wavelength_values.at(i) * 1.0e+8 << " A ... ";
         unsigned int iter = 0;
         Eigen::MatrixXd Lambda_star = calc_ALO(i);
 
@@ -97,9 +91,6 @@ void do_ALI() {
             }
             iter++;
         } while (rmsd > max_tol);
-        thread_buf << " Converged to relative error: " << rmsd << " after " << iter << " iterations." << std::endl;
-#pragma omp critical
-        log_file << thread_buf.rdbuf();
     } // #pragma omp single nowait
     } // #pragma omp parallel
     }
