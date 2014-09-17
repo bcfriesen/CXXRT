@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << std::scientific;
 
-    log_file << "Setting model atom pointers ...";
+    log_file << "Setting model atom pointers ... ";
     std::flush(log_file);
     std::vector<GridVoxel>::iterator gv;
     #pragma omp parallel private (gv)
