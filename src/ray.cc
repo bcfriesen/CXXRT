@@ -152,7 +152,7 @@ void Ray::formal_soln(const unsigned int wl_index) {
                 it->wavelength_grid.at(wl_index).I = 0.0;
             }
         } else {
-            std::vector<RayData>::iterator it_prev = it;
+            std::vector<RayData>::const_iterator it_prev = it;
             std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
             const double Delta_I = (it->wavelength_grid.at(wl_index).alpha * it_prev->gridvoxel->wavelength_grid.at(wl_index).source_fn) + (it->wavelength_grid.at(wl_index).beta * it->gridvoxel->wavelength_grid.at(wl_index).source_fn);
             it->wavelength_grid.at(wl_index).I = it_prev->wavelength_grid.at(wl_index).I * std::exp(-it->wavelength_grid.at(wl_index).Delta_tau) + Delta_I;
