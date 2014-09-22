@@ -138,7 +138,16 @@ void Ray::formal_soln(const unsigned int wl_index) {
 
         if (it == raydata.begin()) {
             if (it->mu > 0.0) {
-                it->wavelength_grid.at(wl_index).I = planck_function(it->wavelength_grid.at(wl_index).lambda, it->gridvoxel->temperature);
+                std::vector<RayData>::const_iterator it_next = it;
+                std::advance(it_next, +1); // use std::next when more C++ compilers are C++11-compliant
+                const double B = planck_function(it->wavelength_grid.at(wl_index).lambda, it->gridvoxel->temperature);
+                const double B_next = planck_function(it_next->wavelength_grid.at(wl_index).lambda, it_next->gridvoxel->temperature);
+                const double tau = it->wavelength_grid.at(wl_index).tau;
+                const double tau_next = it_next->wavelength_grid.at(wl_index).tau;
+                // Derivative of Planck function w.r.t. optical depth. See Mihalas Eq (2-88)
+                const double dB_dtau = (B_next - B) / (tau_next - tau);
+                // Diffusion condition for rays coming up from depth.
+                it->wavelength_grid.at(wl_index).I = planck_function(it->wavelength_grid.at(wl_index).lambda, it->gridvoxel->temperature) + (it->mu * dB_dtau);
             } else {
                 it->wavelength_grid.at(wl_index).I = 0.0;
             }
