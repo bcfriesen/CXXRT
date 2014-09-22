@@ -24,6 +24,7 @@
 #include "misc/atomic_symbols.hh"
 #include "misc/calc_Delta_T.hh"
 #include "EOS/insert_ions.hh"
+#include "misc/calc_emergent_spectrum.hh"
 
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
@@ -241,13 +242,25 @@ int main(int argc, char *argv[]) {
         spectrum_file.open(spectrum_file_name.c_str());
         spectrum_file << std::scientific;
 
-        std::vector<GridVoxel>::const_iterator surface_gv = grid.begin();
+        // Find the surface layer.
+        std::vector<GridVoxel>::iterator surface_gv = grid.begin();
         for (surface_gv = grid.begin(); surface_gv != grid.end()-1; ++surface_gv) {
-            std::vector<GridVoxel>::const_iterator next_gv = surface_gv;
+            std::vector<GridVoxel>::iterator next_gv = surface_gv;
             if (next_gv->z > surface_gv->z) surface_gv = next_gv;
         }
-        for (std::vector<GridWavelengthPoint>::const_iterator gwlp = surface_gv->wavelength_grid.begin(); gwlp != surface_gv->wavelength_grid.end(); ++gwlp) {
-            spectrum_file << gwlp->lambda * 1.0e+8 << " " << 4.0 * pi * gwlp->H << std::endl;
+
+        std::vector<double> emergent_spectrum(wavelength_values.size());
+        #pragma omp parallel private (i)
+        {
+            for (i = 0; i < wavelength_values.size(); ++i) {
+                #pragma omp single nowait
+                {
+                    emergent_spectrum.at(i) = calc_emergent_spectrum(&(*surface_gv), i);
+                }
+            }
+        }
+        for (unsigned int i = 0; i < wavelength_values.size(); ++i) {
+            spectrum_file << wavelength_values.at(i) * 1.0e+8 << " " << emergent_spectrum.at(i) << std::endl;
         }
         spectrum_file.close();
 
