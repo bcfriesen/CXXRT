@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
         // A bunch of post-processing integrals we need to do temperature corrections.
         log_file << std::endl << "Calculating post-processing integrals ... ";
         std::flush(log_file);
-        for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (gv = grid.begin(); gv != grid.end(); ++gv) {
             gv->calc_J_wl_integral();
             gv->calc_H_wl_integral();
             gv->calc_K_wl_integral();
@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
         log_file << "done." << std::endl;
 
         std::cout << std::endl;
-        for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
+        for (gv = grid.begin(); gv != grid.end(); ++gv) {
             double Delta_T = calc_Delta_T(*gv);
             if (std::abs(Delta_T / gv->temperature) > 0.1)
                 // If the requested temperature change is large, damp it to at most 20% of the current temperature.
