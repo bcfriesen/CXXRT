@@ -266,6 +266,11 @@ int main(int argc, char *argv[]) {
 
     }
 
+    for (std::vector<Ray>::iterator ray = rays.begin(); ray != rays.end(); ++ray) {
+        ray->calc_tau_Rosseland();
+        ray->print_ray_data(wavelength_values.size()/2);
+    }
+
     moments_file.close();
     log_file.close();
 
