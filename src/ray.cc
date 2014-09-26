@@ -42,6 +42,7 @@ void Ray::print_ray_data(const unsigned int wl_index) {
     log_file << std::setw(15) << "kappa";
     log_file << std::setw(15) << "eta";
     log_file << std::setw(15) << "tau";
+    log_file << std::setw(15) << "tau_Rosseland";
     log_file << std::setw(15) << "chi";
     log_file << std::setw(15) << "source_fn";
     log_file << std::setw(15) << "Delta_tau";
@@ -59,6 +60,7 @@ void Ray::print_ray_data(const unsigned int wl_index) {
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).kappa;
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).eta;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).tau;
+        log_file << std::setw(15) << std::scientific << rd->tau_Rosseland;
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).chi;
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).source_fn;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).Delta_tau;
