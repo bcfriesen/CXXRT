@@ -99,6 +99,20 @@ void Ray::calc_tau(const unsigned int wl_index) {
     }
 }
 
+
+void Ray::calc_tau_Rosseland() {
+    for (std::vector<RayData>::iterator it = raydata.begin(); it != raydata.end(); ++it) {
+        if (it == raydata.begin()) {
+            it->tau_Rosseland = 0.0;
+        } else {
+            std::vector<RayData>::iterator it_prev = it;
+            std::advance(it_prev, -1); // use std::prev when more C++ compilers are C++11-compliant
+            it->tau_Rosseland = it_prev->tau_Rosseland + (0.5 * (it_prev->gridvoxel->Rosseland_mean_opacity + it->gridvoxel->Rosseland_mean_opacity) * std::abs(it->gridvoxel->z - it_prev->gridvoxel->z) / std::abs(it->mu));
+        }
+    }
+}
+
+
 void Ray::calc_SC_coeffs(const unsigned int wl_index) {
     for (std::vector<RayData>::iterator it = raydata.begin(); it != raydata.end(); ++it) {
 
