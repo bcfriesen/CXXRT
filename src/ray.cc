@@ -50,6 +50,9 @@ void Ray::print_ray_data(const unsigned int wl_index) {
     log_file << std::setw(15) << "J_lam";
     log_file << std::setw(15) << "H_lam";
     log_file << std::setw(15) << "K_lam";
+    log_file << std::setw(15) << "J_wl_int";
+    log_file << std::setw(15) << "H_wl_int";
+    log_file << std::setw(15) << "K_wl_int";
     log_file << std::setw(15) << "Delta_tau";
     log_file << std::setw(15) << "alpha";
     log_file << std::setw(15) << "beta";
@@ -73,6 +76,9 @@ void Ray::print_ray_data(const unsigned int wl_index) {
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).J;
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).H;
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).K;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->J_wl_integral;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->H_wl_integral;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->K_wl_integral;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).Delta_tau;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).alpha;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).beta;
