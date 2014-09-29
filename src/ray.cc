@@ -44,7 +44,12 @@ void Ray::print_ray_data(const unsigned int wl_index) {
     log_file << std::setw(15) << "tau";
     log_file << std::setw(15) << "tau_Rosseland";
     log_file << std::setw(15) << "chi";
+    log_file << std::setw(15) << "temperature";
     log_file << std::setw(15) << "source_fn";
+    log_file << std::setw(15) << "planck_fn";
+    log_file << std::setw(15) << "J_lam";
+    log_file << std::setw(15) << "H_lam";
+    log_file << std::setw(15) << "K_lam";
     log_file << std::setw(15) << "Delta_tau";
     log_file << std::setw(15) << "alpha";
     log_file << std::setw(15) << "beta";
@@ -62,7 +67,12 @@ void Ray::print_ray_data(const unsigned int wl_index) {
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).tau;
         log_file << std::setw(15) << std::scientific << rd->tau_Rosseland;
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).chi;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->temperature;
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).source_fn;
+        log_file << std::setw(15) << std::scientific << planck_function(rd->wavelength_grid.at(wl_index).lambda, rd->gridvoxel->temperature);
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).J;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).H;
+        log_file << std::setw(15) << std::scientific << rd->gridvoxel->wavelength_grid.at(wl_index).K;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).Delta_tau;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).alpha;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).beta;
