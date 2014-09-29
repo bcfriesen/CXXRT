@@ -225,14 +225,16 @@ int main(int argc, char *argv[]) {
         }
         log_file << "done." << std::endl;
 
-        std::cout << std::endl;
-        for (gv = grid.begin(); gv != grid.end(); ++gv) {
-            double Delta_T = calc_Delta_T(*gv);
-            if (std::abs(Delta_T / gv->temperature) > 0.1)
-                // If the requested temperature change is large, damp it to at most 20% of the current temperature.
-                Delta_T *= (0.2 * gv->temperature / std::abs(Delta_T));
-            std::cout << "z: "<< gv->z << " current T: " << gv->temperature << " new T: " << gv->temperature + Delta_T << " Delta T: " << Delta_T <<  std::endl;
-            gv->temperature += Delta_T;
+        if (config["do_temperature_corrections"].as<bool>()) {
+            std::cout << std::endl;
+            for (gv = grid.begin(); gv != grid.end(); ++gv) {
+                double Delta_T = calc_Delta_T(*gv);
+                if (std::abs(Delta_T / gv->temperature) > 0.1)
+                    // If the requested temperature change is large, damp it to at most 20% of the current temperature.
+                    Delta_T *= (0.2 * gv->temperature / std::abs(Delta_T));
+                std::cout << "z: "<< gv->z << " current T: " << gv->temperature << " new T: " << gv->temperature + Delta_T << " Delta T: " << Delta_T <<  std::endl;
+                gv->temperature += Delta_T;
+            }
         }
 
 
