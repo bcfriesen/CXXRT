@@ -5,6 +5,7 @@
 #include <fstream>
 
 #include "misc/planck_function.hh"
+#include "constants.hh"
 #include "ray.hh"
 #include "globals.hh"
 #include "grid.hh"
@@ -53,6 +54,7 @@ void Ray::print_ray_data(const unsigned int wl_index) {
     log_file << std::setw(15) << "J_wl_int";
     log_file << std::setw(15) << "H_wl_int";
     log_file << std::setw(15) << "K_wl_int";
+    log_file << std::setw(15) << "B_wl_int";
     log_file << std::setw(15) << "Delta_tau";
     log_file << std::setw(15) << "alpha";
     log_file << std::setw(15) << "beta";
@@ -79,6 +81,7 @@ void Ray::print_ray_data(const unsigned int wl_index) {
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->J_wl_integral;
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->H_wl_integral;
         log_file << std::setw(15) << std::scientific << rd->gridvoxel->K_wl_integral;
+        log_file << std::setw(15) << std::scientific << sigma_stefan * std::pow(rd->gridvoxel->temperature, 4) / pi;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).Delta_tau;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).alpha;
         log_file << std::setw(15) << std::scientific << rd->wavelength_grid.at(wl_index).beta;
