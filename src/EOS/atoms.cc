@@ -423,7 +423,8 @@ double Ion::eta(const double lambda, const AtomicLevel level, const double n_e, 
 
 double Ion::kappa(const double lambda, const AtomicLevel level, const double n_e, const double temperature) const {
     if (h_planck * c_light / lambda > ionization_potential) {
-        return (level.number_density - LTE_number_density(*(continuum_state), n_e, temperature) * std::exp(-(h_planck * c_light) / (lambda * k_boltzmann * temperature))) * alpha(lambda, level);
+        // TODO: make this the general NLTE form; this works only for LTE
+        return level.number_density * (1.0 - std::exp(-(h_planck * c_light) / (lambda * k_boltzmann * temperature))) * alpha(lambda, level);
     }
     else {
         return 0.0;
