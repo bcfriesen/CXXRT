@@ -8,6 +8,8 @@
 #include <omp.h>
 #endif
 
+#include "mpi.h"
+
 #include <yaml-cpp/yaml.h>
 
 #include "ALI.hh"
@@ -29,6 +31,7 @@
 std::vector<class GridVoxel> grid;
 std::vector<Ray> rays;
 YAML::Node config;
+std::vector<double> tot_wavelength_values;
 std::vector<double> wavelength_values;
 std::ofstream log_file;
 std::ofstream moments_file;
@@ -41,6 +44,16 @@ int main(int argc, char *argv[]) {
         std::cerr << "Usage: <executable name> <YAML control file>" << std::endl;
         exit(1);
     }
+
+    MPI::Init(argc, argv);
+
+    const unsigned int num_mpi_proc = MPI::COMM_WORLD.Get_size();
+    const int mpi_rank = MPI::COMM_WORLD.Get_rank();
+
+    const int mpi_master_rank = 0;
+
+    std::cout << "# of MPI processes: " << num_mpi_proc << std::endl;
+    std::cout << "my MPI rank: " << mpi_rank << std::endl;
 
     config = YAML::LoadFile(argv[1]);
 
@@ -77,9 +90,15 @@ int main(int argc, char *argv[]) {
         std::cerr << "ERROR: wl_min > wl_max!" << std::endl;
         exit(1);
     }
+
     for (unsigned int i = 0; i < n_wavelength_pts; ++i) {
-        wavelength_values.push_back(wl_min + double(i) * (wl_max - wl_min) / double(n_wavelength_pts-1));
+        tot_wavelength_values.push_back(wl_min + double(i) * (wl_max - wl_min) / double(n_wavelength_pts-1));
     }
+    wavelength_values.resize(n_wavelength_pts/num_mpi_proc);
+
+    MPI_Scatter(&tot_wavelength_values.front(), n_wavelength_pts/num_mpi_proc, MPI_DOUBLE,
+                &wavelength_values.front(),     n_wavelength_pts/num_mpi_proc, MPI_DOUBLE,
+                mpi_master_rank, MPI::COMM_WORLD);
 
     for (std::vector<GridVoxel>::iterator gv = grid.begin(); gv != grid.end(); ++gv) {
         gv->wavelength_grid.resize(wavelength_values.size());
@@ -225,16 +244,85 @@ int main(int argc, char *argv[]) {
         }
         log_file << "done." << std::endl;
 
-        if (config["do_temperature_corrections"].as<bool>()) {
-            std::cout << std::endl;
-            for (gv = grid.begin(); gv != grid.end(); ++gv) {
-                double Delta_T = calc_Delta_T(*gv);
-                if (std::abs(Delta_T / gv->temperature) > 0.1)
-                    // If the requested temperature change is large, damp it to at most 20% of the current temperature.
-                    Delta_T *= (0.2 * gv->temperature / std::abs(Delta_T));
-                std::cout << "z: "<< gv->z << " current T: " << gv->temperature << " new T: " << gv->temperature + Delta_T << " Delta T: " << Delta_T <<  std::endl;
-                gv->temperature += Delta_T;
+        // Set up temporary vectors to store wavelength-integrated data which
+        // needs to be sent to MPI master rank for reduction and processing.
+        // This lets me be lazy and not construct MPI data types to do the
+        // communication since these data lie within complicated GridVoxel
+        // classes.
+        std::vector<double> J_wl_integral(grid.size());
+        std::vector<double> H_wl_integral(grid.size());
+        std::vector<double> K_wl_integral(grid.size());
+        std::vector<double> chi_H(grid.size());
+        std::vector<double> kappa_J(grid.size());
+        std::vector<double> kappa_B(grid.size());
+        std::vector<double> Eddington_factor_f(grid.size());
+        std::vector<double> eta_minus_chi_J_wl_integral(grid.size());
+
+        // These will store the MPI_Reduce()-ed values, which will just be
+        // MPI_SUM-ed. Only the master rank needs to worry about these.
+        std::vector<double> J_wl_integral_tot(grid.size());
+        std::vector<double> H_wl_integral_tot(grid.size());
+        std::vector<double> K_wl_integral_tot(grid.size());
+        std::vector<double> chi_H_tot(grid.size());
+        std::vector<double> kappa_J_tot(grid.size());
+        std::vector<double> kappa_B_tot(grid.size());
+        std::vector<double> Eddington_factor_f_tot(grid.size());
+        std::vector<double> eta_minus_chi_J_wl_integral_tot(grid.size());
+
+        for (unsigned int j = 0; j < grid.size(); ++j) {
+            J_wl_integral.at(j) = grid.at(j).J_wl_integral;
+            H_wl_integral.at(j) = grid.at(j).H_wl_integral;
+            K_wl_integral.at(j) = grid.at(j).K_wl_integral;
+            chi_H.at(j) = grid.at(j).chi_H;
+            kappa_J.at(j) = grid.at(j).kappa_J;
+            kappa_B.at(j) = grid.at(j).kappa_B;
+            Eddington_factor_f.at(j) = grid.at(j).Eddington_factor_f;
+            eta_minus_chi_J_wl_integral.at(j) = grid.at(j).eta_minus_chi_J_wl_integral;
+        }
+        // Because all of these data are just integrals, it's perfectly valid
+        // to have each MPI task do the integral over only its own section of
+        // the wavelength grid, and then add up the results.
+        MPI_Reduce(&J_wl_integral.front(), &J_wl_integral_tot.front(), grid.size(), MPI_DOUBLE, MPI_SUM, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Reduce(&H_wl_integral.front(), &H_wl_integral_tot.front(), grid.size(), MPI_DOUBLE, MPI_SUM, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Reduce(&K_wl_integral.front(), &K_wl_integral_tot.front(), grid.size(), MPI_DOUBLE, MPI_SUM, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Reduce(&chi_H.front(), &chi_H_tot.front(), grid.size(), MPI_DOUBLE, MPI_SUM, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Reduce(&kappa_J.front(), &kappa_J_tot.front(), grid.size(), MPI_DOUBLE, MPI_SUM, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Reduce(&kappa_B.front(), &kappa_B_tot.front(), grid.size(), MPI_DOUBLE, MPI_SUM, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Reduce(&Eddington_factor_f.front(), &Eddington_factor_f_tot.front(), grid.size(), MPI_DOUBLE, MPI_SUM, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Reduce(&eta_minus_chi_J_wl_integral.front(), &eta_minus_chi_J_wl_integral_tot.front(), grid.size(), MPI_DOUBLE, MPI_SUM, mpi_master_rank, MPI::COMM_WORLD);
+
+        // Only the master rank will compute Delta_T, then will broadcast it to everyone else.
+        std::vector<double> Delta_T(grid.size());
+        if (mpi_rank == mpi_master_rank) {
+            for (unsigned int j = 0; j < grid.size(); ++j) {
+                grid.at(j).J_wl_integral = J_wl_integral_tot.at(j);
+                grid.at(j).H_wl_integral = H_wl_integral_tot.at(j);
+                grid.at(j).K_wl_integral = K_wl_integral_tot.at(j);
+                grid.at(j).chi_H = chi_H_tot.at(j);
+                grid.at(j).kappa_J = kappa_J_tot.at(j);
+                grid.at(j).kappa_B = kappa_B_tot.at(j);
+                grid.at(j).Eddington_factor_f = Eddington_factor_f_tot.at(j);
+                grid.at(j).eta_minus_chi_J_wl_integral = eta_minus_chi_J_wl_integral_tot.at(j);
             }
+
+            if (config["do_temperature_corrections"].as<bool>()) {
+                std::cout << std::endl;
+                for (unsigned int j = 0; j < grid.size(); ++j) {
+                    Delta_T.at(j) = calc_Delta_T(grid.at(j));
+                }
+            }
+        }
+        // Now broadcast the computed temperature correction to everybody, and they will apply it themselves.
+        MPI_Bcast(&Delta_T.front(), grid.size(), MPI_DOUBLE, mpi_master_rank, MPI::COMM_WORLD);
+
+        for (unsigned int j = 0; j < grid.size(); ++j) {
+            if (std::abs(Delta_T.at(j) / grid.at(j).temperature) > 0.1)
+                // If the requested temperature change is large, damp it to at most 20% of the current temperature.
+                Delta_T.at(j) *= (0.2 * grid.at(j).temperature / std::abs(Delta_T.at(j)));
+            if (mpi_rank == mpi_master_rank) {
+                std::cout << "z: "<< grid.at(j).z << " current T: " << grid.at(j).temperature << " new T: " << grid.at(j).temperature + Delta_T.at(j) << " Delta T: " << Delta_T.at(j) << std::endl;
+            }
+            grid.at(j).temperature += Delta_T.at(j);
         }
 
 
@@ -275,6 +363,8 @@ int main(int argc, char *argv[]) {
 
     moments_file.close();
     log_file.close();
+
+    MPI::Finalize();
 
     return(0);
 }

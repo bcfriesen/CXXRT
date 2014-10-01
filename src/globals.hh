@@ -13,6 +13,7 @@ extern std::vector<class Ray> rays;
 
 extern YAML::Node config;
 
+extern std::vector<double> tot_wavelength_values;
 extern std::vector<double> wavelength_values;
 
 extern std::ofstream log_file;
