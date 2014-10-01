@@ -314,6 +314,30 @@ int main(int argc, char *argv[]) {
         }
         // Now broadcast the computed temperature correction to everybody, and they will apply it themselves.
         MPI_Bcast(&Delta_T.front(), grid.size(), MPI_DOUBLE, mpi_master_rank, MPI::COMM_WORLD);
+        // Broadcast everything else too, just to be safe.
+        MPI_Bcast(&J_wl_integral_tot.front(), grid.size(), MPI_DOUBLE, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Bcast(&H_wl_integral_tot.front(), grid.size(), MPI_DOUBLE, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Bcast(&K_wl_integral_tot.front(), grid.size(), MPI_DOUBLE, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Bcast(&chi_H_tot.front(), grid.size(), MPI_DOUBLE, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Bcast(&kappa_J_tot.front(), grid.size(), MPI_DOUBLE, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Bcast(&kappa_B_tot.front(), grid.size(), MPI_DOUBLE, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Bcast(&Eddington_factor_f_tot.front(), grid.size(), MPI_DOUBLE, mpi_master_rank, MPI::COMM_WORLD);
+        MPI_Bcast(&eta_minus_chi_J_wl_integral_tot.front(), grid.size(), MPI_DOUBLE, mpi_master_rank, MPI::COMM_WORLD);
+
+        // We already synchronized these data on the master rank when we did
+        // the temperature correction calculation.
+        if (mpi_rank != mpi_master_rank) {
+            for (unsigned int j = 0; j < grid.size(); ++j) {
+                grid.at(j).J_wl_integral = J_wl_integral_tot.at(j);
+                grid.at(j).H_wl_integral = H_wl_integral_tot.at(j);
+                grid.at(j).K_wl_integral = K_wl_integral_tot.at(j);
+                grid.at(j).chi_H = chi_H_tot.at(j);
+                grid.at(j).kappa_J = kappa_J_tot.at(j);
+                grid.at(j).kappa_B = kappa_B_tot.at(j);
+                grid.at(j).Eddington_factor_f = Eddington_factor_f_tot.at(j);
+                grid.at(j).eta_minus_chi_J_wl_integral = eta_minus_chi_J_wl_integral_tot.at(j);
+            }
+        }
 
         for (unsigned int j = 0; j < grid.size(); ++j) {
             if (std::abs(Delta_T.at(j) / grid.at(j).temperature) > 0.1)
