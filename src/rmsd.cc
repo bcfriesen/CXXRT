@@ -2,9 +2,9 @@
 #include <vector>
 #include <cmath>
 
-#include <Eigen/Dense>
+#include <viennacl/vector.hpp>
 
-double calc_rmsd(const Eigen::VectorXd vec1, const Eigen::VectorXd vec2) {
+double calc_rmsd(const viennacl::vector<double> vec1, const viennacl::vector<double> vec2) {
     if (vec1.size() != vec2.size()) {
         std::cerr << "rmsd: vectors have different size!" << std::endl;
         exit(1);

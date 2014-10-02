@@ -1,17 +1,13 @@
 #include <cmath>
 
-#include <Eigen/Sparse>
-
 #include "globals.hh"
 #include "ray.hh"
 #include "wavelength_grid.hh"
 
-Eigen::SparseMatrix<double> calc_ALO (const unsigned int wl_index) {
+std::vector< std::map< unsigned int, double> >calc_ALO (const unsigned int wl_index) {
     const unsigned int n_depth_pts = grid.size();
-    Eigen::SparseMatrix<double> Lambda_star(n_depth_pts, n_depth_pts);
-
-    std::vector< Eigen::Triplet<double> > tripletList;
-    tripletList.reserve(n_depth_pts);
+    // WARNING: only works for diagonal ALO right now!
+    std::vector< std::map< unsigned int, double> >Lambda_star(n_depth_pts);
 
     for (unsigned int i = 0; i < n_depth_pts; ++i) {
         std::vector<double> I_hat;
@@ -34,8 +30,7 @@ Eigen::SparseMatrix<double> calc_ALO (const unsigned int wl_index) {
             result += 0.5 * (I_hat.at(j) + I_hat.at(j+1)) * (mu.at(j+1) - mu.at(j));
         }
         result *= 0.5;
-        tripletList.push_back(Eigen::Triplet<double> (i, i, result));
+        Lambda_star[i][i] = result;
     }
-    Lambda_star.setFromTriplets(tripletList.begin(), tripletList.end());
     return (Lambda_star);
 }

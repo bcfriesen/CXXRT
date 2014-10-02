@@ -1,7 +1,7 @@
-include_directories ($ENV{EIGEN})
 include_directories ($ENV{YAML_INCLUDE_DIR})
 include_directories ($ENV{BOOST_DIR}/include)
 include_directories ($ENV{GSL_INCLUDE_DIR})
+include_directories ($ENV{VIENNACL_INCLUDE_DIR})
 
 add_subdirectory (EOS)
 add_subdirectory (lines)

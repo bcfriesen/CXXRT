@@ -1,7 +1,5 @@
 #include <fstream>
 
-#include <Eigen/Dense>
-
 #include "grid.hh"
 #include "ray.hh"
 #include "globals.hh"
@@ -14,8 +12,8 @@ void Lambda_iteration() {
 
     double rmsd;
     const double max_tol = 1.0e-8;
-    Eigen::VectorXd J_old(n_depth_pts);
-    Eigen::VectorXd J_new(n_depth_pts);
+    viennacl::vector<double> J_old(n_depth_pts);
+    viennacl::vector<double> J_new(n_depth_pts);
 
     for (unsigned int i = 0; i < wavelength_values.size(); ++i) {
         log_file << "Starting Lambda iteration on wavelength point " << wavelength_values.at(i)*1.0e+8 << " A ... ";
