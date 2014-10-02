@@ -5,7 +5,9 @@
 #include <omp.h>
 #endif
 
-#include <Eigen/Sparse>
+#include <viennacl/vector.hpp>
+#include <viennacl/compressed_matrix.hpp>
+#include "viennacl/linalg/cg.hpp"
 
 #include "calc_ALO.hh"
 #include "globals.hh"
@@ -28,16 +30,21 @@ void do_ALI() {
 #pragma omp single nowait
         {
         unsigned int iter = 0;
-        Eigen::MatrixXd Lambda_star = calc_ALO(i);
+        std::vector< std::map< unsigned int, double> >Lambda_star = calc_ALO(i);
 
-        Eigen::VectorXd J_old(n_depth_pts);
-        Eigen::VectorXd J_new(n_depth_pts);
-        Eigen::VectorXd J_fs(n_depth_pts);
+        viennacl::vector<double> J_old(n_depth_pts);
+        viennacl::vector<double> J_new(n_depth_pts);
+        viennacl::vector<double> J_fs(n_depth_pts);
         for (unsigned int j = 0; j < n_depth_pts; ++j) {
             J_old(j) = grid.at(j).wavelength_grid.at(i).J;
         }
-        Eigen::VectorXd rhs;
-        Eigen::VectorXd epsilon(n_depth_pts);
+        viennacl::vector<double> rhs(n_depth_pts);
+        viennacl::vector<double> epsilon(n_depth_pts);
+
+        viennacl::vector<double> vcl_rhs(n_depth_pts);
+        viennacl::compressed_matrix<double> vcl_sparsemat(n_depth_pts, n_depth_pts);
+
+        viennacl::copy(Lambda_star, vcl_sparsemat);
 
         do {
             for (std::vector<Ray>::iterator r = rays.begin(); r != rays.end(); ++r) {
@@ -55,24 +62,25 @@ void do_ALI() {
                 J_fs(j) = grid.at(j).wavelength_grid.at(i).J;
                 epsilon(j) = grid.at(j).wavelength_grid.at(i).epsilon;
             }
-            rhs = Lambda_star*J_old;
+            rhs = viennacl::linalg::prod(Lambda_star, J_old);
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
                 rhs(j) *= (1.0 - epsilon(j));
             }
             rhs = J_fs - rhs;
 
-            std::vector< Eigen::Triplet<double> > tripletList;
-            tripletList.reserve(n_depth_pts);
+            // WARNING: only works for diagonal ALO!
+            std::vector< std::map< unsigned int, double> >mtx(n_depth_pts);
 
             for (unsigned int k = 0; k < n_depth_pts; ++k) {
-                tripletList.push_back(Eigen::Triplet<double> (k, k, 1.0 - (1.0 - epsilon(k))*(Lambda_star(k, k))));
+                mtx[k][k] = 1.0 - (1.0 - epsilon(k))*(Lambda_star[k][k]);
             }
-            Eigen::SparseMatrix<double> mtx(n_depth_pts, n_depth_pts);
-            mtx.setFromTriplets(tripletList.begin(), tripletList.end());
-            Eigen::SimplicialLDLT< Eigen::SparseMatrix<double> > solver;
-            solver.compute(mtx);
+
+            viennacl::copy(rhs, vcl_rhs);
+            viennacl::copy(mtx, vcl_sparsemat);
+
             // Iterate the conjugate gradient method on the ALI linear system until it converges.
-            J_new = solver.solve(rhs);
+            J_new = viennacl::linalg::solve(vcl_sparsemat, vcl_rhs, viennacl::linalg::cg_tag());
+
             rmsd = calc_rmsd(J_old, J_new);
             J_old = J_new;
             for (unsigned int j = 0; j < n_depth_pts; ++j) {
