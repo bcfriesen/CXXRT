@@ -1,6 +1,8 @@
 #ifndef RMSD_HH
 #define RMSD_HH
 
+#define VIENNACL_WITH_OPENMP
+
 #include <viennacl/vector.hpp>
 
 // This isn't the raw RMSD, it's the RMSD of the relative change among the

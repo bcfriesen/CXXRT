@@ -5,6 +5,8 @@
 #include <omp.h>
 #endif
 
+#define VIENNACL_WITH_OPENMP
+
 #include <viennacl/vector.hpp>
 #include <viennacl/compressed_matrix.hpp>
 #include "viennacl/linalg/cg.hpp"

@@ -2,6 +2,8 @@
 #include <vector>
 #include <cmath>
 
+#define VIENNACL_WITH_OPENMP
+
 #include <viennacl/vector.hpp>
 
 double calc_rmsd(const viennacl::vector<double> vec1, const viennacl::vector<double> vec2) {
