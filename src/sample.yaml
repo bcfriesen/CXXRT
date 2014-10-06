@@ -23,10 +23,16 @@ spectrum_file: spectrum.dat
 atomic_data_root_folder: /home/brian/CXXRT_atomic_data
 
 read_mesa_model: true
-TAMS_mesa_model_name: /home/brian/1M_at_TAMS_with_approx21_cutoff.mod
-mesa_network: approx21
+#TAMS_mesa_model_name: /home/brian/1M_at_TAMS_with_approx21_cutoff.mod
+#TAMS_mesa_model_name: /home/brian/1M_at_TAMS_cutoff.mod
+TAMS_mesa_model_name: /home/brian/solar_cutoff_10.mod
+#mesa_network: approx21
+#mesa_network: basic
+mesa_network: example_solar
 
 do_temperature_corrections: false
 num_temp_correction_iterations: 10
 
-atoms_with_max_ion: { 'H':0, 'He':1, 'C':3, 'N':4, 'O':4, 'Ne':4, 'Mg':4, 'Si':4, 'S':4, 'Ar':4, 'Ca':4, 'Ti':4, 'Cr':4, 'Fe':4, 'Ni':4 }
+#atoms_with_max_ion: { 'H':0, 'He':1 , 'C':3 }
+atoms_with_max_ion: { 'H':0, 'He':1 , 'Li':1, 'Be':2, 'B':3, 'C':3, 'N':4, 'O':4, 'F':2, 'Ne':3, 'Mg':4}
+#atoms_with_max_ion: { 'H':0, 'He':1, 'C':3, 'N':4, 'O':4, 'Ne':4, 'Mg':4, 'Si':4, 'S':4, 'Ar':4, 'Ca':4, 'Ti':4, 'Cr':4, 'Fe':4, 'Ni':4 }
