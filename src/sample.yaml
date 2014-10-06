@@ -8,8 +8,8 @@ radius_max:  7.0e+10
 log10_rho_min: -7.0
 log10_rho_max:  0.0
 
-wl_min: 1.0e-6
-wl_max: 1.0e-4
+wl_min:  1000.0e-8
+wl_max: 10000.0e-8
 
 blackbody_temperature: 5778.0
 
