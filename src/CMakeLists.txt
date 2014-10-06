@@ -2,6 +2,7 @@ include_directories ($ENV{EIGEN})
 include_directories ($ENV{YAML_INCLUDE_DIR})
 include_directories ($ENV{BOOST_DIR}/include)
 include_directories ($ENV{GSL_INCLUDE_DIR})
+include_directories ($ENV{HDF5_INCLUDE_DIR})
 
 add_subdirectory (EOS)
 add_subdirectory (lines)
@@ -22,4 +23,4 @@ set (CXXRT_SOURCES
 
 ADD_EXECUTABLE(CXXRT ${CXXRT_SOURCES})
 
-target_link_libraries(CXXRT $ENV{YAML_LIB_DIR}/libyaml-cpp.a EOS lines $ENV{GSL_LIB_DIR}/libgsl.a $ENV{GSL_LIB_DIR}/libgslcblas.a misc)
+target_link_libraries(CXXRT $ENV{YAML_LIB_DIR}/libyaml-cpp.a EOS lines $ENV{GSL_LIB_DIR}/libgsl.a $ENV{GSL_LIB_DIR}/libgslcblas.a misc $ENV{HDF5_LIB_DIR}/libhdf5.a z)

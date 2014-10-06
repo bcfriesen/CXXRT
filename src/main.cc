@@ -9,6 +9,7 @@
 #endif
 
 #include "mpi.h"
+#include "hdf5.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -349,13 +350,6 @@ int main(int argc, char *argv[]) {
             grid.at(j).temperature += Delta_T.at(j);
         }
 
-
-        // Print the emergent spectrum.
-        std::ofstream spectrum_file;
-        const std::string spectrum_file_name = config["spectrum_file"].as<std::string>() + "_" + convert_loop_index_to_string.str();
-        spectrum_file.open(spectrum_file_name.c_str());
-        spectrum_file << std::scientific;
-
         // Find the surface layer.
         std::vector<GridVoxel>::iterator surface_gv = grid.begin();
         for (surface_gv = grid.begin(); surface_gv != grid.end()-1; ++surface_gv) {
@@ -373,11 +367,60 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
-        for (unsigned int i = 0; i < wavelength_values.size(); ++i) {
-            spectrum_file << wavelength_values.at(i) * 1.0e+8 << " " << emergent_spectrum.at(i) << std::endl;
-        }
-        spectrum_file.close();
 
+        // Each process prints its section of the spectrum to a different hyperslab of an HDF file.
+
+        // Set property list to use parallel HDF access.
+        MPI_Info info = MPI_INFO_NULL;
+        hid_t plist_id = H5Pcreate(H5P_FILE_ACCESS); // HDF property list identifier
+        H5Pset_fapl_mpio(plist_id, MPI::COMM_WORLD, info);
+
+        hid_t file_id = H5Fcreate((config["spectrum_file"].as<std::string>() + ".h5").c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
+        H5Pclose(plist_id); // release the property list identifier
+
+        // Set up dimensions for data set (just 2 columns of data: wavelengths and fluxes)
+        hsize_t dimsf[2];
+        dimsf[0] = n_wavelength_pts;
+        dimsf[1] = 2;
+        hid_t filespace = H5Screate_simple(2, dimsf, NULL);
+
+        // Create the dataset.
+        hid_t dset_id = H5Dcreate(file_id, "emergent_spectrum", H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        H5Sclose(filespace); // release the file space identifier
+
+        // Each process will write only a subsection of the emergent spectrum.
+        hsize_t count[2];
+        count[0] = dimsf[0] / num_mpi_proc;
+        count[1] = dimsf[1];
+        hsize_t offset[2];
+        offset[0] = mpi_rank * count[0];
+        offset[1] = 0;
+        hid_t memspace = H5Screate_simple(2, count, NULL);
+
+        // Each process selects its own hyperslab to write to.
+        filespace = H5Dget_space(dset_id);
+        H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);
+
+        // Temporarily dump spectrum info into C array for data write.
+        double *data;
+        data = (double *) malloc(sizeof(double) * count[0] * count[1]);
+        for (unsigned int irow = 0; irow < count[0]; ++irow) {
+            data[2*irow]   = wavelength_values.at(irow)*1.0e+8;
+            data[2*irow+1] = emergent_spectrum.at(irow);
+        }
+
+        // Create property list for parallel data write.
+        plist_id = H5Pcreate(H5P_DATASET_XFER);
+        H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);
+        herr_t status = H5Dwrite(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, data);
+
+        free(data);
+
+        H5Dclose(dset_id);
+        H5Sclose(filespace);
+        H5Sclose(memspace);
+        H5Pclose(plist_id);
+        H5Fclose(file_id);
     }
 
     for (std::vector<Ray>::iterator ray = rays.begin(); ray != rays.end(); ++ray) {
