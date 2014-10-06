@@ -1,6 +1,6 @@
 n_depth_pts:  20
 n_mu_pts: 20
-n_wavelength_pts: 20
+n_wavelength_pts: 1000
 
 radius_min:  7.0e+7
 radius_max:  7.0e+10
