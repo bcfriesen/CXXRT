@@ -84,12 +84,23 @@ int main(int argc, char *argv[]) {
     // set up the wavelength grid
     log_file << "Building wavelength grid ... ";
     std::flush(log_file);
-    const unsigned int n_wavelength_pts = config["n_wavelength_pts"].as<int>();
+    unsigned int n_wavelength_pts = config["n_wavelength_pts"].as<int>();
     const double wl_min = config["wl_min"].as<double>();
     const double wl_max = config["wl_max"].as<double>();
     if (wl_min > wl_max) {
         std::cerr << "ERROR: wl_min > wl_max!" << std::endl;
         exit(1);
+    }
+
+    if (n_wavelength_pts % num_mpi_proc != 0) {
+        log_file << "WARNING: number of wavelength points requested: " << n_wavelength_pts << std::endl;
+        log_file << "The number of wavelength points must divide evenly into the number of MPI processes, which is " << num_mpi_proc << "." << std::endl;
+        log_file << "Looking for a nearby larger number of wavelength points which will satisfy this ... " << std::endl;
+        unsigned int i = 1;
+        while ((n_wavelength_pts + i) % num_mpi_proc != 0)
+            i++;
+        log_file << "Done. Increasing the number of wavelength points to " << n_wavelength_pts + i << "." << std::endl;
+        n_wavelength_pts += i;
     }
 
     for (unsigned int i = 0; i < n_wavelength_pts; ++i) {
