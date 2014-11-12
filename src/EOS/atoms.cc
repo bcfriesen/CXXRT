@@ -292,18 +292,26 @@ std::ostream& operator<<(std::ostream& os, const Ion& ion) {
 }
 
 
-double AtomicLine::Einstein_B() const {
-    return (4.0 * std::pow(pi, 2) * std::pow(e_charge, 2) * wavelength) / (h_planck * m_electron * std::pow(c_light, 2)) * oscillator_strength;
+double AtomicLine::Einstein_B_ij() const {
+    return 1.0e-2 * (4.0 * std::pow(pi, 2) * std::pow(e_charge, 2) * wavelength) / (h_planck * m_electron * std::pow(c_light, 2)) * oscillator_strength;
+}
+
+double AtomicLine::Einstein_B_ji() const {
+    return (double(lower_level->g) / double(upper_level->g)) * Einstein_B_ij();
 }
 
 
 double AtomicLine::Einstein_A() const {
-    return ((2.0 * h_planck * c_light) / std::pow(wavelength, 3)) * Einstein_B();
+    return ((2.0 * h_planck * c_light) / std::pow(wavelength, 3)) * Einstein_B_ji();
 }
 
 
-double AtomicLine::alpha(const double lambda) const {
-    return ((h_planck * c_light) / (4.0 * pi)) * (wavelength / c_light) * Einstein_B() * line_profile(lambda, wavelength, Delta_lambda);
+double AtomicLine::alpha_ij(const double lambda) const {
+    return ((h_planck * c_light) / (4.0 * pi)) * (wavelength / c_light) * Einstein_B_ij() * line_profile(lambda, wavelength, Delta_lambda);
+}
+
+double AtomicLine::alpha_ji(const double lambda) const {
+    return ((h_planck * c_light) / (4.0 * pi)) * (wavelength / c_light) * Einstein_B_ji() * line_profile(lambda, wavelength, Delta_lambda);
 }
 
 
@@ -318,7 +326,7 @@ double AtomicLine::radiative_rate_absorption(const std::vector<GridWavelengthPoi
     for (std::vector<GridWavelengthPoint>::const_iterator it = wavelength_grid.begin(); it != wavelength_grid.end()-1; ++it) {
         std::vector<GridWavelengthPoint>::const_iterator it_next = it;
         std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
-        result += 0.5 * (it_next->lambda - it->lambda) * (alpha(it->lambda) * it->J + alpha(it_next->lambda) * it_next->J);
+        result += 0.5 * (it_next->lambda - it->lambda) * (alpha_ij(it->lambda) * it->J + alpha_ij(it_next->lambda) * it_next->J);
     }
     result *= (4.0 * pi) / (h_planck * c_light);
     return result;
@@ -331,8 +339,8 @@ double AtomicLine::radiative_rate_emission(const std::vector<GridWavelengthPoint
         std::vector<GridWavelengthPoint>::const_iterator it_next = it;
         std::advance(it_next, 1); // use std::next when more C++ compilers are C++11-compliant
         double f1, f2;
-        f1 = alpha(it->lambda) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(it->lambda, 5)) + it->J) * std::exp(-(h_planck * c_light) / (k_boltzmann * it->lambda * temperature));
-        f2 = alpha(it_next->lambda) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(it_next->lambda, 5)) + it_next->J) * std::exp(-(h_planck * c_light) / (k_boltzmann * it_next->lambda * temperature));
+        f1 = alpha_ji(it->lambda) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(it->lambda, 5)) + it->J) * std::exp(-(h_planck * c_light) / (k_boltzmann * it->lambda * temperature));
+        f2 = alpha_ji(it_next->lambda) * (((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(it_next->lambda, 5)) + it_next->J) * std::exp(-(h_planck * c_light) / (k_boltzmann * it_next->lambda * temperature));
         result += 0.5 * (it_next->lambda - it->lambda) * (f1 + f2);
     }
     result *= (4.0 * pi) / (h_planck * c_light);
@@ -407,12 +415,12 @@ double Ion::alpha(const double lambda, const AtomicLevel level) const {
 
 
 double AtomicLine::eta(const double lambda) const {
-    return ((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(lambda, 5)) * (double(lower_level->g) / double(upper_level->g)) * alpha(lambda) * upper_level->number_density;
+    return ((2.0 * h_planck * std::pow(c_light, 2)) / std::pow(lambda, 5)) * alpha_ji(lambda) * upper_level->number_density;
 }
 
 
 double AtomicLine::kappa(const double lambda) const {
-    return alpha(lambda) * lower_level->number_density - alpha(lambda) * (double(lower_level->g) / double(upper_level->g)) * upper_level->number_density;
+    return alpha_ij(lambda) * lower_level->number_density - alpha_ij(lambda) * (double(lower_level->g) / double(upper_level->g)) * upper_level->number_density;
 }
 
 
