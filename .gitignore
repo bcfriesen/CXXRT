@@ -21,3 +21,6 @@ build
 *.exe
 *.out
 *.app
+
+# IPython junk
+.ipynb_checkpoints
